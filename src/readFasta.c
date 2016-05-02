@@ -20,6 +20,10 @@ char *readFasta_filename;
 FILE *readFasta_file;
 int4 readFasta_lineLength;
 
+
+static int mpi_init = 0;
+static int bytes_read = 0;
+
 // Open FASTA file for reading
 void readFasta_open(char *filename) {
   readFasta_file = fopen(filename, "r");
@@ -165,3 +169,5 @@ void readFasta_close() {
   free(readFasta_descriptionBuffer);
   fclose(readFasta_file);
 }
+
+

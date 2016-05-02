@@ -2,8 +2,8 @@
 #define _dbLookup_
 
 typedef struct{
-    uint4 subOff:17;
-    uint2 seqId:15;
+    uint4 subOff:16;
+    uint2 seqId:16;
 } subPos_t;
 
 struct initialWord_protein_db
@@ -43,26 +43,22 @@ extern uint4 maxNumSeqBlk;
 
 
 
+void free_dbIdxBlock(int bid);
 
-
-void proteinLookup_db_print();
+void free_dbIdxAux();
 
 void proteinLookup_db_build(int4 numCodes, int wordLength,
         struct scoreMatrix scoreMatrix, char *filename);
 
-void write_dbLookup(char *write_dbLookupFilename);
+/*void write_dbLookup(char *write_dbLookupFilename);*/
 void read_dbLookup(char *write_dbLookupFilename);
-void read_dbIdxBlock(char *read_dbLookupFilename, int blockNum);
+/*void read_dbIdxBlock(char *read_dbLookupFilename, int blockNum);*/
 
 void neighbourLookup_init();
 
 void neighbourLookup_free();
-void neighbourLookup_print();
 
 void neighbourLookup_build(struct PSSMatrix PSSMatrix, struct scoreMatrix, int4 wordLength);
-
-void dbIdxBlock_free(int dbIdxBlockNum);
-void free_protein_db();
 
 void free_dbindex();
 #endif

@@ -12,10 +12,10 @@
 #define constants_sentinalScore -9999
 #endif
 
-#define constants_initialAllocUngappedExtensions MAX_NUM_TRIGGER_EXT
-#define constants_initialAllocAlignments MAX_NUM_ALIGNMENTS
-#define constants_initialAllocGoodAlignments 1000
-#define constants_initialAllocFinalAlignments 1000
+#define constants_initialAllocUngappedExtensions 1000
+#define constants_initialAllocAlignments 10000
+#define constants_initialAllocGoodAlignments 10000
+#define constants_initialAllocFinalAlignments 10000
 #define constants_initialAllocCodewordQueryPositions 5
 #define constants_initialTracebackAlloc 10000
 #define constants_volumeMaxSize 2000000000
@@ -25,6 +25,8 @@
 #define constants_initialAllocUnpackRegions 10000
 #define constants_databaseVersion 3
 #define constants_initialSequenceData 100000
+
+#define constants_initialSelectHits MAX_NUM_UNGAPPED_EXT
 
 extern float Robinson_prob[];
 extern float Nucleotide_prob[];

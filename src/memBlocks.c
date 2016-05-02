@@ -157,13 +157,13 @@ void *memBlocks_getLastEntry(struct memBlocks *memBlocks) {
 }
 
 // Reset the current position to the beginning
-void memBlocks_resetCurrent(struct memBlocks *memBlocks) {
+inline void memBlocks_resetCurrent(struct memBlocks *memBlocks) {
   memBlocks->currentEntry = 0;
   memBlocks->currentBlock = 0;
 }
 
 // Get the current entry and advance to the next
-void *memBlocks_getCurrent(struct memBlocks *memBlocks) {
+inline void *memBlocks_getCurrent(struct memBlocks *memBlocks) {
   void *entry;
 
   // Advance to the next block if neccessary
@@ -184,7 +184,7 @@ void *memBlocks_getCurrent(struct memBlocks *memBlocks) {
 }
 
 // Free memory used by the memBlocks then the memBlocks itself
-void memBlocks_free(struct memBlocks *memBlocks) {
+inline void memBlocks_free(struct memBlocks *memBlocks) {
   // Free each block
   while (memBlocks->numBlocks > 0) {
     memBlocks->numBlocks--;

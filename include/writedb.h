@@ -47,4 +47,6 @@ void writedb_addSequence(unsigned char* sequence, uint4 sequenceLength, unsigned
 // Finalize writing to the formatted collection
 void writedb_close();
 
+
+
 #endif

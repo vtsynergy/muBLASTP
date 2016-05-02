@@ -15,4 +15,5 @@ int4 readFasta_readSequence();
 // Close fasta file and free memory used to store sequence
 void readFasta_close();
 
+
 #endif

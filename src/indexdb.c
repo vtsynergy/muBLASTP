@@ -5,6 +5,7 @@
 // provided that this statement is retained.
 //
 // Main code for blast
+
 #include "blast.h"
 int4 main(int4 argc, char *argv[]) {
   // User must provide FASTA format file at command line
@@ -19,7 +20,7 @@ int4 main(int4 argc, char *argv[]) {
   dbIdx_block_size = atoi(argv[2]) * 1024;
 
   // Open sequence data file and read information
-  readdb_open(filename);
+  readdb_open_mem(filename);
 
   encoding_initialize(encoding_protein);
   struct scoreMatrix scoreMatrix;
@@ -28,36 +29,30 @@ int4 main(int4 argc, char *argv[]) {
 
   parameters_findScoringMatrix();
   scoreMatrix = scoreMatrix_load(parameters_scoringMatrixPath);
-  // scoreMatrix_print(scoreMatrix);
 
-#ifndef COMPRESS_INDEX
-  if (readdb_numberOfSequences != readdb_numberOfClusters) {
-    proteinLookup_db_build(encoding_sentinalCode, parameters_wordSize,
-                           scoreMatrix, filename);
-  } else {
-    proteinLookup_db_build(encoding_numRegularLetters, parameters_wordSize,
-                           scoreMatrix, filename);
-  }
-#else
-  if (readdb_numberOfSequences != readdb_numberOfClusters) {
-      proteinLookup_db_cp_build(encoding_sentinalCode, parameters_wordSize,
+  while(1)
+  {
+      proteinLookup_db_build(encoding_numRegularLetters, parameters_wordSize,
               scoreMatrix, filename);
-  } else {
-      proteinLookup_db_cp_build(encoding_numRegularLetters, parameters_wordSize,
-              scoreMatrix, filename);
+
+      free_dbindex();
+
+      if(readdb_volume + 1 < readdb_numberOfVolumes)
+      {
+          readdb_nextVolume();
+      }
+      else
+      {
+          break;
+      }
   }
 
-  //write_dbLookup_cp(filename);
-
-  //free_indexdb_cp_temp();
-  //free_indexdb_cp();
-#endif
 
   // write_dbLookup(filename);
   scoreMatrix_free(scoreMatrix);
   encoding_free();
 
   // close database
-  readdb_close();
+  readdb_close_mem();
   return 0;
 }

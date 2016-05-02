@@ -16,9 +16,11 @@ uint4 readdb_fileSize, readdb_sequenceCount, readdb_descriptionStart;
 char *readdb_sequenceFilename, *readdb_descriptionsFilename,
     *readdb_dataFilename;
 struct readFile readdb_readSequences, readdb_readData;
+struct readFile_mem readdb_readSequences_mem, readdb_readData_mem;
 uint4 readdb_volumeNumber, readdb_numberOfClusters, readdb_numberOfVolumes;
 struct child *readdb_childBuffer = NULL;
-uint4 readdb_sizeChildBuffer = 0, readdb_volume, readdb_numVolumeSequences;
+uint4 readdb_sizeChildBuffer = 0, readdb_volume, readdb_numVolumeSequences, readdb_volumeOffset = 0;
+uint8 readdb_numVolumeLetters;
 struct sequenceData *readdb_sequenceData;
 
 // Open formatted collection for reading
@@ -32,6 +34,8 @@ void readdb_open(char *filename) {
   readdb_descriptionStart = 0;
   readdb_volumeNumber = 0;
   readdb_volume = 0;
+
+  readdb_numVolumeLetters = 0;
 
   // Open sequence file for reading, mapping contents to readdb_address
   readdb_sequenceFilename = (char *)global_malloc(strlen(filename) + 15);
@@ -55,7 +59,11 @@ void readdb_open(char *filename) {
   readdb_descriptionsFilename = (char *)global_malloc(strlen(filename) + 15);
   sprintf(readdb_descriptionsFilename, "%s.descriptions", filename);
 
-  descriptions_open_load(readdb_descriptionsFilename);
+#ifdef DESCIPT_IN_MEM
+  descriptions_open_mem(readdb_descriptionsFilename);
+#else
+  descriptions_open(readdb_descriptionsFilename);
+#endif
 
   // Open data file for reading
   readdb_dataFilename = (char *)global_malloc(strlen(filename) + 13);
@@ -93,6 +101,9 @@ void readdb_open(char *filename) {
   readdb_sequenceData = (struct sequenceData *)global_malloc(
       sizeof(struct sequenceData) * readdb_numberOfClusters);
 
+  fprintf(stderr, "readdb_numberOfSequences: %d readdb_numberOfVolumes: %d\n", 
+          readdb_numberOfSequences, readdb_numberOfVolumes);
+
   // For each sequence in first volume
   offset = 1;
   sequenceCount = 0;
@@ -107,6 +118,124 @@ void readdb_open(char *filename) {
         readdb_descriptionStart;
     readdb_sequenceData[sequenceCount].sequenceLength = sequenceLength;
     readdb_sequenceData[sequenceCount].encodedLength = encodedLength;
+
+    readdb_numVolumeLetters += sequenceLength;
+
+    // Record pointer to sequence
+    readdb_sequenceData[sequenceCount].sequence = readdb_sequences + offset;
+
+    // If protein data skip past sentinal byte
+    if (readdb_dbAlphabetType == encoding_protein)
+      readdb_sequenceData[sequenceCount].sequence++;
+
+    offset += encodedLength;
+
+    readdb_descriptionStart += descriptionLength;
+
+    sequenceCount++;
+  }
+
+  readdb_numVolumeSequences = sequenceCount;
+}
+
+
+// Open formatted collection for reading
+void readdb_open_mem(char *filename) {
+  uint4 databaseVersion, encodedLength, sequenceLength, descriptionLength,
+      sequenceCount, offset;
+  char *wildcardsFile;
+
+  readdb_filename = filename;
+  readdb_sequenceCount = 0;
+  readdb_descriptionStart = 0;
+  readdb_volumeNumber = 0;
+  readdb_volume = 0;
+
+  readdb_numVolumeLetters = 0;
+
+  // Open sequence file for reading, mapping contents to readdb_address
+  readdb_sequenceFilename = (char *)global_malloc(strlen(filename) + 15);
+  sprintf(readdb_sequenceFilename, "%s.sequences", filename);
+
+  // Report error if .sequences file doesn't exist
+  if (!readFile_checkOpen(readdb_sequenceFilename)) {
+    fprintf(stderr, "Error: unable to open file %s for reading\n",
+            readdb_sequenceFilename);
+    fprintf(stderr, "Before searching a collection you must to format it ");
+    fprintf(stderr, "using FSA-BLAST's formatdb tool which creates .sequences "
+                    ".descriptions and ");
+    fprintf(stderr, ".data files for the collection.\n");
+    exit(-1);
+  }
+
+  readdb_readSequences_mem = readFile_open_mem(readdb_sequenceFilename);
+  readdb_sequences = (char *)readdb_readSequences_mem.address;
+
+  // Open descriptions file for reading
+  readdb_descriptionsFilename = (char *)global_malloc(strlen(filename) + 15);
+  sprintf(readdb_descriptionsFilename, "%s.descriptions", filename);
+
+#ifdef DESCIPT_IN_MEM
+  descriptions_open_mem(readdb_descriptionsFilename);
+#else
+  descriptions_open(readdb_descriptionsFilename);
+#endif
+
+  // Open data file for reading
+  readdb_dataFilename = (char *)global_malloc(strlen(filename) + 13);
+  sprintf(readdb_dataFilename, "%s.data", filename);
+  readdb_readData_mem = readFile_open_mem(readdb_dataFilename);
+  readdb_data = (char *)readdb_readData_mem.address;
+
+  // Read in a set of wildcards
+  wildcardsFile = (char *)global_malloc(strlen(filename) + 13);
+  sprintf(wildcardsFile, "%s.wildcards", filename);
+  wildcards_readWildcards(wildcardsFile);
+  free(wildcardsFile);
+
+  // Get the sequences file size
+  readdb_fileSize = readdb_readSequences_mem.fileSize;
+
+  // Read database statistics
+  vbyte_getVbyte(readdb_data, &databaseVersion);
+  if (databaseVersion != constants_databaseVersion) {
+    fprintf(stderr, "Error: Invalid formatted database version %d. ",
+            databaseVersion);
+    fprintf(stderr, "Current supported version is %d.\n",
+            constants_databaseVersion);
+    fprintf(stderr, "Use formatdb tool to reformat database to version %d.\n",
+            constants_databaseVersion);
+    exit(-1);
+  }
+  vbyte_getVbyte(readdb_data, &readdb_numberOfSequences);
+  readdb_data = vbyte_get64vbyte(readdb_data, &readdb_numberOfLetters);
+  vbyte_getVbyte(readdb_data, &readdb_longestSequenceLength);
+  vbyte_getVbyte(readdb_data, &readdb_dbAlphabetType);
+  vbyte_getVbyte(readdb_data, &readdb_numberOfClusters);
+  vbyte_getVbyte(readdb_data, &readdb_numberOfVolumes);
+
+  readdb_sequenceData = (struct sequenceData *)global_malloc(
+      sizeof(struct sequenceData) * readdb_numberOfClusters);
+
+  fprintf(stderr, "readdb_numberOfSequences: %d readdb_numberOfVolumes: %d\n", 
+          readdb_numberOfSequences, readdb_numberOfVolumes);
+
+  // For each sequence in first volume
+  offset = 1;
+  sequenceCount = 0;
+  while (sequenceCount < readdb_numberOfClusters && offset < readdb_fileSize) {
+    // Read sequence data
+    vbyte_getVbyte(readdb_data, &descriptionLength);
+    vbyte_getVbyte(readdb_data, &sequenceLength);
+    vbyte_getVbyte(readdb_data, &encodedLength);
+
+    readdb_sequenceData[sequenceCount].descriptionLength = descriptionLength;
+    readdb_sequenceData[sequenceCount].descriptionStart =
+        readdb_descriptionStart;
+    readdb_sequenceData[sequenceCount].sequenceLength = sequenceLength;
+    readdb_sequenceData[sequenceCount].encodedLength = encodedLength;
+
+    readdb_numVolumeLetters += sequenceLength;
 
     // Record pointer to sequence
     readdb_sequenceData[sequenceCount].sequence = readdb_sequences + offset;
@@ -129,6 +258,9 @@ void readdb_open(char *filename) {
 int readdb_nextVolume() {
   uint4 encodedLength, sequenceLength, descriptionLength, sequenceCount = 0,
                                                           offset = 0;
+  readdb_volumeOffset += sequenceCount;
+
+  readdb_numVolumeLetters = 0;
 
   // Return 0 if no more volumes to read
   readdb_volume++;
@@ -156,18 +288,20 @@ int readdb_nextVolume() {
     vbyte_getVbyte(readdb_data, &sequenceLength);
     vbyte_getVbyte(readdb_data, &encodedLength);
 
-    readdb_sequenceData[sequenceCount].descriptionLength = descriptionLength;
-    readdb_sequenceData[sequenceCount].descriptionStart =
+    readdb_sequenceData[readdb_volumeOffset + sequenceCount].descriptionLength = descriptionLength;
+    readdb_sequenceData[readdb_volumeOffset + sequenceCount].descriptionStart =
         readdb_descriptionStart;
-    readdb_sequenceData[sequenceCount].sequenceLength = sequenceLength;
-    readdb_sequenceData[sequenceCount].encodedLength = encodedLength;
+    readdb_sequenceData[readdb_volumeOffset + sequenceCount].sequenceLength = sequenceLength;
+    readdb_sequenceData[readdb_volumeOffset + sequenceCount].encodedLength = encodedLength;
 
     // Record pointer to sequence
-    readdb_sequenceData[sequenceCount].sequence = readdb_sequences + offset;
+    readdb_sequenceData[readdb_volumeOffset + sequenceCount].sequence = readdb_sequences + offset;
 
     // If protein data skip past sentinal byte
     if (encoding_alphabetType == encoding_protein)
-      readdb_sequenceData[sequenceCount].sequence++;
+      readdb_sequenceData[readdb_volumeOffset + sequenceCount].sequence++;
+
+    readdb_numVolumeLetters += sequenceLength;
 
     offset += encodedLength;
 
@@ -176,6 +310,71 @@ int readdb_nextVolume() {
     sequenceCount++;
   }
 
+
+  //readdb_volumeOffset += sequenceCount;
+  readdb_sequenceCount = 0;
+  readdb_numVolumeSequences = sequenceCount;
+
+  return 1;
+}
+
+int readdb_nextVolume_mem() {
+  uint4 encodedLength, sequenceLength, descriptionLength, sequenceCount = 0,
+                                                          offset = 0;
+  readdb_volumeOffset += sequenceCount;
+
+  readdb_numVolumeLetters = 0;
+
+  // Return 0 if no more volumes to read
+  readdb_volume++;
+  if (readdb_volume >= readdb_numberOfVolumes)
+    return 0;
+
+  // Close current volume
+  readFile_close_mem(readdb_readSequences_mem);
+
+  // Open next volume
+  sprintf(readdb_sequenceFilename, "%s.sequences%d", readdb_filename,
+          readdb_volume);
+  readdb_readSequences_mem = readFile_open_mem(readdb_sequenceFilename);
+  readdb_sequences = (unsigned char *)readdb_readSequences_mem.address;
+
+  // Get the sequences file size
+  readdb_fileSize = readdb_readSequences_mem.fileSize;
+
+  // For each sequence in next volume volume
+  offset = 1;
+  sequenceCount = 0;
+  while (sequenceCount < readdb_numberOfClusters && offset < readdb_fileSize) {
+    // Read sequence data
+    vbyte_getVbyte(readdb_data, &descriptionLength);
+    vbyte_getVbyte(readdb_data, &sequenceLength);
+    vbyte_getVbyte(readdb_data, &encodedLength);
+
+    readdb_sequenceData[readdb_volumeOffset + sequenceCount].descriptionLength = descriptionLength;
+    readdb_sequenceData[readdb_volumeOffset + sequenceCount].descriptionStart =
+        readdb_descriptionStart;
+    readdb_sequenceData[readdb_volumeOffset + sequenceCount].sequenceLength = sequenceLength;
+    readdb_sequenceData[readdb_volumeOffset + sequenceCount].encodedLength = encodedLength;
+
+    // Record pointer to sequence
+    readdb_sequenceData[readdb_volumeOffset + sequenceCount].sequence = readdb_sequences + offset;
+
+    // If protein data skip past sentinal byte
+    if (encoding_alphabetType == encoding_protein)
+      readdb_sequenceData[readdb_volumeOffset + sequenceCount].sequence++;
+
+    readdb_numVolumeLetters += sequenceLength;
+
+    offset += encodedLength;
+
+    readdb_descriptionStart += descriptionLength;
+
+    sequenceCount++;
+  }
+
+
+  //readdb_volumeOffset += sequenceCount;
   readdb_sequenceCount = 0;
   readdb_numVolumeSequences = sequenceCount;
 
@@ -283,7 +482,32 @@ void readdb_close() {
   free(readdb_dataFilename);
   readFile_close(readdb_readSequences);
   readFile_close(readdb_readData);
-  descriptions_close_free();
+
+#ifdef DESCIPT_IN_MEM
+  descriptions_close_mem();
+#else
+  descriptions_close();
+#endif
+
+  free(readdb_childBuffer);
+  readdb_childBuffer = NULL;
+  readdb_sizeChildBuffer = 0;
+}
+
+void readdb_close_mem() {
+  free(readdb_sequenceData);
+  free(readdb_sequenceFilename);
+  free(readdb_descriptionsFilename);
+  free(readdb_dataFilename);
+  readFile_close_mem(readdb_readSequences_mem);
+  readFile_close_mem(readdb_readData_mem);
+
+#ifdef DESCIPT_IN_MEM
+  descriptions_close_mem();
+#else
+  descriptions_close();
+#endif
+
   free(readdb_childBuffer);
   readdb_childBuffer = NULL;
   readdb_sizeChildBuffer = 0;

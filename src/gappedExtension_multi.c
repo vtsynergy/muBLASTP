@@ -1306,13 +1306,7 @@ void gappedExtension_score_multi(struct gappedExtension *gappedExtension,
       gappedExtension->normalizedScore, queryNum);
 }
 
-void gappedExtension_score_ncbi_multi(struct gappedExtension *gappedExtension,
-                                 int queryNum) {
-  gappedExtension->normalizedScore =
-      statistics_gappedNominal2normalized_ncbi(gappedExtension->nominalScore);
 
-  gappedExtension->eValue = gappedExtension->eValue;
-}
 
 void gappedExtension_free_multi(int queryNum) {
   // Free memory used by traceback array

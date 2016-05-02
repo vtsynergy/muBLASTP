@@ -339,5 +339,5 @@ BlastGetStartForGappedAlignment (const Uint1* query, const Uint1* subject,
 
 BlastHSP* Blast_HSPNew(void);
 
-BlastHSP* Blast_HSPNew2(BlastHSP *Blast_HSP_arr, int *Blast_HSP_cnt);
+BlastHSP* Blast_HSPInit(BlastHSP *Blast_HSP_arr, int *Blast_HSP_cnt);
 #endif

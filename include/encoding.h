@@ -49,24 +49,16 @@ unsigned char encoding_determineAlphabetType(char* sequence, uint4 sequenceSize)
 // Generate a random regular letter for a given wildcard
 unsigned char encoding_randomEncodedLetter(unsigned char code);
 
-// Insert wildcards back int4o the sequence
-extern inline void encoding_insertWilds(unsigned char* subject, unsigned char* edits,
-                                        unsigned char* endEdits);
+// Insert wildcards back into the sequence
+extern inline void encoding_insertWilds(unsigned char *subject, unsigned char *edits,
+        unsigned char *endEdits);
+
 
 // Extract a single character from a packed byte
 #define encoding_extractBase(byte, bytePosition) ((byte >> (6 - (bytePosition * 2))) & 0x3)
 
 // Unpack a sequence from byte-packed form
 unsigned char* encoding_byteUnpack(unsigned char* bytePackedSequence, int4 sequenceLength);
-
-// Byte pack fourth letters
-extern inline unsigned char encoding_bytePack(unsigned char* sequence);
-
-// Byte pack the last 1 to 4 characters in a sequence
-extern inline unsigned char encoding_bytePackRemaining(unsigned char* sequence, int4 numLetters);
-
-// Byte pack the first 1 to 4 characters in a sequence
-extern inline unsigned char encoding_bytePackBeginning(unsigned char* sequence, int4 numLetters);
 
 // Replace the wildcards in a protein or nucleotide sequence
 int4 encoding_replaceWildcards(struct memSingleBlock* wildcardEdits, unsigned char* sequence,
@@ -87,5 +79,16 @@ void encoding_free();
 // Unpack part of a sequence
 unsigned char* encoding_byteUnpackRegion(unsigned char* subject, unsigned char* bytePackedSequence,
                                          int4 sequenceLength);
+
+// Byte pack fourth letters
+extern inline unsigned char encoding_bytePack(unsigned char *sequence); 
+
+// Byte pack the last 1 to 4 characters in a sequence
+extern inline unsigned char encoding_bytePackRemaining(unsigned char *sequence,
+        int4 numLetters); 
+
+// Byte pack the first 1 to 4 characters in a sequence
+extern inline unsigned char encoding_bytePackBeginning(unsigned char *sequence,
+        int4 numLetters); 
 
 #endif

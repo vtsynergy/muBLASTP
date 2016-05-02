@@ -7,7 +7,9 @@
 // Main code for blast
 
 #include "blast.h"
+//#define QUERY_BLK
 char *query_arr[BATCH_SIZE];
+char *queryDescription_arr[BATCH_SIZE];
 struct PSSMatrix PSSMatrix_arr[BATCH_SIZE];
 
 void blast_search(char *searchDbFile, struct PSSMatrix PSSMatrix, char *query);
@@ -44,10 +46,10 @@ int4 main(int4 argc, char *argv[]) {
     encoding_initialize(encoding_protein);
     parameters_loadDefaults(encoding_protein);
     scoreMatrix = scoreMatrix_load(parameters_scoringMatrixPath);
-    proteinLookup_query_initial(encoding_numRegularLetters, parameters_wordSize);
 
     int nextQuery = 0;
     do {
+        int queryLettersBlk = 0;
         longestQueryLength = 0;
         queryNum = 0;
         do {
@@ -65,7 +67,7 @@ int4 main(int4 argc, char *argv[]) {
             // Make copy of the description
             queryDescription = (char *)global_malloc(
                     sizeof(char) * (readFasta_descriptionLength + 1));
-            blast_queryDescription = (char *)global_malloc(
+            blast_queryDescription_multi[queryNum] =  blast_queryDescription = (char *)global_malloc(
                     sizeof(char) * (readFasta_descriptionLength + 1));
             strcpy(queryDescription, readFasta_descriptionBuffer);
             strcpy(blast_queryDescription, readFasta_descriptionBuffer);
@@ -73,7 +75,7 @@ int4 main(int4 argc, char *argv[]) {
             // Determine the alphabet type of the query
             queryAlphabetType = encoding_determineAlphabetType(query, strlen(query));
 
-            queryDescription = print_formatDescription(queryDescription, 7, 0, 70);
+            queryDescription_arr[queryNum] = queryDescription = print_formatDescription(queryDescription, 7, 0, 70);
             //if (parameters_outputType != parameters_xml &&
                     //parameters_outputType != parameters_tabular) {
                 //printf("Query= %s\n", queryDescription);
@@ -144,31 +146,82 @@ int4 main(int4 argc, char *argv[]) {
                             parameters_wordSize);
                 }
 
-
                 wordLookupDFA_assign(queryNum);
                 PSSMatrix_arr[queryNum] = PSSMatrix;
             }
 
-            free(queryDescription);
-            free(blast_queryDescription);
+            //free(queryDescription);
+            //free(blast_queryDescription);
             queryNum++;
             nextQuery = readFasta_readSequence();
+            queryLettersBlk += PSSMatrix.length;
 
-        } while (nextQuery && (queryNum < BATCH_SIZE));
+        } while (nextQuery && (queryNum < BATCH_SIZE) && queryLettersBlk < 60000 && queryNum < 1024);
+            //} while (nextQuery && (queryNum < BATCH_SIZE) && queryLettersBlk);
 
         int ii;
+
+        struct timeval start, end;
+        gettimeofday(&start, NULL);
+
+#if 0
+        proteinLookup_query_initial(encoding_numRegularLetters, parameters_wordSize);
         for(ii = 0; ii < queryNum; ii++)
         {
-            proteinLookup_query_add(ii, PSSMatrix_arr[ii].queryCodes, PSSMatrix_arr[ii].length, parameters_wordSize, scoreMatrix);
+            //proteinLookup_query_add(ii, PSSMatrix_arr[ii].queryCodes, PSSMatrix_arr[ii].length, parameters_wordSize, scoreMatrix);
+            proteinLookup_query_add(ii, PSSMatrix_arr[ii].bestMatchCodes, PSSMatrix_arr[ii].length, parameters_wordSize, scoreMatrix);
         }
         proteinLookup_sort();
+#else
+        proteinLookup_query_initial_blk(encoding_numRegularLetters, 
+                parameters_wordSize, numQueryBlk);
+
+        for(ii = 0; ii < queryNum; ii++)
+        {
+            proteinLookup_query_add_blk(ii, PSSMatrix_arr[ii].queryCodes, 
+                    PSSMatrix_arr[ii].length, parameters_wordSize, 
+                    scoreMatrix, numQueryBlk);
+
+            //queryLettersBlk += PSSMatrix_arr[ii].length;
+
+            //if(queryLettersBlk >= 32768)
+            //{
+
+            //proteinLookup_sort_blk(numQueryBlk);
+                //numQueryBlk++;
+                //proteinLookup_query_initial_blk(encoding_numRegularLetters, 
+                        //parameters_wordSize, numQueryBlk);
+
+                //queryLettersBlk = 0;
+            //}
+        }
+
+        proteinLookup_sort_blk(numQueryBlk);
+
+#endif
+
+        gettimeofday(&end, NULL);
+
+        fprintf(stderr, "index building time: %f numQueryBlk: %d numQuery: %d\n", (float)((end.tv_sec * 1000000 + end.tv_usec)
+                    - (start.tv_sec * 1000000 + start.tv_usec)) * 1e-6, numQueryBlk + 1, queryNum);
+
 
         blast_search_multi(parameters_subjectDatabaseFile, PSSMatrix_arr,
                 queryNum, scoreMatrix);
 
+        for(ii = 0; ii < queryNum; ii++)
+        {
+            PSSMatrix_free(PSSMatrix_arr[ii]);
+            free(query_arr[ii]);
+            free(queryDescription_arr[ii]);
+            free(blast_queryDescription_multi[ii]);
+        }
+
+        queryIndex_free_blk();
+
     } while (nextQuery);
 
-    queryIndex_free();
+
     encoding_free();
     // close FASTA reader
     readFasta_close();
@@ -245,18 +298,17 @@ void blast_search_multi(char *searchDbFile, struct PSSMatrix *PSSMatrix_arr,
     // Initialize collections of alignments
     alignments_initialize_multi();
 
-    for (ii = 0; ii < numQuery; ii++) {
-        hitMatrix_initialize_multi(longestQueryLength, readdb_longestSequenceLength,
-                readdb_sequences, ii);
-    }
+    //for (ii = 0; ii < numQuery; ii++) {
+        //hitMatrix_initialize_multi(longestQueryLength, readdb_longestSequenceLength,
+                //readdb_sequences, ii);
+    //}
 
-    if(parameters_num_threads > 1)
-        alignments_query_omp(PSSMatrix_arr, numQuery);
-    else
-        alignments_query_serial(PSSMatrix_arr, numQuery, scoreMatrix);
+    total_numberOfLetters = readdb_numberOfLetters;
+    alignments_queryIdx(PSSMatrix_arr, scoreMatrix, query_arr, queryDescription_arr, numQuery);
+    
+    //for (ii = 0; ii < numQuery; ii++) {
 
-    for (ii = 0; ii < numQuery; ii++) {
-
+#if 0
         printf("Query %d alignment info:\n", ii);
         printf("Number of hits: %d\n", blast_numHits_multi[ii]);
         printf("Number of extensions: %u\n", blast_numUngappedExtensions_multi[ii]);
@@ -268,19 +320,19 @@ void blast_search_multi(char *searchDbFile, struct PSSMatrix *PSSMatrix_arr,
                 blast_numGoodAlignments_multi[ii]);
         printf("Number of sequences better than %g: %u\n\n", parameters_cutoff,
                 alignments_finalAlignments_multi[ii]->numEntries);
+#endif
 
         //print_gappedAlignmentsBrief_multi(ii);
         // print_gappedAlignmentsFull_multi(query_arr[ii], PSSMatrix_arr[ii], ii);
 
-        hitMatrix_free_multi(ii);
-        wordLookupDFA_free_multi(ii);
+        //hitMatrix_free_multi(ii);
+        //wordLookupDFA_free_multi(ii);
         //semiGappedScoring_free_multi(ii);
-        fasterGappedExtension_free_multi(ii);
-        gappedExtension_free_multi(ii);
-        PSSMatrix_free(PSSMatrix_arr[ii]);
-        alignments_free_multi(ii);
-        free(query_arr[ii]);
-    }
+        //fasterGappedExtension_free_multi(ii);
+        //gappedExtension_free_multi(ii);
+        //alignments_free_multi(ii);
+        //
+        //}
 
     //encoding_free();
 }

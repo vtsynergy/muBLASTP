@@ -1,6 +1,8 @@
 #ifndef _print_
 #define _print_
 
+
+
 // Format a sequence description so it wraps around lines nicely
 char* print_formatDescription(char* description, int4 firstLineIndent, int4 remainingLinesIndent,
                               int4 maxLineLength);
@@ -27,8 +29,11 @@ void print_XMLfooter();
 
 void print_gappedAlignmentsBrief_multi(int queryNum);
 
-
 void print_gappedAlignmentsFull_multi(char *query, struct PSSMatrix PSSMatrix,
                                       int queryNum);
 
+int print_gappedExtension_mpi(struct gappedExtension *gappedExtension,
+                           struct PSSMatrix PSSMatrix, char *query,
+                           unsigned char *subject, char *finalText_p);
+ 
 #endif

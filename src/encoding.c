@@ -302,26 +302,6 @@ unsigned char encoding_randomEncodedLetter(unsigned char code) {
   }
 }
 
-// Insert wildcards back into the sequence
-void encoding_insertWilds(unsigned char *subject, unsigned char *edits,
-                          unsigned char *endEdits) {
-  uint4 wildcardPosition;
-  unsigned char wildcard;
-
-  // For each edit
-  while (edits < endEdits) {
-    // Read wildcard
-    wildcard = *edits;
-    edits++;
-
-    // Read its position
-    vbyte_getVbyte(edits, &wildcardPosition);
-
-    // Add wildcard
-    subject[wildcardPosition] = wildcard;
-  }
-}
-
 // Unpack part of a sequence
 unsigned char *encoding_byteUnpackRegion(unsigned char *subject,
                                          unsigned char *bytePackedSequence,
@@ -385,44 +365,6 @@ unsigned char *encoding_byteUnpack(unsigned char *bytePackedSequence,
 #define encoding_unpackBase2(packedByte) ((packedByte >> 4) & 0x3)
 #define encoding_unpackBase3(packedByte) ((packedByte >> 2) & 0x3)
 #define encoding_unpackBase4(packedByte) (packedByte & 0x3)
-
-// Byte pack fourth letters
-unsigned char encoding_bytePack(unsigned char *sequence) {
-  return (*sequence << 6) | (*(sequence + 1) << 4) | (*(sequence + 2) << 2) |
-         *(sequence + 3);
-}
-
-// Byte pack the last 1 to 4 characters in a sequence
-unsigned char encoding_bytePackRemaining(unsigned char *sequence,
-                                         int4 numLetters) {
-  if (numLetters == 1) {
-    return (*sequence << 6);
-  } else if (numLetters == 2) {
-    return (*(sequence + 1) << 4) | (*sequence << 6);
-  } else if (numLetters == 3) {
-    return (*(sequence + 2) << 2) | (*(sequence + 1) << 4) | (*sequence << 6);
-  } else // numLetters = 4
-  {
-    return *(sequence + 3) | (*(sequence + 2) << 2) | (*(sequence + 1) << 4) |
-           (*sequence << 6);
-  }
-}
-
-// Byte pack the first 1 to 4 characters in a sequence
-unsigned char encoding_bytePackBeginning(unsigned char *sequence,
-                                         int4 numLetters) {
-  if (numLetters == 1) {
-    return *sequence;
-  } else if (numLetters == 2) {
-    return *(sequence + 1) | (*sequence << 2);
-  } else if (numLetters == 3) {
-    return *(sequence + 2) | (*(sequence + 1) << 2) | (*sequence << 4);
-  } else // numLetters = 4
-  {
-    return *(sequence + 3) | (*(sequence + 2) << 2) | (*(sequence + 1) << 4) |
-           (*sequence << 6);
-  }
-}
 
 // Replace the wildcards in a protein or nucleotide sequence
 int4 encoding_replaceWildcards(struct memSingleBlock *wildcardEdits,
@@ -493,17 +435,9 @@ void encoding_encodeSequence(char *sequence, int4 sequenceSize,
   // Convert letters to codes
   count = 0;
   while (count < sequenceSize) {
-    //if((unsigned char)(sequence[count]) == 'U')
-    //{
-        //fprintf(stderr, "Selenocysteine (U) at position %d replaced by X\n", count);
-        //code = encoding_codesArray['X'];
-    //}
-    //else
-    {
-        code = encoding_codesArray[(unsigned char)(sequence[count])];
-    }
-    sequence[count] = code;
-    count++;
+      code = encoding_codesArray[(unsigned char)(sequence[count])];
+      sequence[count] = code;
+      count++;
   }
 }
 
@@ -522,5 +456,63 @@ void encoding_free() {
     // Declare memory for regular codes
     free(encoding_wildcards[code].replacementCodes);
     code++;
+  }
+}
+
+// Byte pack fourth letters
+inline unsigned char encoding_bytePack(unsigned char *sequence) {
+  return (*sequence << 6) | (*(sequence + 1) << 4) | (*(sequence + 2) << 2) |
+         *(sequence + 3);
+}
+
+// Byte pack the last 1 to 4 characters in a sequence
+inline unsigned char encoding_bytePackRemaining(unsigned char *sequence,
+                                         int4 numLetters) {
+  if (numLetters == 1) {
+    return (*sequence << 6);
+  } else if (numLetters == 2) {
+    return (*(sequence + 1) << 4) | (*sequence << 6);
+  } else if (numLetters == 3) {
+    return (*(sequence + 2) << 2) | (*(sequence + 1) << 4) | (*sequence << 6);
+  } else // numLetters = 4
+  {
+    return *(sequence + 3) | (*(sequence + 2) << 2) | (*(sequence + 1) << 4) |
+           (*sequence << 6);
+  }
+}
+
+// Byte pack the first 1 to 4 characters in a sequence
+inline unsigned char encoding_bytePackBeginning(unsigned char *sequence,
+                                         int4 numLetters) {
+  if (numLetters == 1) {
+    return *sequence;
+  } else if (numLetters == 2) {
+    return *(sequence + 1) | (*sequence << 2);
+  } else if (numLetters == 3) {
+    return *(sequence + 2) | (*(sequence + 1) << 2) | (*sequence << 4);
+  } else // numLetters = 4
+  {
+    return *(sequence + 3) | (*(sequence + 2) << 2) | (*(sequence + 1) << 4) |
+           (*sequence << 6);
+  }
+}
+
+// Insert wildcards back into the sequence
+inline void encoding_insertWilds(unsigned char *subject, unsigned char *edits,
+                          unsigned char *endEdits) {
+  uint4 wildcardPosition;
+  unsigned char wildcard;
+
+  // For each edit
+  while (edits < endEdits) {
+    // Read wildcard
+    wildcard = *edits;
+    edits++;
+
+    // Read its position
+    vbyte_getVbyte(edits, &wildcardPosition);
+
+    // Add wildcard
+    subject[wildcardPosition] = wildcard;
   }
 }

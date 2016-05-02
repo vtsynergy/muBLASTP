@@ -36,7 +36,7 @@ struct ungappedExtension* ungappedExtension_nucleotideExtend(int4 queryHitOffset
     uint4 subjectLength);
 
 // Find seed point4 for an ungapped extension
-extern inline void ungappedExtension_findSeed(struct ungappedExtension* ungappedExtension,
+void ungappedExtension_findSeed(struct ungappedExtension* ungappedExtension,
 		                                      struct PSSMatrix PSSMatrix, unsigned char* subject);
 
 void ungappedExtension_print(struct ungappedExtension* extension);

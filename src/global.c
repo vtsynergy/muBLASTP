@@ -18,7 +18,10 @@ uint4 blast_numQuery = 0;
 uint4 blast_numBlocks = 0;
 uint2 blast_tgSize = 1;
 
+int rank = 0, num_procs = 1;
+
 uint4 longestQueryLength;
+uint8 total_numberOfLetters = 0;
 
 // BLAST statistics
 uint4 blast_numHits = 0;
@@ -188,7 +191,7 @@ char *global_int8toString(uint8 number) {
   int4 length, count1, count2;
 
   // Convert integer to string
-  sprintf(string1, "%llu", number);
+  sprintf(string1, "%lu", number);
   length = strlen(string1);
 
   // Declare second string large enough to hold number with commas
@@ -219,55 +222,43 @@ char *global_int8toString(uint8 number) {
 // Free the global convert string
 void global_free() { free(global_string); }
 
-uint4 global_totalMalloc = 0;
+uint8 global_totalMalloc = 0;
 
 // Malloc new memory, check that malloc was successful
 void *global_malloc(size_t size) {
+
   void *newMemory;
 
   newMemory = malloc(size);
 
-  //    printf("[%d]\n", size);
-
-  /*    if (size > 20000000)
-      {
-          char* a;
-          a = NULL;
-          *a = 0;
-      }*/
-
   if (newMemory == NULL && size != 0) {
+
     // Report error allocating memory
-    fprintf(stderr, "Error allocating %lu bytes: ", size);
-    fprintf(stderr, strerror(errno));
+    fprintf(stderr, "Error allocating %lu Megabytes: ", size >> 20);
+    fprintf(stderr, "%s\n", strerror(errno));
     fprintf(stderr, "\n");
     fflush(stderr);
     exit(-1);
   }
 
-  // global_totalMalloc += size;
-  __sync_fetch_and_add(&global_totalMalloc, size);
+  global_totalMalloc += size;
 
   return newMemory;
 }
 
 // Realloc memory, check that realloc was successful
 void *global_realloc(void *ptr, size_t size) {
-  ptr = realloc(ptr, size);
+    ptr = realloc(ptr, size);
+    if (ptr == NULL && size != 0) {
+        // Report error allocating memory
+        fprintf(stderr, "Error allocating %lu bytes: ", size);
+        fprintf(stderr, "%s\n", strerror(errno));
+        fflush(stderr);
+        exit(-1);
+    }
 
-  //    printf("[%d*]\n", size);
+    // global_totalMalloc += size;
+    __sync_fetch_and_add(&global_totalMalloc, size);
 
-  if (ptr == NULL && size != 0) {
-    // Report error allocating memory
-    fprintf(stderr, "Error allocating %lu bytes: ", size);
-    fprintf(stderr, strerror(errno));
-    fprintf(stderr, "\n");
-    fflush(stderr);
-    exit(-1);
-  }
-
-  // global_totalMalloc += size;
-  __sync_fetch_and_add(&global_totalMalloc, size);
-
-  return ptr;
+    return ptr;
 }

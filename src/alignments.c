@@ -21,6 +21,40 @@ uint4 alignments_numClusters = 0;
 int alignments_expandCluster(struct alignment *alignment,
                              struct PSSMatrix PSSMatrix);
 
+// Add a high-scoring gapped extension to this alignment
+void alignments_addGappedExtension(struct alignment *alignment,
+                                   struct gappedExtension *newExtension) {
+  struct gappedExtension *currentExtension, *previousExtension;
+
+  // If this is the first high-scoring gapped extension for this alignment
+  if (alignment->gappedExtensions == NULL) {
+    // Make this the first gapped extension in the alignment
+    alignment->gappedExtensions = newExtension;
+  } else {
+    // Start at beginning of list of gapped extensions (one with highest score)
+    currentExtension = alignment->gappedExtensions;
+    previousExtension = NULL;
+
+    // Move through list of existing extensions until we either reach the
+    // end or reach one with a score less than newExtension
+    while (currentExtension != NULL &&
+           (currentExtension->nominalScore > newExtension->nominalScore)) {
+      previousExtension = currentExtension;
+      currentExtension = currentExtension->next;
+    }
+
+    if (previousExtension == NULL) {
+      // This is the highest scoring extension, insert at front of the queue
+      alignment->gappedExtensions = newExtension;
+      newExtension->next = currentExtension;
+    } else {
+      // Insert between higher and lower scoring extensions
+      previousExtension->next = newExtension;
+      newExtension->next = currentExtension;
+    }
+  }
+}
+
 // Initialize array storing pointers to alignments
 void alignments_initialize() {
   // Initialize alignments, good alignments and final alignments blocks
@@ -149,39 +183,7 @@ void alignments_addUngappedExtension(struct ungappedExtension *newExtension) {
   }
 }
 
-// Add a high-scoring gapped extension to this alignment
-void alignments_addGappedExtension(struct alignment *alignment,
-                                   struct gappedExtension *newExtension) {
-  struct gappedExtension *currentExtension, *previousExtension;
 
-  // If this is the first high-scoring gapped extension for this alignment
-  if (alignment->gappedExtensions == NULL) {
-    // Make this the first gapped extension in the alignment
-    alignment->gappedExtensions = newExtension;
-  } else {
-    // Start at beginning of list of gapped extensions (one with highest score)
-    currentExtension = alignment->gappedExtensions;
-    previousExtension = NULL;
-
-    // Move through list of existing extensions until we either reach the
-    // end or reach one with a score less than newExtension
-    while (currentExtension != NULL &&
-           (currentExtension->nominalScore > newExtension->nominalScore)) {
-      previousExtension = currentExtension;
-      currentExtension = currentExtension->next;
-    }
-
-    if (previousExtension == NULL) {
-      // This is the highest scoring extension, insert at front of the queue
-      alignment->gappedExtensions = newExtension;
-      newExtension->next = currentExtension;
-    } else {
-      // Insert between higher and lower scoring extensions
-      previousExtension->next = newExtension;
-      newExtension->next = currentExtension;
-    }
-  }
-}
 
 // Remove given extension from the list of gapped extensions associated
 // with the given alignment
@@ -436,28 +438,7 @@ int4 alignments_compareFinalAlignments(const void *alignment1,
   }
 }
 
-int4 alignments_compareFinalAlignments2(const void *alignment1,
-                                       const void *alignment2) {
-  const struct finalAlignment *a1, *a2;
 
-  a1 = (struct finalAlignment *)alignment1;
-  a2 = (struct finalAlignment *)alignment2;
-
-  if (a1->alignment->gappedExtensions->eValue > a2->alignment->gappedExtensions->eValue) {
-    return 1;
-  } else if (a1->alignment->gappedExtensions->eValue < a2->alignment->gappedExtensions->eValue) {
-    return -1;
-  } else {
-    // Resolve conflicts using subject length
-      if (a1->highestNominalScore > a2->highestNominalScore) {
-          return -1;
-      } else if (a1->highestNominalScore < a2->highestNominalScore) {
-          return 1;
-      }
-      else
-          return 0;
-  }
-}
 
 // Sort the array of good alignments in order of score
 void alignments_sortGoodAlignments() {

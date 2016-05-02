@@ -46,6 +46,7 @@ struct trace
 	uint4 queryStart;
 	uint4 subjectStart;
 	unsigned char* traceCodes;
+    uint4 traceCodeOff;
 };
 
 
@@ -54,7 +55,8 @@ struct trace
 struct ungappedExtension
 {
 	struct trace trace;
-    uint2 sequenceCount;
+    uint4 sequenceCount;
+    uint4 queryCount;
 	struct coordinate start;
 	struct coordinate end;
     struct coordinate gap_start;
@@ -94,29 +96,57 @@ struct gappedExtension
 	float normalizedScore;
 	double eValue;
 	struct gappedExtension* next;
+	int nextOffset;
 };
 
 // Information about the alignment between the query and a subject
 struct alignment
 {
-	int4 descriptionLocation;
-  int4 descriptionLength;
-	unsigned char* subject;
-	int4 subjectLength;
-	struct ungappedExtension* ungappedExtensions;
-	struct gappedExtension* gappedExtensions;
-  unsigned char* edits;
-  int4 encodedLength;
-	char joinChecked;
-  char inMemorySubject;
-  struct unpackRegion* unpackRegions;
-  uint4 numUnpackRegions;
-  uint4 cluster;
-  uint4 sequenceCount;
-  uint4 queryCount;
-  uint4 numExtensions;
-  double best_eValue;
+    int4 descriptionLocation;
+    int4 descriptionLength;
+    unsigned char* subject;
+    int4 subjectLength;
+    struct ungappedExtension* ungappedExtensions;
+    int4  ungappedExtensionOffset;
+    struct gappedExtension* gappedExtensions;
+    int4  gappedExtensionOffset;
+    unsigned char* edits;
+    int4 encodedLength;
+    char joinChecked;
+    char inMemorySubject;
+    struct unpackRegion* unpackRegions;
+    uint4 numUnpackRegions;
+    uint4 cluster;
+    uint4 sequenceCount;
+    uint4 queryCount;
+    uint4 numExtensions;
+    int volumnNumber;
+    double best_eValue;
 };
+
+/*typedef struct alignment align_t;*/
+
+/*typedef struct*/
+/*{*/
+/*int4 descriptionLocation;*/
+/*int4 descriptionLength;*/
+/*unsigned char* subject;*/
+/*int4 subjectLength;*/
+/*struct ungappedExtension* ungappedExtensions;*/
+/*int4  ungappedExtensionOffset;*/
+/*struct gappedExtension* gappedExtensions;*/
+/**//*unsigned char* edits;*/
+/*int4 encodedLength;*/
+/**//*char joinChecked;*/
+/*char inMemorySubject;*/
+/**//*struct unpackRegion* unpackRegions;*/
+/**//*uint4 numUnpackRegions;*/
+/**//*uint4 cluster;*/
+/*uint4 sequenceCount;*/
+/*uint4 queryCount;*/
+/*uint4 numExtensions;*/
+/*double best_eValue;*/
+/*} align_t;*/
 
 // A final alignment above cutoff
 struct finalAlignment
@@ -124,7 +154,11 @@ struct finalAlignment
 	int4 highestNominalScore;
     char* description;
 	struct alignment* alignment;
+    int4 thread_id;
 };
+
+extern int rank, num_procs;
+extern uint8 total_numberOfLetters; 
 
 // Timing variables
 extern int4 blast_prepTime, blast_searchTime;
@@ -166,7 +200,7 @@ char* global_int4toString(uint4 number);
 // Convert a 64-bit int4eger int4o a string with commas
 char* global_int8toString(uint8 number);
 
-extern uint4 global_totalMalloc;
+extern uint8 global_totalMalloc;
 
 // Malloc new memory, check that malloc was successful
 void* global_malloc(size_t size);

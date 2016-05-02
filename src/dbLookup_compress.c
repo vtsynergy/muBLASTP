@@ -215,7 +215,7 @@ void proteinLookup_db_cp_build(int4 numCodes, int wordLength,
                     readdb_sequenceData[ii].sequenceLength, wordLength,
                     scoreMatrix, seqStartBlk);
             proteinLookup_db_blk_cp[jj].dbIdxblk_longestSeq = 
-                max(proteinLookup_db_blk_cp[jj].dbIdxblk_longestSeq, readdb_sequenceData[ii].sequenceLength);
+                MAX(proteinLookup_db_blk_cp[jj].dbIdxblk_longestSeq, readdb_sequenceData[ii].sequenceLength);
 
             if((ii - seqStartBlk) >= (INT4_MAX - 1))
             {
@@ -240,7 +240,7 @@ void proteinLookup_db_cp_build(int4 numCodes, int wordLength,
 
         seqStartBlk = ii;
         numPosDBCP += numPosBlkCP;
-        maxNumSeqBlk = max(proteinLookup_db_blk_cp[jj].numSeqBlk, maxNumSeqBlk);
+        maxNumSeqBlk = MAX(proteinLookup_db_blk_cp[jj].numSeqBlk, maxNumSeqBlk);
 
         for (ii = 0; ii < proteinLookup_numWords; ii++)
         {

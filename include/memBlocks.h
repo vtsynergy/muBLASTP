@@ -31,13 +31,14 @@ void memBlocks_returnUnused(struct memBlocks* memBlocks, int4 numUnused);
 void* memBlocks_getLastEntry(struct memBlocks* memBlocks);
 
 // Reset the current position to the beginning
-extern inline void memBlocks_resetCurrent(struct memBlocks* memBlocks);
+extern inline void memBlocks_resetCurrent(struct memBlocks *memBlocks); 
+
 
 // Get the current entry and advance to the next
-extern inline void* memBlocks_getCurrent(struct memBlocks* memBlocks);
+extern inline void *memBlocks_getCurrent(struct memBlocks *memBlocks); 
 
 // Free memory used by the memBlocks then the memBlocks itself
-extern inline void memBlocks_free(struct memBlocks* memBlocks);
+extern inline void memBlocks_free(struct memBlocks *memBlocks); 
 
 #endif
 

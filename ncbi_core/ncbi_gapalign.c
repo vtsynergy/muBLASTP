@@ -776,7 +776,7 @@ BlastHSP* Blast_HSPNew(void)
      return new_hsp;
 }
 
-BlastHSP* Blast_HSPNew2(BlastHSP *Blast_HSP_arr, int *Blast_HSP_cnt)
+BlastHSP* Blast_HSPInit(BlastHSP *Blast_HSP_arr, int *Blast_HSP_cnt)
 {
     BlastHSP* new_hsp = Blast_HSP_arr + *Blast_HSP_cnt;
     (*Blast_HSP_cnt)++;

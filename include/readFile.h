@@ -3,8 +3,15 @@
 
 struct readFile
 {
-	int4 fileSize;
+	size_t fileSize;
 	int4 fileDescriptor;
+	void* address;
+};
+
+struct readFile_mem
+{
+	size_t fileSize;
+    FILE *fileDescriptor;
 	void* address;
 };
 
@@ -16,5 +23,10 @@ void readFile_close(struct readFile readFile);
 
 // Check file exists
 int readFile_checkOpen(char* filename);
+
+
+struct readFile_mem readFile_open_mem(char *filename);
+
+void readFile_close_mem(struct readFile_mem readFile);
 
 #endif

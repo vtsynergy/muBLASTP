@@ -463,7 +463,7 @@ static int4 s_BlastPSSMExtendLeft(int2 **matrix, char *subject, int4 s_off,
   int4 score = maxscore;
   char *s;
 
-  n = min(s_off, q_off);
+  n = MIN(s_off, q_off);
   best_i = n + 1;
   s = subject + s_off - n;
 
@@ -495,7 +495,7 @@ static int4 s_BlastPSSMExtendRight(int2 **matrix, char *subject,
   int4 score = maxscore;
   unsigned char *s;
 
-  n = min(subjectLength - s_off, query_size - q_off);
+  n = MIN(subjectLength - s_off, query_size - q_off);
   s = subject + s_off;
 
   for (i = 0; i < n; i++) {
@@ -528,7 +528,7 @@ int4 s_BlastAaExtendLeft(int2 **matrix, char *subject, char *query, int4 s_off,
 
   unsigned char *s, *q;
 
-  n = min(s_off, q_off);
+  n = MIN(s_off, q_off);
   best_i = n + 1;
 
   s = subject + s_off - n;
@@ -562,7 +562,7 @@ int4 s_BlastAaExtendRight(int2 **matrix, char *subject, char *query, int4 s_off,
   int4 score = maxscore;
 
   unsigned char *s, *q;
-  n = min(subjectLength - s_off, queryLength - q_off);
+  n = MIN(subjectLength - s_off, queryLength - q_off);
 
   s = subject + s_off;
   q = query + q_off;
@@ -639,7 +639,7 @@ int4 s_BlastAaExtendTwoHit_SM(int2 **matrix, char *query, char *subject,
   *hsp_s = s_right_off - left_d;
   *hsp_len = left_d + right_d;
 
-  return max(left_score, right_score);
+  return MAX(left_score, right_score);
 }
 
 int4 s_BlastAaExtendTwoHit_PSSM(int2 **matrix, char *subject, int4 s_left_off,
@@ -691,7 +691,7 @@ int4 s_BlastAaExtendTwoHit_PSSM(int2 **matrix, char *subject, int4 s_left_off,
   *hsp_s = s_right_off - left_d;
   *hsp_len = left_d + right_d;
 
-  return max(left_score, right_score);
+  return MAX(left_score, right_score);
 }
 
 struct ungappedExtension *ungappedExtension_extend_ncbi_multi2(
@@ -750,13 +750,14 @@ struct ungappedExtension *ungappedExtension_extend_ncbi_multi2(
     newUngappedExtension->end.queryOffset = queryStart + extendLength;
 
     // Find the seed point
-    newUngappedExtension->seed = ungappedExtension_findProteinSeed(
-        newUngappedExtension, PSSMatrix, subject);
+    //newUngappedExtension->seed = ungappedExtension_findProteinSeed(
+    //newUngappedExtension, PSSMatrix, subject);
     // Initialize next to null
     newUngappedExtension->next = NULL;
     newUngappedExtension->nominalScore = ungappedExtension_bestScore;
     newUngappedExtension->status = ungappedExtension_UNGAPPED;
     newUngappedExtension->sequenceCount = sequenceCount;
+    newUngappedExtension->queryCount = queryNum;
 
     return newUngappedExtension;
   } else {
@@ -775,7 +776,7 @@ int ungappedExtension_extend_ncbi_multi3(
       subjectEndReached;
   int4 ungappedExtension_bestScore;
 
-#ifndef SM_UNGAP_EXT
+#if 1
   ungappedExtension_bestScore = s_BlastAaExtendTwoHit_PSSM(
       PSSMatrix.matrix, subject, lastHitOffset, subjectOffset, queryOffset,
       statistics_ungappedNominalDropoff_multi[queryNum], &queryStart,
@@ -811,8 +812,8 @@ int ungappedExtension_extend_ncbi_multi3(
     newUngappedExtension->end.queryOffset = queryStart + extendLength;
 
     // Find the seed point
-    newUngappedExtension->seed = ungappedExtension_findProteinSeed(
-        newUngappedExtension, PSSMatrix, subject);
+    //newUngappedExtension->seed = ungappedExtension_findProteinSeed(
+    //newUngappedExtension, PSSMatrix, subject);
     // Initialize next to null
     newUngappedExtension->next = NULL;
     newUngappedExtension->nominalScore = ungappedExtension_bestScore;

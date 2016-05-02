@@ -445,15 +445,15 @@ Blast_CalcFreqRatios(double ** ratios, int alphsize,
     }
 }
 
-#ifndef INT2_MIN
-/** smallest (most negative) number represented by signed (two byte) short */
-#define INT2_MIN    (-32768)
-#endif
+//#ifndef INT2_MIN
+///** smallest (most negative) number represented by signed (two byte) short */
+//#define INT2_MIN    (-32768)
+//#endif
 
-#ifndef INT2_MAX
-/** smallest (most negative) number represented by signed (two byte) short */
-#define INT2_MAX    (32767)
-#endif
+//#ifndef INT2_MAX
+///** smallest (most negative) number represented by signed (two byte) short */
+//#define INT2_MAX    (32767)
+//#endif
 
 
 #define COMPO_SCORE_MIN INT2_MIN
@@ -2892,7 +2892,7 @@ void alignments_get_eValue(struct ungappedExtension **ungappedExtensions, int4 n
     gbp.b = -26.601600000000001;
     gbp.Beta = -903.31536000000006; 
     gbp.Tau = -928.11696000000006; 
-    gbp.db_length = readdb_numberOfLetters; 
+    gbp.db_length = total_numberOfLetters; 
     gbp.filled = 1;
 
     Blast_HSPListGetEvalues(queryLength, subjectLength, &kbp, &gbp, ungappedExtensions, numExts, TRUE, FALSE, 0.0, 1.0, best_eValue);
@@ -2921,7 +2921,7 @@ void finalAlignments_get_eValue(struct ungappedExtension **ungappedExtensions, i
     gbp.b = -26.601600000000001;
     gbp.Beta = -903.31536000000006; 
     gbp.Tau = -928.11696000000006; 
-    gbp.db_length = readdb_numberOfLetters; 
+    gbp.db_length = total_numberOfLetters; 
     gbp.filled = 1;
 
     Blast_HSPListGetEvalues(queryLength, subjectLength, &kbp, &gbp, ungappedExtensions, numExts, TRUE, FALSE, 0.0, 1.0, best_eValue);
@@ -2937,14 +2937,10 @@ Int2 Blast_HSPListReapByEvalue(struct ungappedExtension ** hsp_array, Int4 hspcn
    Int4 index;
    double cutoff;
    
-   //if (hsp_list == NULL)
-      //return 0;
-
    cutoff = expect_value;
 
    *hspcnt_new = 0;
 
-   //hsp_array = hsp_list->hsp_array;
    for (index = 0; index < hspcnt; index++) {
       hsp = hsp_array[index];
       *bestScore = MAX(*bestScore, hsp->nominalScore);
@@ -2953,19 +2949,14 @@ Int2 Blast_HSPListReapByEvalue(struct ungappedExtension ** hsp_array, Int4 hspcn
       
       if (hsp->eValue > cutoff) {
           hsp->status = ungappedExtension_DELETED;
-          //free(hsp->trace.traceCodes);
-          //hsp_array[index] = Blast_HSPFree(hsp_array[index]);
       }
       else {
           if (index > *hspcnt_new)
-          hsp_array[*hspcnt_new] = hsp_array[index];
+              hsp_array[*hspcnt_new] = hsp_array[index];
           (*hspcnt_new)++;
       }
    }
       
-   //*hspcnt_new = hspcnt;
-   //hsp_list->hspcnt = hsp_cnt;
-
    return 0;
 }
 
@@ -2980,53 +2971,18 @@ s_HitlistEvaluateAndPurge(int * pbestScore, double *pbestEvalue,
     int status = 0;
     *pbestEvalue = DBL_MAX;
     *pbestScore  = 0;
-    //if (hitParams->do_sum_stats) {
-    //status = BLAST_LinkHsps(program_number, hsp_list, queryInfo,
-    //subject_length, sbp,
-    //hitParams->link_hsp_params, TRUE);
-    //} else 
-   //{
-        //status =
-            //Blast_HSPListGetEvalues(query_length, subject_length,
-                                    //hsp_list, TRUE, FALSE, sbp,
-                                    //0.0, /* use a non-zero gap decay
-                                            //only when linking HSPs */
-                                    //1.0); /* Use scaling factor equal to
-                                             //1, because both scores and
-                                             //Lambda are scaled, so they
-                                             //will cancel each other. */
-    //}
-    //if (eBlastTypeBlastp == program_number)
-            ////eBlastTypeBlastx == program_number) 
-    //{
-        //if ((0 <= pvalueForThisPair) && (pvalueForThisPair <= 1)) {
-            //s_AdjustEvaluesForComposition(hsp_list, pvalueForThisPair, 
-                                          //subject_length,
-                                          //&queryInfo->contexts[context_index],
-                                          //LambdaRatio, subject_id);
-        //}
-    //}
+
     finalAlignments_get_eValue(hsp_list, hspcnt, query_length, subject_length, pbestEvalue);
     int hspcnt_new = 0;
     double expect_value = 10;
-    //if (status == 0) {
     Blast_HSPListReapByEvalue(hsp_list, hspcnt, &hspcnt_new, pbestScore, expect_value);
-    //if(hspcnt_new < *hspcnt)
-    //{
-        //fprintf(stderr, "GappedExtension Purge\n");
-    //}
 
     if(!hspcnt_new)
     {
         *pbestEvalue = 0;
         *pbestScore = 0;
     }
-    //hspcnt = hspcnt_new;
-    //if (hsp_list->hspcnt > 0) {
-    //*pbestEvalue = hsp_list->best_evalue;
-    //*pbestScore  = hsp_list->bestscore;
-    //}
-    //}
+
     return hspcnt_new;
 }
 

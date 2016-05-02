@@ -5,26 +5,27 @@ OBJ=obj
 
 NCBI_CORE=ncbi_core/
 
-CC=icc
-CCPLUS=icpc
-CFLAGS= -fopenmp -g -I$(INC) -I$(NCBI_CORE) -O3 -D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE  #-DNEIGHBOR_INDEX
+CC=gcc
+CCPLUS=g++
+CFLAGS=-fopenmp -g -I$(INC) -I$(NCBI_CORE) -O3 -D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE #-DNEIGHBOR_INDEX
 LDFLAGS=-g -lm -lpthread -lstdc++
 
-OBJFILES=$(OBJ)/utils.o $(OBJ)/merge.o $(OBJ)/queryLookup.o $(OBJ)/dbLookup.o $(OBJ)/search_db.o $(OBJ)/search_multi.o $(OBJ)/alignments_multi.o $(OBJ)/alignments.o $(OBJ)/bytepackGappedScoring.o $(OBJ)/descriptions.o $(OBJ)/encoding.o $(OBJ)/fasterGappedExtension_multi.o $(OBJ)/fasterGappedExtension.o $(OBJ)/gappedExtension_multi.o $(OBJ)/gappedExtension.o $(OBJ)/gappedScoring_multi.o $(OBJ)/gappedScoring.o $(OBJ)/nuGappedScoring.o $(OBJ)/global.o $(OBJ)/hitMatrix_multi.o $(OBJ)/hitMatrix.o $(OBJ)/karlin.o $(OBJ)/memBlocks_multi.o $(OBJ)/memBlocks.o $(OBJ)/memSingleBlock.o $(OBJ)/nucleotideLookup.o $(OBJ)/oldGappedScoring.o $(OBJ)/oldSemiGappedScoring.o $(OBJ)/parameters.o $(OBJ)/print.o $(OBJ)/PSSMatrix.o $(OBJ)/qPosList.o $(OBJ)/readFasta.o $(OBJ)/readFile.o $(OBJ)/scoreMatrix.o $(OBJ)/semiGappedScoring_multi.o $(OBJ)/semiGappedScoring.o $(OBJ)/statistics.o $(OBJ)/ungappedExtension_multi.o  $(OBJ)/ungappedExtension.o $(OBJ)/wordLookupDFA_multi.o $(OBJ)/wordLookupDFA.o $(OBJ)/writeFile.o $(OBJ)/constants.o $(OBJ)/smithWatermanTraceback.o $(OBJ)/smithWatermanScoring.o $(OBJ)/tableGappedScoring.o $(OBJ)/vbyte.o $(OBJ)/unpack_multi.o $(OBJ)/unpack.o $(OBJ)/index.o $(OBJ)/postings.o $(OBJ)/hashcounter.o $(OBJ)/writedb.o $(OBJ)/readdb.o $(OBJ)/search.o $(OBJ)/wildcards.o $(OBJ)/dust.o $(OBJ)/seg.o $(OBJ)/ncbi_gapalign.o $(OBJ)/ncbi_stat.o $(OBJ)/ncbi_tree.o $(OBJ)/ncbi_traceback.o $(OBJ)/ncbi_matrix.o $(OBJ)/ncbi_composition_adjustment.o $(OBJ)/ncbi_filter.o $(OBJ)/alignments_ncbi.o $(OBJ)/dbLookup_compress.o
+OBJFILES=$(OBJ)/utils.o $(OBJ)/merge.o $(OBJ)/queryLookup.o $(OBJ)/dbLookup.o $(OBJ)/search_dbIdx.o $(OBJ)/alignments_multi.o $(OBJ)/alignments_dbIdx.o $(OBJ)/descriptions.o $(OBJ)/encoding.o  $(OBJ)/global.o $(OBJ)/karlin.o $(OBJ)/memBlocks.o $(OBJ)/memSingleBlock.o $(OBJ)/parameters.o $(OBJ)/print.o $(OBJ)/PSSMatrix.o $(OBJ)/qPosList.o $(OBJ)/readFasta.o $(OBJ)/readFile.o $(OBJ)/scoreMatrix.o  $(OBJ)/vbyte.o  $(OBJ)/statistics.o $(OBJ)/ungappedExtension_multi.o  $(OBJ)/ungappedExtension.o $(OBJ)/wordLookupDFA_multi.o $(OBJ)/wordLookupDFA.o $(OBJ)/writeFile.o $(OBJ)/constants.o $(OBJ)/writedb.o $(OBJ)/readdb.o $(OBJ)/wildcards.o $(OBJ)/dust.o $(OBJ)/seg.o $(OBJ)/ncbi_gapalign.o $(OBJ)/ncbi_stat.o $(OBJ)/ncbi_tree.o $(OBJ)/ncbi_traceback.o $(OBJ)/ncbi_matrix.o $(OBJ)/ncbi_composition_adjustment.o $(OBJ)/ncbi_filter.o $(OBJ)/alignments_ncbi.o $(OBJ)/dbLookup_compress.o 
+#$(OBJ)/search_queryIdx.o $(OBJ)/alignments_queryIdx.o $(OBJ)/bytepackGappedScoring.o  $(OBJ)/fasterGappedExtension_multi.o $(OBJ)/fasterGappedExtension.o $(OBJ)/gappedExtension_multi.o $(OBJ)/gappedExtension.o $(OBJ)/gappedScoring_multi.o $(OBJ)/gappedScoring.o $(OBJ)/nuGappedScoring.o $(OBJ)/alignments.o $(OBJ)/search.o $(OBJ)/hitMatrix_multi.o $(OBJ)/hitMatrix.o $(OBJ)/nucleotideLookup.o  $(OBJ)/oldGappedScoring.o $(OBJ)/oldSemiGappedScoring.o $(OBJ)/semiGappedScoring_multi.o $(OBJ)/semiGappedScoring.o  $(OBJ)/smithWatermanTraceback.o $(OBJ)/smithWatermanScoring.o $(OBJ)/tableGappedScoring.o $(OBJ)/unpack_multi.o $(OBJ)/unpack.o $(OBJ)/index.o $(OBJ)/postings.o $(OBJ)/hashcounter.o 
 
-HEADERFILES=$(INC)/profile.h $(INC)/utils.h $(INC)/merge.h $(INC)/queryLookup.h $(INC)/dbLookup.h $(INC)/search_multi.h $(INC)/search_db.h $(INC)/alignments_multi.h $(INC)/alignments.h $(INC)/blast.h $(INC)/bytepackGappedScoring.h $(INC)/descriptions.h $(INC)/encoding.h $(INC)/fasterGappedExtension_multi.h $(INC)/fasterGappedExtension.h $(INC)/gappedExtension_multi.h $(INC)/gappedExtension.h $(INC)/nuGappedScoring.h $(INC)/gappedScoring_multi.h $(INC)/gappedScoring.h $(INC)/global.h $(INC)/hitMatrix_multi.h $(INC)/hitMatrix.h $(INC)/karlin.h $(INC)/memBlocks_multi.h $(INC)/memBlocks.h $(INC)/memSingleBlock.h $(INC)/nucleotideLookup.h $(INC)/oldGappedScoring.h $(INC)/oldSemiGappedScoring.h $(INC)/parameters.h $(INC)/print.h $(INC)/PSSMatrix.h $(INC)/qPosList.h $(INC)/readFasta.h $(INC)/readFile.h $(INC)/scoreMatrix.h $(INC)/semiGappedScoring_multi.h $(INC)/semiGappedScoring.h $(INC)/statistics.h $(INC)/ungappedExtension_multi.h $(INC)/ungappedExtension.h $(INC)/wordLookupDFA_multi.h $(INC)/wordLookupDFA.h $(INC)/writeFile.h $(INC)/constants.h $(INC)/smithWatermanTraceback.h $(INC)/smithWatermanScoring.h $(INC)/tableGappedScoring.h $(INC)/vbyte.h $(INC)/unpack_multi.h $(INC)/unpack.h $(INC)/index.h $(INC)/postings.h $(INC)/hashcounter.h $(INC)/writedb.h $(INC)/readdb.h $(INC)/search.h $(INC)/wildcards.h $(INC)/dust.h $(INC)/seg.h $(NCBI_CORE)/ncbi_gapalign.h $(NCBI_CORE)/ncbi_stat.h $(NCBI_CORE)/ncbi_tree.h $(NCBI_CORE)/ncbi_traceback.h $(NCBI_CORE)/ncbi_matrix.h $(NCBI_CORE)/ncbi_composition_adjustment.h $(NCBI_CORE)/ncbi_filter.h $(INC)/alignments_ncbi.h $(INC)/dbLookup_compress.h
+HEADERFILES=$(INC)/utils.h $(INC)/merge.h $(INC)/queryLookup.h $(INC)/dbLookup.h $(INC)/search_queryIdx.h $(INC)/search_dbIdx.h $(INC)/alignments_multi.h $(INC)/alignments_dbIdx.h $(INC)/alignments_queryIdx.h  $(INC)/alignments.h $(INC)/blast.h $(INC)/bytepackGappedScoring.h $(INC)/descriptions.h $(INC)/encoding.h $(INC)/fasterGappedExtension_multi.h $(INC)/fasterGappedExtension.h $(INC)/gappedExtension_multi.h $(INC)/gappedExtension.h $(INC)/nuGappedScoring.h $(INC)/gappedScoring_multi.h $(INC)/gappedScoring.h $(INC)/global.h $(INC)/hitMatrix_multi.h $(INC)/hitMatrix.h $(INC)/karlin.h $(INC)/memBlocks.h $(INC)/memSingleBlock.h $(INC)/nucleotideLookup.h $(INC)/oldGappedScoring.h $(INC)/oldSemiGappedScoring.h $(INC)/parameters.h $(INC)/print.h $(INC)/PSSMatrix.h $(INC)/qPosList.h $(INC)/readFasta.h $(INC)/readFile.h $(INC)/scoreMatrix.h $(INC)/semiGappedScoring_multi.h $(INC)/semiGappedScoring.h $(INC)/statistics.h $(INC)/ungappedExtension_multi.h $(INC)/ungappedExtension.h $(INC)/wordLookupDFA_multi.h $(INC)/wordLookupDFA.h $(INC)/writeFile.h $(INC)/constants.h $(INC)/smithWatermanTraceback.h $(INC)/smithWatermanScoring.h $(INC)/tableGappedScoring.h $(INC)/vbyte.h $(INC)/unpack_multi.h $(INC)/unpack.h $(INC)/index.h $(INC)/postings.h $(INC)/hashcounter.h $(INC)/writedb.h $(INC)/readdb.h $(INC)/search.h $(INC)/wildcards.h $(INC)/dust.h $(INC)/seg.h $(NCBI_CORE)/ncbi_gapalign.h $(NCBI_CORE)/ncbi_stat.h $(NCBI_CORE)/ncbi_tree.h $(NCBI_CORE)/ncbi_traceback.h $(NCBI_CORE)/ncbi_matrix.h $(NCBI_CORE)/ncbi_composition_adjustment.h $(NCBI_CORE)/ncbi_filter.h $(INC)/alignments_ncbi.h $(INC)/dbLookup_compress.h
 
-SRCFILES=$(SRC)/utils.c $(SRC)/merge.c $(SRC)/search_multi.c $(SRC)/search_db.c $(SRC)/queryLookup.c  $(SRC)/dbLookup.c $(SRC)/alignments.c $(SRC)/alignments_multi.c $(SRC)/indexdb.c $(SRC)/mublastp.c $(SRC)/blast.c $(SRC)/bytepackGappedScoring.c $(SRC)/descriptions.c $(SRC)/encoding.c $(SRC)/fasterGappedExtension.c $(SRC)/fasterGappedExtension_multi.c $(SRC)/gappedExtension_multi.c $(SRC)/gappedExtension.c $(SRC)/gappedScoring_multi.c $(SRC)/gappedScoring.c $(SRC)/nuGappedScoring.c $(SRC)/global.c $(SRC)/hitMatrix_multi.c $(SRC)/hitMatrix.c $(SRC)/karlin.c $(SRC)/memBlocks_multi.c $(SRC)/memBlocks.c $(SRC)/memSingleBlock.c $(SRC)/nucleotideLookup.c $(SRC)/oldGappedScoring.c $(SRC)/oldSemiGappedScoring.c $(SRC)/parameters.c $(SRC)/print.c $(SRC)/PSSMatrix.c $(SRC)/qPosList.c $(SRC)/readFasta.c $(SRC)/readFile.c $(SRC)/scoreMatrix.c $(SRC)/semiGappedScoring_multi.c $(SRC)/semiGappedScoring.c $(SRC)/statistics.c $(SRC)/ungappedExtension_multi.c $(SRC)/ungappedExtension.c $(SRC)/wordLookupDFA_multi.c $(SRC)/wordLookupDFA.c $(SRC)/writeFile.c $(SRC)/constants.c $(SRC)/smithWatermanTraceback.c $(SRC)/smithWatermanScoring.c $(SRC)/tableGappedScoring.c $(SRC)/vbyte.c $(SRC)/unpack_multi.c $(SRC)/unpack.c $(SRC)/index.c $(SRC)/postings.c $(SRC)/hashcounter.c $(SRC)/writedb.c $(SRC)/readdb.c $(SRC)/search.c $(SRC)/wildcards.c $(SRC)/dust.c $(SRC)/seg.c $(NCBI_CORE)/ncbi_gapalign.c $(NCBI_CORE)/ncbi_gapalign.c $(NCBI_CORE)/ncbi_tree.c $(NCBI_CORE)/ncbi_traceback.c $(NCBI_CORE)/ncbi_matrix.c $(NCBI_CORE)/ncbi_composition_adjustment.c $(NCBI_CORE)/ncbi_filter.c $(SRC)/alignments_ncbi.c $(SRC)/dbLookup_compress.c $(SRC)/sortdb.c
+SRCFILES=$(SRC)/utils.c $(SRC)/merge.c $(SRC)/search_queryIdx.c $(SRC)/search_dbIdx.c $(SRC)/queryLookup.c  $(SRC)/dbLookup.c $(SRC)/alignments.c $(SRC)/alignments_multi.c $(SRC)/alignments_dbIdx.c $(SRC)/alignments_queryIdx.c $(SRC)/indexdb.c $(SRC)/mublastp.c $(SRC)/blast.c $(SRC)/bytepackGappedScoring.c $(SRC)/descriptions.c $(SRC)/encoding.c $(SRC)/fasterGappedExtension.c $(SRC)/fasterGappedExtension_multi.c $(SRC)/gappedExtension_multi.c $(SRC)/gappedExtension.c $(SRC)/gappedScoring_multi.c $(SRC)/gappedScoring.c $(SRC)/nuGappedScoring.c $(SRC)/global.c $(SRC)/hitMatrix_multi.c $(SRC)/hitMatrix.c $(SRC)/karlin.c $(SRC)/memBlocks.c $(SRC)/memSingleBlock.c $(SRC)/nucleotideLookup.c $(SRC)/oldGappedScoring.c $(SRC)/oldSemiGappedScoring.c $(SRC)/parameters.c $(SRC)/print.c $(SRC)/PSSMatrix.c $(SRC)/qPosList.c $(SRC)/readFasta.c $(SRC)/readFile.c $(SRC)/scoreMatrix.c $(SRC)/semiGappedScoring_multi.c $(SRC)/semiGappedScoring.c $(SRC)/statistics.c $(SRC)/ungappedExtension_multi.c $(SRC)/ungappedExtension.c $(SRC)/wordLookupDFA_multi.c $(SRC)/wordLookupDFA.c $(SRC)/writeFile.c $(SRC)/constants.c $(SRC)/smithWatermanTraceback.c $(SRC)/smithWatermanScoring.c $(SRC)/tableGappedScoring.c $(SRC)/vbyte.c $(SRC)/unpack_multi.c $(SRC)/unpack.c $(SRC)/index.c $(SRC)/postings.c $(SRC)/hashcounter.c $(SRC)/writedb.c $(SRC)/readdb.c $(SRC)/search.c $(SRC)/wildcards.c $(SRC)/dust.c $(SRC)/seg.c $(NCBI_CORE)/ncbi_gapalign.c $(NCBI_CORE)/ncbi_gapalign.c $(NCBI_CORE)/ncbi_tree.c $(NCBI_CORE)/ncbi_traceback.c $(NCBI_CORE)/ncbi_matrix.c $(NCBI_CORE)/ncbi_composition_adjustment.c $(NCBI_CORE)/ncbi_filter.c $(SRC)/alignments_ncbi.c $(SRC)/dbLookup_compress.c $(SRC)/sortdb.c $(SRC)/dbinfo.c $(SRC)/sampledb.c $(SRC)/querySelector.c  
 
-all: $(OBJ) mublastp blast formatdb indexdb sortdb
+all: $(OBJ) mublastp formatdb indexdb sortdb #sampledb querySelector dbinfo blast
 
 $(OBJ):
 	mkdir -p $(OBJ)
 
-blast: $(OBJ)/blast.o $(OBJFILES)
-	$(CCPLUS) $(CFLAGS) $(LDFLAGS) -o blast $(OBJ)/blast.o $(OBJFILES)
+#blast: $(OBJ)/blast.o $(OBJFILES)
+	#$(CC) $(CFLAGS) -o blast $(OBJ)/blast.o $(OBJFILES) $(LDFLAGS) 
 mublastp: $(OBJ)/mublastp.o $(OBJFILES)
-	$(CCPLUS) $(CFLAGS) $(LDFLAGS) -o mublastp $(OBJ)/mublastp.o $(OBJFILES)
+	$(CC) $(CFLAGS) -o mublastp $(OBJ)/mublastp.o $(OBJFILES) $(LDFLAGS) 
 ssearch: $(OBJ)/ssearch.o $(OBJFILES)
 	$(CC) $(CFLAGS) $(LDFLAGS) -o ssearch $(OBJ)/ssearch.o $(OBJFILES)
 blast-debug: $(SRC)/blast.c $(SRCFILES)
@@ -40,7 +41,7 @@ blast-bitlookup: $(SRC)/blast.c $(SRCFILES)
 verboseBlast: $(SRC)/blast.c $(SRCFILES)
 	$(CC) $(CFLAGS) $(LDFLAGS) -DVERBOSE -o verboseBlast $(SRCFILES)
 formatdb: $(OBJ)/formatdb.o $(OBJFILES)
-	$(CC) $(CFLAGS) $(LDFLAGS) -o formatdb $(OBJ)/formatdb.o $(OBJFILES)
+	$(CC) $(CFLAGS) -o formatdb $(OBJ)/formatdb.o $(OBJFILES) $(LDFLAGS) 
 createindex: $(OBJ)/createindex.o $(OBJFILES)
 	$(CC) $(CFLAGS) $(LDFLAGS) -o createindex $(OBJ)/createindex.o $(OBJFILES)
 readdb: $(OBJ)/readdbApp.o $(OBJFILES)
@@ -166,10 +167,17 @@ $(OBJ)/dust.o: $(SRC)/dust.c $(HEADERFILES)
 $(OBJ)/seg.o: $(SRC)/seg.c $(HEADERFILES)
 	$(CC) $(CFLAGS) -c -o $(OBJ)/seg.o $(SRC)/seg.c
 
-$(OBJ)/search_db.o: $(SRC)/search_db.c $(HEADERFILES)
-	$(CC) $(CFLAGS) -c -o $(OBJ)/search_db.o $(SRC)/search_db.c
-$(OBJ)/search_multi.o: $(SRC)/search_multi.c $(HEADERFILES)
-	$(CC) $(CFLAGS) -c -o $(OBJ)/search_multi.o $(SRC)/search_multi.c
+$(OBJ)/querySelector.o: $(SRC)/querySelector.c $(HEADERFILES)
+	$(CC) $(CFLAGS) -c -o $(OBJ)/querySelector.o $(SRC)/querySelector.c
+querySelector: $(OBJ)/querySelector.o $(OBJFILES)
+	$(CC) $(CFLAGS) -o querySelector $(OBJ)/querySelector.o $(OBJFILES) $(LDFLAGS) 
+
+
+
+$(OBJ)/search_dbIdx.o: $(SRC)/search_dbIdx.c $(HEADERFILES)
+	$(CC) $(CFLAGS) -c -o $(OBJ)/search_dbIdx.o $(SRC)/search_dbIdx.c
+#$(OBJ)/search_queryIdx.o: $(SRC)/search_queryIdx.c $(HEADERFILES)
+	#$(CC) $(CFLAGS) -c -o $(OBJ)/search_queryIdx.o $(SRC)/search_queryIdx.c
 $(OBJ)/dbLookup.o: $(SRC)/dbLookup.c $(HEADERFILES)
 	$(CC) $(CFLAGS) -c -o $(OBJ)/dbLookup.o $(SRC)/dbLookup.c
 $(OBJ)/queryLookup.o: $(SRC)/queryLookup.c $(HEADERFILES)
@@ -181,11 +189,13 @@ $(OBJ)/ungappedExtension_multi.o: $(SRC)/ungappedExtension_multi.c $(HEADERFILES
 	$(CC) $(CFLAGS) -c -o $(OBJ)/ungappedExtension_multi.o $(SRC)/ungappedExtension_multi.c
 $(OBJ)/alignments_multi.o: $(SRC)/alignments_multi.c $(HEADERFILES)
 	$(CC) $(CFLAGS) -c -o $(OBJ)/alignments_multi.o $(SRC)/alignments_multi.c
+$(OBJ)/alignments_dbIdx.o: $(SRC)/alignments_dbIdx.c $(HEADERFILES)
+	$(CC) $(CFLAGS) -c -o $(OBJ)/alignments_dbIdx.o $(SRC)/alignments_dbIdx.c
+#$(OBJ)/alignments_queryIdx.o: $(SRC)/alignments_queryIdx.c $(HEADERFILES)
+	#$(CC) $(CFLAGS) -c -o $(OBJ)/alignments_queryIdx.o $(SRC)/alignments_queryIdx.c
 $(OBJ)/unpack_multi.o: $(SRC)/unpack_multi.c $(HEADERFILES)
 	$(CC) $(CFLAGS) -c -o $(OBJ)/unpack_multi.o $(SRC)/unpack_multi.c
 
-$(OBJ)/memBlocks_multi.o: $(SRC)/memBlocks_multi.c $(HEADERFILES)
-	$(CC) $(CFLAGS) -c -o $(OBJ)/memBlocks_multi.o $(SRC)/memBlocks_multi.c
 $(OBJ)/wordLookupDFA_multi.o: $(SRC)/wordLookupDFA_multi.c $(HEADERFILES)
 	$(CC) $(CFLAGS) -c -o $(OBJ)/wordLookupDFA_multi.o $(SRC)/wordLookupDFA_multi.c
 
@@ -225,15 +235,29 @@ $(OBJ)/utils.o: $(SRC)/utils.c $(HEADERFILES)
 	$(CC) $(CFLAGS) -c -o $(OBJ)/utils.o $(SRC)/utils.c
 $(OBJ)/indexdb.o: $(SRC)/indexdb.c $(HEADERFILES)
 	$(CC) $(CFLAGS) -c -o $(OBJ)/indexdb.o $(SRC)/indexdb.c
-
 indexdb: $(OBJ)/indexdb.o $(OBJFILES)
-	$(CC) $(CFLAGS) $(LDFLAGS) -o indexdb $(OBJ)/indexdb.o $(OBJFILES)
+	$(CC) $(CFLAGS) -o indexdb $(OBJ)/indexdb.o $(OBJFILES) $(LDFLAGS)
 
 $(OBJ)/sortdb.o: $(SRC)/sortdb.c $(HEADERFILES)
 	$(CC) $(CFLAGS) -c -o $(OBJ)/sortdb.o $(SRC)/sortdb.c
 
 sortdb: $(OBJ)/sortdb.o $(OBJFILES)
-	$(CC) $(CFLAGS) $(LDFLAGS) -o sortdb $(OBJ)/sortdb.o $(OBJFILES)
+	$(CC) $(CFLAGS) -o sortdb $(OBJ)/sortdb.o $(OBJFILES) $(LDFLAGS) 
+
+
+$(OBJ)/dbinfo.o: $(SRC)/dbinfo.c $(HEADERFILES)
+	$(CC) $(CFLAGS) -c -o $(OBJ)/dbinfo.o $(SRC)/dbinfo.c
+
+dbinfo: $(OBJ)/dbinfo.o $(OBJFILES)
+	$(CC) $(CFLAGS) -o dbinfo $(OBJ)/dbinfo.o $(OBJFILES) $(LDFLAGS) 
+
+
+
+$(OBJ)/sampledb.o: $(SRC)/sampledb.c $(HEADERFILES)
+	$(CC) $(CFLAGS) -c -o $(OBJ)/sampledb.o $(SRC)/sampledb.c
+
+sampledb: $(OBJ)/sampledb.o $(OBJFILES)
+	$(CC) $(CFLAGS) -o sampledb $(OBJ)/sampledb.o $(OBJFILES) $(LDFLAGS) 
 
 $(OBJ)/gappedExtension_multi.o: $(SRC)/gappedExtension_multi.c $(HEADERFILES)
 	$(CC) $(CFLAGS) -c -o $(OBJ)/gappedExtension_multi.o $(SRC)/gappedExtension_multi.c
