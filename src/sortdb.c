@@ -46,7 +46,6 @@ void print_sequence(int seqId, FILE *output_file)
 
     char *seq = getSequence(seqId); 
 
-    ASSERT(seqDes[0] == 'g');
     fprintf(output_file, ">%s\n%s\n", seqDes, seq);
     //fprintf(output_file, ">gi|%d\n%s\n", seqId, seq);
 
