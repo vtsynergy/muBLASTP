@@ -243,8 +243,9 @@ void proteinLookup_db_build(int4 numCodes, int wordLength,
 
     int4 ii, jj;
 
-    fprintf(stderr, "volumn: %d numBlocks: %d numWords: %d\nindexing...", 
+    fprintf(stderr, "volumn: %d seqOffset: %d numBlocks: %d numWords: %d\nindexing...", 
             readdb_volume,
+            readdb_volumeOffset,
             proteinLookup_numBlocks,
             proteinLookup_numWords);
 
@@ -272,15 +273,15 @@ void proteinLookup_db_build(int4 numCodes, int wordLength,
                 ii < readdb_numVolumeSequences && numLetterBlk < dbIdx_block_size;
                 ii++) {
 
-            numLetterBlk += readdb_sequenceData[ii].sequenceLength;
+            numLetterBlk += readdb_sequenceData[ii + readdb_volumeOffset].sequenceLength;
 
-            proteinLookup_db_sub(ii - seqStartBlk, readdb_sequenceData[ii].sequence,
+            proteinLookup_db_sub(ii - seqStartBlk, readdb_sequenceData[ii + readdb_volumeOffset].sequence,
                     readdb_sequenceData[ii + readdb_volumeOffset].sequenceLength, wordLength,
                     jj);
 
             proteinLookup_db_b[jj].dbIdxblk_longestSeq =
                 MAX(proteinLookup_db_b[jj].dbIdxblk_longestSeq,
-                        readdb_sequenceData[ii].sequenceLength);
+                        readdb_sequenceData[ii + readdb_volumeOffset].sequenceLength);
 
             if((ii - seqStartBlk) >= ((1 << 16) - 2))
             {
@@ -290,7 +291,7 @@ void proteinLookup_db_build(int4 numCodes, int wordLength,
         }
 
         if (numLetterBlk >= dbIdx_block_size) {
-            numLetterBlk -= readdb_sequenceData[ii - 1].sequenceLength;
+            numLetterBlk -= readdb_sequenceData[ii + readdb_volumeOffset - 1].sequenceLength;
         }
 
         proteinLookup_db_b[jj].numSeqBlk = ii - seqStartBlk + 1;

@@ -14,7 +14,7 @@ char *descriptions_filename;
 FILE *descriptions_file;
 
 
-struct readFile descriptions_file_mem;
+struct readFile_mem descriptions_file_mem;
 
 // Open text file containing descriptions
 void descriptions_open(char *filename) {
@@ -30,9 +30,8 @@ void descriptions_open(char *filename) {
     descriptions_filename = filename;
 }
 
-void descriptions_open_mem(char *filename) {
-    //
-    descriptions_file_mem = readFile_open(filename);
+void descriptions_open_mem(char *filename, uint4 offset, uint4 size) {
+    descriptions_file_mem = readFile_open_mem_offset(filename, offset, size);
 }
 
 // Get the description located at the given position in the file
@@ -64,7 +63,7 @@ void descriptions_close()
 
 void descriptions_close_mem() 
 {
-    readFile_close(descriptions_file_mem);
+    readFile_close_mem(descriptions_file_mem);
 }
 
 char *descriptions_getDescription_mem(uint4 descriptionLocation,

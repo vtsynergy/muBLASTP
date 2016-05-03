@@ -71,32 +71,44 @@ struct readFile_mem readFile_open_mem(char *filename) {
   readFile.fileSize = ftell(readFile.fileDescriptor);
   rewind(readFile.fileDescriptor);
 
-  //// Get length of file
-  //if (fstat(readFile.fileDescriptor, &fileStats) == -1) {
-    //fprintf(stderr, "%s\n", strerror(errno));
-    //fprintf(stderr, "Error opening file %s for reading: 2\n", filename);
-    //exit(-1);
-  //}
-
-  //readFile.fileSize = fileStats.st_size;
-
-  // Map address to fileSize bytes of application address space
-  //readFile.address = mmap(0, readFile.fileSize, PROT_READ, MAP_SHARED,
-  //readFile.fileDescriptor, 0);
-
   readFile.address = global_malloc(readFile.fileSize);
 
   fread(readFile.address, 1, readFile.fileSize, readFile.fileDescriptor);
 
-  // Check for error in mapping
-  //if (readFile.address == (void *)MAP_FAILED) {
-    //fprintf(stderr, "%s\n", strerror(errno));
-    //fprintf(stderr, "Error opening file %s for reading: 3\n", filename);
-    //exit(-1);
-  //}
+  return readFile;
+
+}
+
+// On file for reading and map to memory, then return mapped memory address
+struct readFile_mem readFile_open_mem_offset(char *filename, int8 offset, int8 size) {
+    //struct stat fileStats;
+  struct readFile_mem readFile;
+
+  // Open file for reading
+  if ((readFile.fileDescriptor = fopen(filename, "r")) == NULL) {
+    fprintf(stderr, "%s\n", strerror(errno));
+    fprintf(stderr, "Error opening file %s for reading: 1\n", filename);
+    exit(-1);
+  }
+
+ 
+  fseek(readFile.fileDescriptor, 0L, SEEK_END);
+  readFile.fileSize = ftell(readFile.fileDescriptor);
+  //rewind(readFile.fileDescriptor);
+
+  ASSERT(offset + size <= readFile.fileSize);
+
+  fseek(readFile.fileDescriptor, offset, SEEK_SET);
+
+  readFile.address = global_malloc(size);
+
+  fread(readFile.address, 1, size, readFile.fileDescriptor);
 
   return readFile;
+
 }
+
+
 
 // Check file exists
 int readFile_checkOpen(char *filename) {

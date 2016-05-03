@@ -18,6 +18,8 @@ struct readFile_mem
 // On file for reading and map to memory, then return mapped memory address
 struct readFile readFile_open(char* filename);
 
+struct readFile_mem readFile_open_mem_offset(char *filename, int8 offset, int8 size);
+
 // Unmap then close the file
 void readFile_close(struct readFile readFile);
 

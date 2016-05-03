@@ -36,16 +36,10 @@ char* getSequence(uint4 seqId)
 void print_sequence(int seqId, FILE *output_file)
 {
 
-#ifdef DESCIPT_IN_MEM
     char *seqDes = 
         descriptions_getDescription_mem(
                 readdb_sequenceData[seqId].descriptionStart, 
                 readdb_sequenceData[seqId].descriptionLength);
-#else
-    char *seqDes = descriptions_getDescription(
-            readdb_sequenceData[seqId].descriptionStart, 
-            readdb_sequenceData[seqId].descriptionLength);
-#endif
 
     char *seq = getSequence(seqId); 
 
@@ -112,7 +106,7 @@ int4 main(int4 argc, char* argv[])
         fprintf(stderr, "\n");
 
         if (readdb_volume + 1 < readdb_numberOfVolumes) {
-            readdb_nextVolume();
+            readdb_nextVolume_mem();
             startSeq = endSeq;
             endSeq += readdb_numVolumeSequences;
         }

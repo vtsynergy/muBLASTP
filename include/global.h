@@ -104,6 +104,7 @@ struct alignment
 {
     int4 descriptionLocation;
     int4 descriptionLength;
+    char* description;
     unsigned char* subject;
     int4 subjectLength;
     struct ungappedExtension* ungappedExtensions;

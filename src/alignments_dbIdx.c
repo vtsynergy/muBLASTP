@@ -107,6 +107,7 @@ void alignments_dbIdx(
             {
                 struct alignment *alignment = &goodAlignBuf_arr[tid][ii];
                 loadSubject(alignment);
+                alignment->description = descriptions_getDescription_mem(alignment->descriptionLocation, alignment->descriptionLength);
             }
 
             goodAlignOffset[tid] = goodAlignCount_arr[tid];
@@ -123,7 +124,6 @@ void alignments_dbIdx(
         }
 
     }
-
 
     merge(numQuery);
 
@@ -151,6 +151,7 @@ void alignments_dbIdx(
 
             int thread_id = currentAlignment->thread_id;
             struct alignment *alignment = currentAlignment->alignment;
+            currentAlignment->description = alignment->description;
             ASSERT(alignment->gappedExtensionOffset != -1);
             alignment->gappedExtensions = 
                 gappedExtension_arr[thread_id] 
@@ -189,6 +190,7 @@ void alignments_dbIdx(
         {
             struct alignment *alignment = &goodAlignBuf_arr[tid][ii];
             free(alignment->subject - 1);
+            //free(alignment->description);
         }
     }
 
