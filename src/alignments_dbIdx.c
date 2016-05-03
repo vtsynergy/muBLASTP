@@ -1,4 +1,5 @@
 #include "blast.h"
+#include <sys/time.h>
 
 struct alignment *goodAlignQuery[BATCH_SIZE];
 int4 numGoodAlignQuery[BATCH_SIZE];
@@ -100,6 +101,9 @@ void alignments_dbIdx(
     {
         prelim_search_dbIdx(PSSMatrix_arr, scoreMatrix, numQuery);
 
+        struct timeval start, end;
+        gettimeofday(&start, NULL);
+
         int tid;
         for(tid = 0; tid < parameters_num_threads; tid++)
         {
@@ -112,6 +116,12 @@ void alignments_dbIdx(
 
             goodAlignOffset[tid] = goodAlignCount_arr[tid];
         }
+
+        gettimeofday(&end, NULL);
+        long post_time = ((end.tv_sec * 1000000 + end.tv_usec) -
+                (start.tv_sec * 1000000 + start.tv_usec));
+
+        fprintf(stderr, "postprocess time: %f\n", (float)post_time * 1e-6);
 
         if(readdb_volume + 1 < readdb_numberOfVolumes)
         {

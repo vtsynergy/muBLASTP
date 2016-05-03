@@ -7,6 +7,7 @@
 // Functions for reading a formatted database
 
 #include "blast.h"
+#include <sys/time.h>
 
 uint4 readdb_numberOfSequences, readdb_longestSequenceLength,
       readdb_dbAlphabetType;
@@ -138,6 +139,10 @@ void readdb_open(char *filename) {
 
 // Open formatted collection for reading
 void readdb_open_mem(char *filename) {
+
+    struct timeval start, end;
+    gettimeofday(&start, NULL);
+
     uint4 databaseVersion, encodedLength, sequenceLength, descriptionLength,
           sequenceCount, offset;
     char *wildcardsFile;
@@ -252,6 +257,11 @@ void readdb_open_mem(char *filename) {
             description_size);
 
     readdb_numVolumeSequences = sequenceCount;
+
+    gettimeofday(&end, NULL);
+    long readdb_time = ((end.tv_sec * 1000000 + end.tv_usec) -
+            (start.tv_sec * 1000000 + start.tv_usec));
+    fprintf(stderr, "readdb time: %f\n", (float)readdb_time * 1e-6);
 }
 
 // Load the next volume
@@ -319,6 +329,10 @@ int readdb_nextVolume() {
 }
 
 int readdb_nextVolume_mem() {
+
+
+    struct timeval start, end;
+    gettimeofday(&start, NULL);
 
     uint4 encodedLength, 
           sequenceLength, 
@@ -394,6 +408,11 @@ int readdb_nextVolume_mem() {
 
     readdb_sequenceCount = 0;
     readdb_numVolumeSequences = sequenceCount;
+
+    gettimeofday(&end, NULL);
+    long readdb_time = ((end.tv_sec * 1000000 + end.tv_usec) -
+            (start.tv_sec * 1000000 + start.tv_usec));
+    fprintf(stderr, "readdb time: %f\n", (float)readdb_time * 1e-6);
 
     return 1;
 }

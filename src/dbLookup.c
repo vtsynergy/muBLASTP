@@ -552,7 +552,7 @@ void read_dbLookupAux(char *read_dbLookupFilename) {
     }
            
 
-    fprintf(stderr, "load dbIdxAux: volumn: %d numBlocks: %d\n", readdb_volume, proteinLookup_numBlocks);
+    //fprintf(stderr, "load dbIdxAux: volumn: %d numBlocks: %d\n", readdb_volume, proteinLookup_numBlocks);
 
 
     proteinLookup_db = (struct initialWord_protein_db *)malloc(
@@ -597,7 +597,7 @@ void read_dbLookup(char *read_dbLookupFilename) {
     long read_time = ((end.tv_sec * 1000000 + end.tv_usec) -
             (start.tv_sec * 1000000 + start.tv_usec));
 
-    fprintf(stderr, "Index loading time: %f index size: %lu MB\n", (float)read_time * 1e-6, totalIndexSize >> 20);
+    fprintf(stderr, "readIdx time: %f\n", (float)read_time * 1e-6);
 
     fclose(dbLookupFile);
 
