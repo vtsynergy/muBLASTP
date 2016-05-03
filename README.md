@@ -7,8 +7,8 @@
 ```
 	$ ./formatdb database/uniprot_sport.fasta
 ```
-* 2 Sort FASTA database by sequence length (would take hours; for fast sorting,
-may use another fasta sorting tools, e.g., https://github.com/jimhester/fasta_utilities)
+* 2 Sort FASTA database by sequence length (would take a while for large
+  databases) 
 ```
     $ ./sortdb database/uniprot_sport.fasta database/uniprot_sport_sort.fasta
 ```
