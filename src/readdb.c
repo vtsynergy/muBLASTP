@@ -396,8 +396,8 @@ int readdb_nextVolume_mem() {
 
     uint8 description_size = readdb_descriptionStart; 
 
-    fprintf(stderr, "seqStart: %d seqSize: %d descripStart: %lu descripSize: %lu\n", 
-            readdb_volumeOffset,  readdb_fileSize, description_offset,  description_size);
+    //fprintf(stderr, "seqStart: %d seqSize: %d descripStart: %lu descripSize: %lu\n", 
+    //readdb_volumeOffset,  readdb_fileSize, description_offset,  description_size);
 
     descriptions_close_mem();
 

@@ -28,10 +28,11 @@ inline int4 getCodeword_protein_query(unsigned char *codes,
     return codeword;
 }
 
-inline HitPair *hit_sort_radix(HitPair *selectHits1, HitPair *selectHits2, int numSecondBins, int numExtHit)
+inline HitPair *hit_sort_radix(HitPair *selectHits1, HitPair *selectHits2, size_t numSecondBins, int numExtHit)
 {
 
-    int8 bitCount = 0, bitValue = 1;
+    int8 bitValue = 1;
+    int4 bitCount = 0;
 
     while(bitValue < numSecondBins)
     {
@@ -97,6 +98,8 @@ inline HitPair *hit_sort_radix(HitPair *selectHits1, HitPair *selectHits2, int n
         }
     }
 
+    //fprintf(stderr, "bitCount: %d numExtHit: %d\n", bitCount, numExtHit);
+
     return to_bin;
 }
 
@@ -157,15 +160,16 @@ void search_protein2hit_dbIdx_lasthit_radix(
 #endif
     int ii, kk, jj;
 
-    int4 numSecondBins = (((numSeqBlk + 1) * maxDiag)) + 1;
+    size_t numSecondBins = (((numSeqBlk + 1) * maxDiag)) + 1;
 
     int4 numGoodAlign = *goodAlignCount;
     int4 numGoodExtensions = *goodExtensionCount;
 
-    for(ii = 0; ii < numSecondBins; ii++)
-    {
-        lastHits[ii] = 0xFFFF;
-    }
+    memset(lastHits, 0, sizeof(uint2) * numSecondBins);
+    //for(ii = 0; ii < numSecondBins; ii++)
+    //{
+        //lastHits[ii] = 0xFFFF;
+    //}
 
     int numExtHit = 0;
     int4 numNeighbours;
@@ -220,11 +224,11 @@ void search_protein2hit_dbIdx_lasthit_radix(
         queryPosition++;
     }
 
-    if(numExtHit > MAX_NUM_UNGAPPED_EXT)
-    {
-        fprintf(stderr, "%d, %d] ERROR! numExtHit = %d\n", tid, queryNum, numExtHit);
-        exit(0);
-    }
+    //if(numExtHit >= numSecondBins)
+    //{
+        //fprintf(stderr, "%d, %d] ERROR! numExtHit = %d\n", tid, queryNum, numExtHit);
+        //exit(0);
+    //}
 
     HitPair *to_bin = hit_sort_radix(selectHits1, selectHits2, numSecondBins, numExtHit);
 

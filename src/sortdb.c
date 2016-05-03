@@ -83,7 +83,7 @@ int4 main(int4 argc, char* argv[])
     while(1)
     {
 
-        fprintf(stderr, "volumn: %d startSeq: %d endSeq: %d\n", readdb_volume, startSeq, endSeq);
+        fprintf(stderr, "sorting volumn %d ", readdb_volume);
 
         int ii;
         for(ii = startSeq; ii < endSeq; ii++)
@@ -93,13 +93,11 @@ int4 main(int4 argc, char* argv[])
 
         qsort(seqId + startSeq, readdb_numVolumeSequences, sizeof(int), compareSeq);
 
-        uint4 numSeqPercent = readdb_numVolumeSequences / 10;
-
         for(ii = startSeq; ii < endSeq; ii++)
         {
-            if(!((ii - startSeq) % numSeqPercent))
+            if(!((ii - startSeq) % 10000))
             {
-                fprintf(stderr, "%d.", (ii - startSeq) * 10 / numSeqPercent);
+                fprintf(stderr, ".");
             }
 
             print_sequence(seqId[ii], output_file);

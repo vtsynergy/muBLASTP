@@ -254,27 +254,39 @@ void prelim_search_dbIdx(
     int ii, jj;
     for(jj = 0; jj < proteinLookup_numBlocks; jj++)
     {
-        int numSeqBlk = proteinLookup_db_b[jj].numSeqBlk;
-        int maxDiag = longestQueryLength + proteinLookup_db_b[jj].dbIdxblk_longestSeq;
-        int numSeqBins = (((numSeqBlk + 1) * maxDiag)) + 1; 
+        size_t numSeqBlk = proteinLookup_db_b[jj].numSeqBlk;
+        size_t maxDiag = longestQueryLength + proteinLookup_db_b[jj].dbIdxblk_longestSeq;
+        size_t numSeqBins = (((numSeqBlk + 1) * maxDiag)) + 1; 
         maxNumSecondBins = MAX(numSeqBins, maxNumSecondBins);
     }
 
+    //fprintf(stderr, "maxNumSecondBins: %d\n", maxNumSecondBins);
+
     for(ii = 0; ii < parameters_num_threads; ii++)
     {
-        selectHits1_arr[ii] = (HitPair *)malloc(sizeof(HitPair) * 
-                MAX_NUM_UNGAPPED_EXT); 
+        selectHits1_arr[ii] = (HitPair *)global_malloc(sizeof(HitPair) * 
+                maxNumSecondBins); 
 
-        selectHits2_arr[ii] = (HitPair *)malloc(sizeof(HitPair) * 
-                MAX_NUM_UNGAPPED_EXT); 
+        selectHits2_arr[ii] = (HitPair *)global_malloc(sizeof(HitPair) * 
+                maxNumSecondBins); 
+
+        if(selectHits1_arr == NULL || selectHits2_arr == NULL)
+        {
+            fprintf(stderr, "failed to malloc selectHits_arr: %d\n", maxNumSecondBins);
+        }
 
         ungappedExtension_new_arr[ii] = 
-            (struct ungappedExtension **)malloc(sizeof(struct ungappedExtension *) 
+            (struct ungappedExtension **)global_malloc(sizeof(struct ungappedExtension *) 
                     * MAX_EXTENSIONS_PER_QUERY);
     }
 
 
-    uint2 *lastHits_arr = (uint2 *)malloc(sizeof(uint2) * maxNumSecondBins * parameters_num_threads);
+    uint2 *lastHits_arr = (uint2 *)global_malloc(sizeof(uint2) * maxNumSecondBins * parameters_num_threads);
+
+    if(lastHits_arr == NULL)
+    {
+        fprintf(stderr, "failed to malloc lasthit_arr: %d\n", sizeof(uint2) * maxNumSecondBins * parameters_num_threads);
+    }
 
     struct timeval start, end;
     gettimeofday(&start, NULL);
