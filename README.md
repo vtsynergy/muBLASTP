@@ -15,9 +15,9 @@
 ```
     $ ./formatdb database/uniprot_sport_sort.fasta
 ```
-* 3 Build database index with block of 2k bases
+* 3 Build database index with block of 1024k bases
 ```
-    $ ./indexdb database/uniprot_sport_sort.fasta 2000
+    $ ./indexdb database/uniprot_sport_sort.fasta 1024
 ```
 * 4(a). Run muBLASTP with a single thread 
 ```
