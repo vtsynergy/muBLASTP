@@ -31,7 +31,7 @@ inline int4 getCodeword_protein_query(unsigned char *codes,
 inline HitPair *hit_sort_radix(HitPair *selectHits1, HitPair *selectHits2, int numSecondBins, int numExtHit)
 {
 
-    int bitCount = 0, bitValue = 1;
+    int8 bitCount = 0, bitValue = 1;
 
     while(bitValue < numSecondBins)
     {
@@ -157,7 +157,7 @@ void search_protein2hit_dbIdx_lasthit_radix(
 #endif
     int ii, kk, jj;
 
-    int numSecondBins = (((numSeqBlk + 1) * maxDiag)) + 1;
+    int4 numSecondBins = (((numSeqBlk + 1) * maxDiag)) + 1;
 
     int4 numGoodAlign = *goodAlignCount;
     int4 numGoodExtensions = *goodExtensionCount;

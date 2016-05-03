@@ -4,7 +4,7 @@
 extern uint4 readdb_numberOfSequences, readdb_longestSequenceLength, readdb_dbAlphabetType;
 extern uint8 readdb_numberOfLetters;
 extern unsigned char *readdb_filename, *readdb_sequences;
-extern uint4 readdb_fileSize, readdb_sequenceCount, readdb_descriptionStart;
+extern uint4 readdb_fileSize, readdb_sequenceCount;
 extern uint4 readdb_volumeNumber, readdb_numberOfClusters, readdb_numberOfVolumes;
 extern uint4 readdb_numVolumeSequences, readdb_volume;
 extern uint4 readdb_volumeOffset;

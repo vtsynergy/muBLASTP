@@ -23,6 +23,10 @@ char* getSequence(uint4 seqId)
 {
     // Declare memory for the sequence
     int ii;
+
+    ASSERT(readdb_sequenceData[seqId].sequenceLength > 0);
+    char *sequenceBuffer = (char *)global_malloc(
+            sizeof(char) * (readdb_sequenceData[seqId].sequenceLength + 1));
     for(ii = 0; ii < readdb_sequenceData[seqId].sequenceLength; ii++)
     {
         sequenceBuffer[ii] = 
@@ -35,7 +39,6 @@ char* getSequence(uint4 seqId)
 
 void print_sequence(int seqId, FILE *output_file)
 {
-
     char *seqDes = 
         descriptions_getDescription_mem(
                 readdb_sequenceData[seqId].descriptionStart, 
@@ -43,9 +46,11 @@ void print_sequence(int seqId, FILE *output_file)
 
     char *seq = getSequence(seqId); 
 
+    ASSERT(seqDes[0] == 'g');
     fprintf(output_file, ">%s\n%s\n", seqDes, seq);
     //fprintf(output_file, ">gi|%d\n%s\n", seqId, seq);
 
+    free(seq);
     free(seqDes); 
 }
 
@@ -75,8 +80,6 @@ int4 main(int4 argc, char* argv[])
 
     int startSeq = 0, endSeq = readdb_numVolumeSequences;
 
-    sequenceBuffer = (char *)global_malloc(
-            sizeof(char) * (readdb_longestSequenceLength + 1));
 
     while(1)
     {
@@ -100,6 +103,7 @@ int4 main(int4 argc, char* argv[])
                 fprintf(stderr, "%d.", (ii - startSeq) / numSeqPercent);
             }
 
+            //if(readdb_volume == 4)
             print_sequence(seqId[ii], output_file);
         }
 

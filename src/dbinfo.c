@@ -78,7 +78,11 @@ int4 main(int4 argc, char* argv[])
         }
     }
 
-    fprintf(stderr, "min: %d max: %d median: %d aver: %d\n", readdb_sequenceData[0].sequenceLength, readdb_longestSequenceLength, readdb_sequenceData[seqId[readdb_numberOfSequences/2]].sequenceLength, readdb_numberOfLetters/readdb_numberOfSequences);
+    fprintf(stderr, "min: %d max: %d median: %d aver: %d\n", 
+            readdb_sequenceData[0].sequenceLength, 
+            readdb_longestSequenceLength, 
+            readdb_sequenceData[seqId[readdb_numberOfSequences/2]].sequenceLength, 
+            readdb_numberOfLetters/readdb_numberOfSequences);
 
     for(ii = 0; ii < 20; ii++)
     {

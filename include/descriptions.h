@@ -4,7 +4,7 @@
 // Open text file containing descriptions
 void descriptions_open(char* filename);
 
-void descriptions_open_mem(char* filename, uint4 offset, uint4 size);
+void descriptions_open_mem(char* filename, uint8 offset, uint4 size);
 
 // Get the description located at the given position in the file
 char* descriptions_getDescription(uint4 descriptionLocation, uint4 descriptionLength);

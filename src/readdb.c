@@ -13,7 +13,7 @@ uint4 readdb_numberOfSequences, readdb_longestSequenceLength,
       readdb_dbAlphabetType;
 uint8 readdb_numberOfLetters;
 unsigned char *readdb_filename, *readdb_data, *readdb_sequences;
-uint4 readdb_fileSize, readdb_sequenceCount, readdb_descriptionStart;
+uint4 readdb_fileSize, readdb_sequenceCount;
 char *readdb_sequenceFilename, *readdb_descriptionsFilename,
      *readdb_dataFilename;
 struct readFile readdb_readSequences, readdb_readData;
@@ -21,7 +21,7 @@ struct readFile_mem readdb_readSequences_mem, readdb_readData_mem;
 uint4 readdb_volumeNumber, readdb_numberOfClusters, readdb_numberOfVolumes;
 struct child *readdb_childBuffer = NULL;
 uint4 readdb_sizeChildBuffer = 0, readdb_volume, readdb_numVolumeSequences, readdb_volumeOffset = 0;
-uint8 readdb_numVolumeLetters;
+uint8 readdb_numVolumeLetters, readdb_descriptionStart;
 struct sequenceData *readdb_sequenceData;
 
 // Open formatted collection for reading
@@ -221,7 +221,7 @@ void readdb_open_mem(char *filename) {
     // For each sequence in first volume
     offset = 1;
     sequenceCount = 0;
-    uint4 description_offset = 0;
+    uint8 description_offset = 0;
     while (sequenceCount < readdb_numberOfClusters && offset < readdb_fileSize) {
         // Read sequence data
         vbyte_getVbyte(readdb_data, &descriptionLength);
@@ -364,7 +364,7 @@ int readdb_nextVolume_mem() {
     // For each sequence in next volume volume
     offset = 1;
     sequenceCount = 0;
-    uint4 description_offset = readdb_descriptionStart;
+    uint8 description_offset = readdb_descriptionStart;
     readdb_descriptionStart = 0;
     while (sequenceCount < readdb_numberOfClusters && offset < readdb_fileSize) {
         // Read sequence data
@@ -402,7 +402,7 @@ int readdb_nextVolume_mem() {
             description_offset, 
             description_size);
 
-    readdb_descriptionStart = description_offset + readdb_descriptionStart;
+    readdb_descriptionStart = description_offset + description_size;
 
 
 
@@ -518,13 +518,7 @@ void readdb_close() {
     free(readdb_dataFilename);
     readFile_close(readdb_readSequences);
     readFile_close(readdb_readData);
-
-#ifdef DESCIPT_IN_MEM
-    descriptions_close_mem();
-#else
     descriptions_close();
-#endif
-
     free(readdb_childBuffer);
     readdb_childBuffer = NULL;
     readdb_sizeChildBuffer = 0;

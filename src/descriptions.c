@@ -30,7 +30,7 @@ void descriptions_open(char *filename) {
     descriptions_filename = filename;
 }
 
-void descriptions_open_mem(char *filename, uint4 offset, uint4 size) {
+void descriptions_open_mem(char *filename, uint8 offset, uint4 size) {
     descriptions_file_mem = readFile_open_mem_offset(filename, offset, size);
 }
 
