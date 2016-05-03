@@ -39,7 +39,7 @@ int4 main(int4 argc, char *argv[]) {
 
       if(readdb_volume + 1 < readdb_numberOfVolumes)
       {
-          readdb_nextVolume();
+          readdb_nextVolume_mem();
       }
       else
       {
