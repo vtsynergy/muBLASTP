@@ -258,7 +258,7 @@ void readdb_open_mem(char *filename) {
 int readdb_nextVolume() {
   uint4 encodedLength, sequenceLength, descriptionLength, sequenceCount = 0,
                                                           offset = 0;
-  readdb_volumeOffset += sequenceCount;
+  readdb_volumeOffset += readdb_numVolumeSequences;
 
   readdb_numVolumeLetters = 0;
 
@@ -321,7 +321,7 @@ int readdb_nextVolume() {
 int readdb_nextVolume_mem() {
   uint4 encodedLength, sequenceLength, descriptionLength, sequenceCount = 0,
                                                           offset = 0;
-  readdb_volumeOffset += sequenceCount;
+  readdb_volumeOffset += readdb_numVolumeSequences;
 
   readdb_numVolumeLetters = 0;
 
