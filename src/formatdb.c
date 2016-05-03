@@ -84,13 +84,14 @@ int4 main(int argc, char *argv[]) {
             startWildcardData = wildcardData = NULL;
         }
 
+
         // Add sequence to the formatted collection
         writedb_addSequence(sequence, sequenceLength, readFasta_descriptionBuffer,
                 readFasta_descriptionLength, startWildcardData,
                 wildcardData - startWildcardData, NULL, 0);
 
         // Print status dots
-        if (writedb_sequenceCount % 10000 == 0) {
+        if (writedb_sequenceCount % 100000 == 0) {
             printf(".");
             fflush(stdout);
         }

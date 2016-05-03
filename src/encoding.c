@@ -37,11 +37,6 @@ char *encoding_alphabetTypes[2] = { "Protein", "Nucleotide" };
 #endif
 
 #define encoding_aaNumCodes 32
-//unsigned char encoding_aaLettersArray[encoding_aaNumCodes] = {
-  //'L', 'A', 'G', 'S', 'V', 'E', 'T', 'K', 'D', 'P', 'I',
-  //'R', 'N', 'Q', 'F', 'Y', 'M', 'H', 'C', 'W', 'B', 'Z',
-  //'X', 'U', '1', '2', '3', '4', '5', '6', '#', '!'
-//};
 
 unsigned char encoding_aaLettersArray[encoding_aaNumCodes] = {
   'L', 'A', 'G', 'S', 'V', 'E', 'T', 'K', 'D', 'P', 'I',

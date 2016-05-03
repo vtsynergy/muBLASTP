@@ -30,7 +30,7 @@ void descriptions_open(char *filename) {
     descriptions_filename = filename;
 }
 
-void descriptions_open_mem(char *filename, uint8 offset, uint4 size) {
+void descriptions_open_mem(char *filename, uint8 offset, uint8 size) {
     descriptions_file_mem = readFile_open_mem_offset(filename, offset, size);
 }
 
@@ -75,6 +75,12 @@ char *descriptions_getDescription_mem(uint4 descriptionLocation,
     description = (char *)global_malloc(sizeof(char) * (descriptionLength + 1));
 
     memcpy(description, descriptions_file_mem.address + descriptionLocation, descriptionLength);
+
+    if(!(description[0] == 'g' && description[1] == 'i') &&
+            !(description[0] == 's' && description[1] == 'p'))
+    {
+        description[0] = 'g'; description[1] = 'i';
+    }
 
     description[descriptionLength] = '\0';
 

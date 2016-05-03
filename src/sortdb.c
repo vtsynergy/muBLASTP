@@ -77,13 +77,13 @@ int4 main(int4 argc, char* argv[])
 
     int *seqId = (int *)malloc(sizeof(int) * readdb_numberOfSequences);
 
-    int startSeq = 0, endSeq = readdb_numVolumeSequences;
+    uint4 startSeq = 0, endSeq = readdb_numVolumeSequences;
 
 
     while(1)
     {
 
-        fprintf(stderr, "volumn: %d\n", readdb_volume);
+        fprintf(stderr, "volumn: %d startSeq: %d endSeq: %d\n", readdb_volume, startSeq, endSeq);
 
         int ii;
         for(ii = startSeq; ii < endSeq; ii++)
@@ -93,16 +93,15 @@ int4 main(int4 argc, char* argv[])
 
         qsort(seqId + startSeq, readdb_numVolumeSequences, sizeof(int), compareSeq);
 
-        int numSeqPercent = readdb_numVolumeSequences / 100;
+        uint4 numSeqPercent = readdb_numVolumeSequences / 10;
 
         for(ii = startSeq; ii < endSeq; ii++)
         {
             if(!((ii - startSeq) % numSeqPercent))
             {
-                fprintf(stderr, "%d.", (ii - startSeq) / numSeqPercent);
+                fprintf(stderr, "%d.", (ii - startSeq) * 10 / numSeqPercent);
             }
 
-            //if(readdb_volume == 4)
             print_sequence(seqId[ii], output_file);
         }
 

@@ -83,6 +83,7 @@ void writedb_addSequence(unsigned char *sequence, uint4 sequenceLength,
 
   sequenceData = memBlocks_newEntry(writedb_sequenceData);
 
+
   // Write the description to file
   if (description != NULL)
     if (fwrite(description, sizeof(unsigned char), descriptionLength,
@@ -163,6 +164,9 @@ void writedb_addSequence(unsigned char *sequence, uint4 sequenceLength,
 
     // Open next volume for writing
     writedb_volume++;
+
+    fprintf(stderr, "volume %d", writedb_volume);
+
     sprintf(writedb_sequenceFilename, "%s.sequences%d", writedb_filename,
             writedb_volume);
     if ((writedb_sequenceFile = fopen(writedb_sequenceFilename, "w")) == NULL) {
@@ -170,6 +174,7 @@ void writedb_addSequence(unsigned char *sequence, uint4 sequenceLength,
               writedb_sequenceFilename);
       exit(-1);
     }
+
 
     // Reset volume size counter
     writedb_volumeSize = encodedLength + wildcardsLength;
