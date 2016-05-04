@@ -7,7 +7,7 @@
 ```
 	$ ./formatdb database/uniprot_sport.fasta
 ```
-* 2 Sort FASTA database by sequence length (may use another fasta sorting tool, e.g., https://github.com/jimhester/fasta_utilities)
+* 2 Sort FASTA database by sequence length
 ```
     $ ./sortdb database/uniprot_sport.fasta database/uniprot_sport_sort.fasta
 ```
@@ -15,9 +15,9 @@
 ```
     $ ./formatdb database/uniprot_sport_sort.fasta
 ```
-* 3 Build database index with block of 1024k bases (recommand 128K for multithreading)
+* 3 Build database index with block of 128k bases (recommand 128K for multithreading, can use larger block for single thread for better performance)
 ```
-    $ ./indexdb database/uniprot_sport_sort.fasta 1024
+    $ ./indexdb database/uniprot_sport_sort.fasta 128
 ```
 * 4(a). Run muBLASTP with a single thread 
 ```

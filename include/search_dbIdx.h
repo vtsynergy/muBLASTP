@@ -18,14 +18,11 @@ void search_protein2hit_dbIdx_lasthit_radix(
         uint2 *lastHits, 
         HitPair *selectHits1, HitPair *selectHits2,
         struct alignment **goodAlignBuf, 
-        int4 *goodAlignCount, 
+        size_t *goodAlignCount, 
         size_t *goodAlignBufSize,
         struct ungappedExtension **goodExtensionBuf, 
-        int4 *goodExtensionCount, 
+        size_t *goodExtensionCount, 
         size_t *goodExtensionBufSize,
-        /*char **subjectBuf,*/
-        /*int4 *subjectCount,*/
-        /*size_t *subjectBufSize,*/
         struct ungappedExtension **ungappedExtension_new, BlastGapDP *dp_mem,
         BlastIntervalTree *tree, BlastIntervalTree *private_tree,
         uint4 *blast_numHits_t, uint4 *blast_numUngappedExtensions_t,

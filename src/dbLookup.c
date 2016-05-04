@@ -569,7 +569,7 @@ void read_dbLookupAux(char *read_dbLookupFilename) {
     }
            
 
-    fprintf(stderr, "dbIdx: volumn: %d numBlocks: %d\n", readdb_volume, proteinLookup_numBlocks);
+    //fprintf(stderr, "dbIdx: volumn: %d numBlocks: %d\n", readdb_volume, proteinLookup_numBlocks);
 
 
     proteinLookup_db = (struct initialWord_protein_db *)malloc(
@@ -582,6 +582,7 @@ void read_dbLookupAux(char *read_dbLookupFilename) {
 
 void read_dbLookup(char *read_dbLookupFilename) {
 
+    fprintf(stderr, "loading index(%d/%d)...", readdb_volume, readdb_numberOfVolumes);
     struct timeval start, end;
     gettimeofday(&start, NULL);
 
@@ -614,7 +615,7 @@ void read_dbLookup(char *read_dbLookupFilename) {
     long read_time = ((end.tv_sec * 1000000 + end.tv_usec) -
             (start.tv_sec * 1000000 + start.tv_usec));
 
-    fprintf(stderr, "readIdx time: %f\n", (float)read_time * 1e-6);
+    fprintf(stderr, "time: %f numBlocks: %d\n", (float)read_time * 1e-6, proteinLookup_numBlocks);
 
     fclose(dbLookupFile);
 

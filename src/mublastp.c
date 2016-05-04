@@ -158,8 +158,8 @@ int4 main(int4 argc, char *argv[]) {
 
 void blast_search_db(char *searchDbFile, struct PSSMatrix *PSSMatrix_arr,
         int numQuery, struct scoreMatrix scoreMatrix) {
-    fprintf(stderr, "number of queries: %d longestQueryLength: %d\n", numQuery,
-            longestQueryLength);
+    //fprintf(stderr, "number of queries: %d longestQueryLength: %d\n", numQuery,
+    //longestQueryLength);
 
     global_initialize_multi();
     blast_numQuery = numQuery;

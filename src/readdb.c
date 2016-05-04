@@ -140,6 +140,7 @@ void readdb_open(char *filename) {
 // Open formatted collection for reading
 void readdb_open_mem(char *filename) {
 
+    fprintf(stderr, "opening database...");
     struct timeval start, end;
     gettimeofday(&start, NULL);
 
@@ -212,11 +213,16 @@ void readdb_open_mem(char *filename) {
     vbyte_getVbyte(readdb_data, &readdb_numberOfClusters);
     vbyte_getVbyte(readdb_data, &readdb_numberOfVolumes);
 
+    fprintf(stderr, "numOfVolumes: %d totalNumberSequences: %d\n",
+            readdb_numberOfVolumes,
+            readdb_numberOfClusters
+            );
+
+    fprintf(stderr, "loading database(%d/%d)...", readdb_volume, readdb_numberOfVolumes);
+
     readdb_sequenceData = (struct sequenceData *)global_malloc(
             sizeof(struct sequenceData) * readdb_numberOfClusters);
 
-    fprintf(stderr, "readdb_numberOfSequences: %d readdb_numberOfVolumes: %d\n", 
-            readdb_numberOfSequences, readdb_numberOfVolumes);
 
     // For each sequence in first volume
     offset = 1;
@@ -261,7 +267,14 @@ void readdb_open_mem(char *filename) {
     gettimeofday(&end, NULL);
     long readdb_time = ((end.tv_sec * 1000000 + end.tv_usec) -
             (start.tv_sec * 1000000 + start.tv_usec));
-    fprintf(stderr, "readdb time: %f\n", (float)readdb_time * 1e-6);
+
+    fprintf(stderr, "time: %f numOfSequencesVolume: %d\n", 
+            (float)readdb_time * 1e-6,
+            readdb_numVolumeSequences
+            );
+
+    //fprintf(stderr, "readdb_numberOfSequences: %d readdb_numberOfVolumes: %d\n", 
+    //readdb_numberOfSequences, readdb_numberOfVolumes);
 }
 
 // Load the next volume
@@ -349,8 +362,11 @@ int readdb_nextVolume_mem() {
     if (readdb_volume >= readdb_numberOfVolumes)
         return 0;
 
+    fprintf(stderr, "loading database(%d/%d)...", readdb_volume, readdb_numberOfVolumes);
+
     // Close current volume
     readFile_close_mem(readdb_readSequences_mem);
+    descriptions_close_mem();
 
     // Open next volume
     sprintf(readdb_sequenceFilename, "%s.sequences%d", readdb_filename,
@@ -399,7 +415,6 @@ int readdb_nextVolume_mem() {
     //fprintf(stderr, "seqStart: %d seqSize: %d descripStart: %lu descripSize: %lu\n", 
     //readdb_volumeOffset,  readdb_fileSize, description_offset,  description_size);
 
-    descriptions_close_mem();
 
     descriptions_open_mem(readdb_descriptionsFilename, 
             description_offset, 
@@ -407,15 +422,18 @@ int readdb_nextVolume_mem() {
 
     readdb_descriptionStart = description_offset + description_size;
 
-
-
     readdb_sequenceCount = 0;
     readdb_numVolumeSequences = sequenceCount;
 
     gettimeofday(&end, NULL);
+
     long readdb_time = ((end.tv_sec * 1000000 + end.tv_usec) -
             (start.tv_sec * 1000000 + start.tv_usec));
-    fprintf(stderr, "readdb time: %f\n", (float)readdb_time * 1e-6);
+
+    fprintf(stderr, "time: %f numOfSequencesVolume: %d\n", 
+            (float)readdb_time * 1e-6,
+            readdb_numVolumeSequences
+            );
 
     return 1;
 }

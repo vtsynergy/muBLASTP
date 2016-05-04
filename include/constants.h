@@ -18,7 +18,7 @@
 #define constants_initialAllocFinalAlignments 10000
 #define constants_initialAllocCodewordQueryPositions 5
 #define constants_initialTracebackAlloc 10000
-#define constants_volumeMaxSize 2000000000
+#define constants_volumeMaxSize 1000000000
 #define constants_maxNumVolumes 100
 #define constants_maximumTracebackSize 10000000
 #define constants_unpackRegionExtend 1000

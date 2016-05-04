@@ -4,10 +4,10 @@
 struct alignment *goodAlignQuery[BATCH_SIZE];
 int4 numGoodAlignQuery[BATCH_SIZE];
 
-int4 goodAlignCount_arr[MAX_NUM_THREADS] = {0};
-int4 goodExtensionCount_arr[MAX_NUM_THREADS] = {0};
-int4 gappedExtensionCount_arr[MAX_NUM_THREADS] = {0};
-int4 traceCodeCount_arr[MAX_NUM_THREADS] = {0};
+size_t goodAlignCount_arr[MAX_NUM_THREADS] = {0};
+size_t goodExtensionCount_arr[MAX_NUM_THREADS] = {0};
+size_t gappedExtensionCount_arr[MAX_NUM_THREADS] = {0};
+size_t traceCodeCount_arr[MAX_NUM_THREADS] = {0};
 //int4 subjectCount_arr[MAX_NUM_THREADS] = {0};
 
 struct alignment *goodAlignBuf_arr[MAX_NUM_THREADS];
@@ -93,8 +93,6 @@ void alignments_dbIdx(
             (unsigned char *)malloc(traceCodeBufSize_arr[ii]);
     }
 
-    //loadDbIdx();
-
     int goodAlignOffset[MAX_NUM_THREADS] = {0};
     
     while(1)
@@ -121,7 +119,7 @@ void alignments_dbIdx(
         long post_time = ((end.tv_sec * 1000000 + end.tv_usec) -
                 (start.tv_sec * 1000000 + start.tv_usec));
 
-        fprintf(stderr, "postprocess time: %f\n", (float)post_time * 1e-6);
+        //fprintf(stderr, "postprocess time: %f\n", (float)post_time * 1e-6);
 
         if(readdb_volume + 1 < readdb_numberOfVolumes)
         {
@@ -242,6 +240,8 @@ void prelim_search_dbIdx(
         int numQuery)
 {
 
+    fprintf(stderr, "prelim search...");
+
     struct ungappedExtension **ungappedExtension_new_arr[parameters_num_threads];
     HitPair *selectHits1_arr[parameters_num_threads], 
             *selectHits2_arr[parameters_num_threads];
@@ -251,13 +251,21 @@ void prelim_search_dbIdx(
 
     size_t maxNumSecondBins = 0;
 
+    int maxMaxNumSeq = 0, maxMaxDiag = 0;
+
     int ii, jj;
     for(jj = 0; jj < proteinLookup_numBlocks; jj++)
     {
         size_t numSeqBlk = proteinLookup_db_b[jj].numSeqBlk;
         size_t maxDiag = longestQueryLength + proteinLookup_db_b[jj].dbIdxblk_longestSeq;
         size_t numSeqBins = (((numSeqBlk + 1) * maxDiag)) + 1; 
-        maxNumSecondBins = MAX(numSeqBins, maxNumSecondBins);
+        if(numSeqBins > maxNumSecondBins)
+        {
+            maxNumSecondBins = numSeqBins;
+            maxMaxNumSeq = numSeqBlk;
+            maxMaxDiag = maxDiag;
+        }
+        //maxNumSecondBins = MAX(numSeqBins, maxNumSecondBins);
     }
 
     //fprintf(stderr, "maxNumSecondBins: %d\n", maxNumSecondBins);
@@ -283,6 +291,12 @@ void prelim_search_dbIdx(
 
     uint2 *lastHits_arr = (uint2 *)global_malloc(sizeof(uint2) * maxNumSecondBins * parameters_num_threads);
 
+    //fprintf(stderr, "maxNumSecondBins: %d maxMaxNumSeq: %d maxMaxDiag: %d lasthit_arr: %d selectHits_arr: %d\n",
+            //maxNumSecondBins, maxMaxNumSeq, maxMaxDiag,
+            //sizeof(uint2) * maxNumSecondBins * parameters_num_threads >> 20,
+            //sizeof(HitPair) * maxNumSecondBins * 2 >> 20
+            //);
+
     if(lastHits_arr == NULL)
     {
         fprintf(stderr, "failed to malloc lasthit_arr: %d\n", sizeof(uint2) * maxNumSecondBins * parameters_num_threads);
@@ -290,6 +304,7 @@ void prelim_search_dbIdx(
 
     struct timeval start, end;
     gettimeofday(&start, NULL);
+
 
 #pragma omp parallel num_threads(parameters_num_threads) default(shared) private(ii, jj)
     {
@@ -336,9 +351,6 @@ void prelim_search_dbIdx(
                         &goodExtensionBuf_arr[thread_id], 
                         &goodExtensionCount_arr[thread_id], 
                         &goodExtensionBufSize_arr[thread_id], 
-                        //&subjectBuf_arr[thread_id],
-                        //&subjectCount_arr[thread_id],
-                        //&subjectBufSize_arr[thread_id],
                         ungappedExtension_new_arr[thread_id], dp_mem, 
                         tree, private_tree, 
                         &blast_numHits_t, 
@@ -362,7 +374,7 @@ void prelim_search_dbIdx(
     long prelim_time = ((end.tv_sec * 1000000 + end.tv_usec) -
             (start.tv_sec * 1000000 + start.tv_usec));
 
-    fprintf(stderr, "prelim time: %f\n", (float)prelim_time * 1e-6);
+    fprintf(stderr, "time: %f\n", (float)prelim_time * 1e-6);
 
     
 
