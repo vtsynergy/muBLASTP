@@ -15,7 +15,7 @@
 ```
     $ ./formatdb database/uniprot_sport_sort.fasta
 ```
-* 3 Build database index with block of 1024k bases
+* 3 Build database index with block of 1024k bases (recommand 128K for multithreading)
 ```
     $ ./indexdb database/uniprot_sport_sort.fasta 1024
 ```
