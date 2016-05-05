@@ -721,7 +721,8 @@ void read_dbLookup(char *read_dbLookupFilename) {
     long read_time = ((end.tv_sec * 1000000 + end.tv_usec) -
             (start.tv_sec * 1000000 + start.tv_usec));
 
-    fprintf(stderr, "time: %f numBlocks: %d\n", (float)read_time * 1e-6, proteinLookup_numBlocks);
+    fprintf(stderr, "time: %f numBlocks: %d blockSize: %dK\n", 
+            (float)read_time * 1e-6, proteinLookup_numBlocks, dbIdx_block_size/1024);
 
     fclose(dbLookupFile);
 

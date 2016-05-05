@@ -215,11 +215,11 @@ void search_protein2hit_dbIdx_lasthit_radix(
         queryPosition++;
     }
 
-    if(numExtHit > MAX_NUM_UNGAPPED_EXT)
-    {
-        fprintf(stderr, "%d, %d] ERROR! numExtHit = %d\n", tid, queryNum, numExtHit);
-        exit(0);
-    }
+    //if(numExtHit > MAX_NUM_UNGAPPED_EXT)
+    //{
+        //fprintf(stderr, "%d, %d] ERROR! numExtHit = %d\n", tid, queryNum, numExtHit);
+        //exit(0);
+    //}
 
     HitPair *to_bin = hit_sort_radix(selectHits1, selectHits2, numSecondBins, numExtHit);
 
@@ -297,7 +297,7 @@ void search_protein2hit_dbIdx_lasthit_radix(
         if(numGoodExtensions + numUngappedExtSeq >= *goodExtensionBufSize)
         {
             *goodExtensionBufSize *= 2;
-            fprintf(stderr, "goodExtensionBuf resize to %d\n", *goodAlignBufSize);
+            //fprintf(stderr, "goodExtensionBuf resize to %d\n", *goodAlignBufSize);
             *goodExtensionBuf = (struct ungappedExtension *)global_realloc(
                     *goodExtensionBuf, 
                     sizeof(struct ungappedExtension) * (*goodExtensionBufSize));
@@ -342,7 +342,7 @@ void search_protein2hit_dbIdx_lasthit_radix(
                 if(numGoodAlign >= *goodAlignBufSize)
                 {
                     *goodAlignBufSize *= 2;
-                    fprintf(stderr, "goodAlignBuf resize to %d\n", *goodAlignBufSize);
+                    //fprintf(stderr, "goodAlignBuf resize to %d\n", *goodAlignBufSize);
                     *goodAlignBuf = (struct alignment *)global_realloc(
                             *goodAlignBuf, 
                             sizeof(struct alignment) * (*goodAlignBufSize));
