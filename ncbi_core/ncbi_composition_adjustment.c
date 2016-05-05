@@ -2972,10 +2972,14 @@ s_HitlistEvaluateAndPurge(int * pbestScore, double *pbestEvalue,
     *pbestEvalue = DBL_MAX;
     *pbestScore  = 0;
 
-    finalAlignments_get_eValue(hsp_list, hspcnt, query_length, subject_length, pbestEvalue);
+    finalAlignments_get_eValue(hsp_list, 
+            hspcnt, query_length, 
+            subject_length, pbestEvalue);
     int hspcnt_new = 0;
     double expect_value = 10;
-    Blast_HSPListReapByEvalue(hsp_list, hspcnt, &hspcnt_new, pbestScore, expect_value);
+    Blast_HSPListReapByEvalue(hsp_list, 
+            hspcnt, &hspcnt_new, 
+            pbestScore, expect_value);
 
     if(!hspcnt_new)
     {

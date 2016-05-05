@@ -552,12 +552,7 @@ void readdb_close_mem() {
     free(readdb_dataFilename);
     readFile_close_mem(readdb_readSequences_mem);
     readFile_close_mem(readdb_readData_mem);
-
-#ifdef DESCIPT_IN_MEM
     descriptions_close_mem();
-#else
-    descriptions_close();
-#endif
 
     free(readdb_childBuffer);
     readdb_childBuffer = NULL;

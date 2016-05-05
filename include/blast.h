@@ -13,7 +13,6 @@
 #define NEIGHBOR_INDEX
 #define NCBI_BLAST
 #define MAX_NUM_THREADS 56 
-#define DESCIPT_IN_MEM
 
 #define BATCH_SIZE 1000
 

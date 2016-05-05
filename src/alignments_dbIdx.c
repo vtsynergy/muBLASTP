@@ -6,10 +6,10 @@ struct alignment *finalAlignQuery[BATCH_SIZE];
 int4 numGoodAlignQuery[BATCH_SIZE];
 int4 numFinalAlignQuery[BATCH_SIZE];
 
-size_t goodAlignCount_arr[MAX_NUM_THREADS] = {0};
-size_t goodExtensionCount_arr[MAX_NUM_THREADS] = {0};
-size_t gappedExtensionCount_arr[MAX_NUM_THREADS] = {0};
-size_t traceCodeCount_arr[MAX_NUM_THREADS] = {0};
+int4 goodAlignCount_arr[MAX_NUM_THREADS] = {0};
+int4 goodExtensionCount_arr[MAX_NUM_THREADS] = {0};
+int4 gappedExtensionCount_arr[MAX_NUM_THREADS] = {0};
+int4 traceCodeCount_arr[MAX_NUM_THREADS] = {0};
 //int4 subjectCount_arr[MAX_NUM_THREADS] = {0};
 
 struct alignment *goodAlignBuf_arr[MAX_NUM_THREADS];
@@ -95,9 +95,11 @@ void alignments_dbIdx(
     {
         finalAlignQuery[ii] = (struct alignment *)global_malloc(
                 sizeof(struct alignment) * parameters_numDisplayAlignments * 2);
+
+        numFinalAlignQuery[ii] = 0;
     }
 
-    memset(numFinalAlignQuery, 0, sizeof(int4) * numQuery);
+    //memset(numFinalAlignQuery, 0, sizeof(int4) * numQuery);
 
     int goodAlignOffset[MAX_NUM_THREADS] = {0};
     
@@ -401,9 +403,15 @@ void merge(int numQuery)
     struct timeval start, end;
     gettimeofday(&start, NULL);
 
-    memset(numGoodAlignQuery, 0, sizeof(int4) * numQuery);
+    //memset(numGoodAlignQuery, 0, sizeof(int4) * numQuery);
 
     int tid, ii, jj;
+    for(ii = 0; ii < numQuery; ii++)
+    {
+        numGoodAlignQuery[ii] = 0;
+
+    }
+
     for(tid = 0; tid < parameters_num_threads; tid++)
     {
         for(ii = 0; ii < goodAlignCount_arr[tid]; ii++)
@@ -417,9 +425,10 @@ void merge(int numQuery)
     {
         goodAlignQuery[ii] = (struct alignment *)global_malloc(
                 sizeof(struct alignment) * numGoodAlignQuery[ii]);
+        numGoodAlignQuery[ii] = 0;
     }
 
-    memset(numGoodAlignQuery, 0, sizeof(int4) * numQuery);
+    //memset(numGoodAlignQuery, 0, sizeof(int4) * numQuery);
 
     for(tid = 0; tid < parameters_num_threads; tid++)
     {

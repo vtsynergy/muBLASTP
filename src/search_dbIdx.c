@@ -28,11 +28,10 @@ inline int4 getCodeword_protein_query(unsigned char *codes,
     return codeword;
 }
 
-inline HitPair *hit_sort_radix(HitPair *selectHits1, HitPair *selectHits2, size_t numSecondBins, int numExtHit)
+inline HitPair *hit_sort_radix(HitPair *selectHits1, HitPair *selectHits2, int numSecondBins, int numExtHit)
 {
 
-    int8 bitValue = 1;
-    int4 bitCount = 0;
+    int8 bitCount = 0, bitValue = 1;
 
     while(bitValue < numSecondBins)
     {
@@ -98,8 +97,6 @@ inline HitPair *hit_sort_radix(HitPair *selectHits1, HitPair *selectHits2, size_
         }
     }
 
-    //fprintf(stderr, "bitCount: %d numExtHit: %d\n", bitCount, numExtHit);
-
     return to_bin;
 }
 
@@ -112,10 +109,10 @@ void search_protein2hit_dbIdx_lasthit_radix(
         uint2 *lastHits, 
         HitPair *selectHits1, HitPair *selectHits2,
         struct alignment **goodAlignBuf, 
-        size_t *goodAlignCount, 
+        int4 *goodAlignCount, 
         size_t *goodAlignBufSize,
         struct ungappedExtension **goodExtensionBuf, 
-        size_t *goodExtensionCount, 
+        int4 *goodExtensionCount, 
         size_t *goodExtensionBufSize,
         struct ungappedExtension **ungappedExtension_new, BlastGapDP *dp_mem,
         BlastIntervalTree *tree, BlastIntervalTree *private_tree,
@@ -141,8 +138,6 @@ void search_protein2hit_dbIdx_lasthit_radix(
     int numSeqBlk = proteinLookup_db_b[bid].numSeqBlk;
 
     int maxDiag = longestSeqLen + length;
-    //int maxDiag2 = get_diag_arr_length(longestQueryLength);
-    //int diagMask = maxDiag2 - 1;
 
     subPos_t *subSequencePositions =
         proteinLookup_db_b[bid].subSequencePositions;
@@ -157,16 +152,15 @@ void search_protein2hit_dbIdx_lasthit_radix(
 #endif
     int ii, kk, jj;
 
-    size_t numSecondBins = (((numSeqBlk + 1) * maxDiag)) + 1;
+    int4 numSecondBins = (((numSeqBlk + 1) * maxDiag)) + 1;
 
     int4 numGoodAlign = *goodAlignCount;
     int4 numGoodExtensions = *goodExtensionCount;
 
-    memset(lastHits, 0, sizeof(uint2) * numSecondBins);
-    //for(ii = 0; ii < numSecondBins; ii++)
-    //{
-        //lastHits[ii] = 0xFFFF;
-    //}
+    for(ii = 0; ii < numSecondBins; ii++)
+    {
+        lastHits[ii] = 0xFFFF;
+    }
 
     int numExtHit = 0;
     int4 numNeighbours;
@@ -221,11 +215,11 @@ void search_protein2hit_dbIdx_lasthit_radix(
         queryPosition++;
     }
 
-    //if(numExtHit >= numSecondBins)
-    //{
-        //fprintf(stderr, "%d, %d] ERROR! numExtHit = %d\n", tid, queryNum, numExtHit);
-        //exit(0);
-    //}
+    if(numExtHit > MAX_NUM_UNGAPPED_EXT)
+    {
+        fprintf(stderr, "%d, %d] ERROR! numExtHit = %d\n", tid, queryNum, numExtHit);
+        exit(0);
+    }
 
     HitPair *to_bin = hit_sort_radix(selectHits1, selectHits2, numSecondBins, numExtHit);
 
@@ -263,17 +257,6 @@ void search_protein2hit_dbIdx_lasthit_radix(
                             queryNum, ungappedExtension_new, dp_mem,
                             tree, private_tree, BlastHSP))
                 {
-                    //int4 encodedLength = alignment->encodedLength;
-                    //if(*subjectCount + encodedLength > *subjectBufSize)
-                    //{
-                        //*subjectBufSize *= 2;
-                        //*subjectBuf = (char *)realloc(*subjectBuf, sizeof(char) * (*subjectBufSize));
-                    //}
-                    //memcpy(*subjectBuf + (*subjectCount), alignment->subject - 1, 
-                            //sizeof(char) * encodedLength);
-                    //alignment->subject = *subjectBuf + (*subjectCount) + 1;
-                    //*subjectCount += encodedLength;
-
                     numGoodAlign++;
                     numGoodExtensions += numUngappedExtSeq;
                     numTriggerExt += numUngappedExtSeq;
@@ -314,7 +297,7 @@ void search_protein2hit_dbIdx_lasthit_radix(
         if(numGoodExtensions + numUngappedExtSeq >= *goodExtensionBufSize)
         {
             *goodExtensionBufSize *= 2;
-            //fprintf(stderr, "goodExtensionBuf resize to %d\n", *goodAlignBufSize);
+            fprintf(stderr, "goodExtensionBuf resize to %d\n", *goodAlignBufSize);
             *goodExtensionBuf = (struct ungappedExtension *)global_realloc(
                     *goodExtensionBuf, 
                     sizeof(struct ungappedExtension) * (*goodExtensionBufSize));
@@ -359,7 +342,7 @@ void search_protein2hit_dbIdx_lasthit_radix(
                 if(numGoodAlign >= *goodAlignBufSize)
                 {
                     *goodAlignBufSize *= 2;
-                    //fprintf(stderr, "goodAlignBuf resize to %d\n", *goodAlignBufSize);
+                    fprintf(stderr, "goodAlignBuf resize to %d\n", *goodAlignBufSize);
                     *goodAlignBuf = (struct alignment *)global_realloc(
                             *goodAlignBuf, 
                             sizeof(struct alignment) * (*goodAlignBufSize));
@@ -370,7 +353,6 @@ void search_protein2hit_dbIdx_lasthit_radix(
                 alignment->descriptionLocation = descriptionStart;
                 alignment->descriptionLength = descriptionLength;
                 alignment->subject = subject;
-                alignment->description = NULL;
                 alignment->subjectLength = subjectLength;
                 alignment->encodedLength = encodedLength;
                 //alignment->joinChecked = 0;
@@ -403,18 +385,6 @@ void search_protein2hit_dbIdx_lasthit_radix(
                     queryNum, ungappedExtension_new, dp_mem,
                     tree, private_tree, BlastHSP))
         {
-            //int4 encodedLength = alignment->encodedLength;
-            //if(*subjectCount + encodedLength > *subjectBufSize)
-            //{
-                //*subjectBufSize *= 2;
-                //*subjectBuf = (char *)realloc(*subjectBuf, sizeof(char) * (*subjectBufSize));
-            //}
-            //memcpy(*subjectBuf + (*subjectCount), alignment->subject - 1, 
-                    //sizeof(char) * encodedLength);
-            //alignment->subject = *subjectBuf + (*subjectCount) + 1;
-            //*subjectCount += encodedLength;
-
-            //alignment->subject = NULL;
             numGoodAlign++;
             numGoodExtensions += numUngappedExtSeq;
 

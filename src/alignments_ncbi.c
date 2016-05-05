@@ -469,7 +469,11 @@ void alignments_getTracebacks_ncbi(
         num_goodAlignment++;
         BlastCompo_SequenceData seqData;
         seqData.buffer = seq_data; 
-        memset(seqData.buffer, 0, sizeof(unsigned char) * alignment->subjectLength + 2);
+        for(ii = 0; ii < (alignment->subjectLength + 2); ii++)
+        {
+            seqData.buffer[ii] = 0;
+        }
+        //memset(seqData.buffer, 0, sizeof(unsigned char) * alignment->subjectLength + 2);
         seqData.length = alignment->subjectLength;
         seqData.data = seqData.buffer + 1;
 
@@ -685,7 +689,8 @@ void alignments_getTracebacks_ncbi(
         int bestScore = 0;
         double best_eValue = 0;
         int hspcnt_new = s_HitlistEvaluateAndPurge(
-                &bestScore, &best_eValue, hsp_array, hspcnt, PSSMatrix.length, alignment->subjectLength);
+                &bestScore, &best_eValue, hsp_array, 
+                hspcnt, PSSMatrix.length, alignment->subjectLength);
 
         //for(ii = hspcnt_new; ii < hspcnt; ii++)
         //{

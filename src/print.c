@@ -595,15 +595,6 @@ void print_gappedAlignmentsBrief_multi(int queryNum) {
         currentAlignment = finalAlignment->alignment;
         currentExtension = currentAlignment->gappedExtensions;
 
-        //finalAlignment->description = 
-//#ifdef DESCIPT_IN_MEM
-            //descriptions_getDescription_mem(currentAlignment->descriptionLocation,
-                    //currentAlignment->descriptionLength);
-//#else
-            //descriptions_getDescription(currentAlignment->descriptionLocation,
-                    //currentAlignment->descriptionLength);
-//#endif
-
         // Get description of subject
         if (parameters_getDescriptions) {
 #ifdef CAFEMODE
