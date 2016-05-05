@@ -218,7 +218,7 @@ void readdb_open_mem(char *filename) {
             readdb_numberOfClusters
             );
 
-    fprintf(stderr, "loading database(%d/%d)...", readdb_volume, readdb_numberOfVolumes);
+    fprintf(stderr, "loading database(%d/%d)...", readdb_volume + 1, readdb_numberOfVolumes);
 
     readdb_sequenceData = (struct sequenceData *)global_malloc(
             sizeof(struct sequenceData) * readdb_numberOfClusters);
@@ -362,7 +362,7 @@ int readdb_nextVolume_mem() {
     if (readdb_volume >= readdb_numberOfVolumes)
         return 0;
 
-    fprintf(stderr, "loading database(%d/%d)...", readdb_volume, readdb_numberOfVolumes);
+    fprintf(stderr, "loading database(%d/%d)...", readdb_volume + 1, readdb_numberOfVolumes);
 
     // Close current volume
     readFile_close_mem(readdb_readSequences_mem);

@@ -109,10 +109,10 @@ void alignments_free_multi2(int queryNum) {
     // For each final alignment, free the description
     memSingleBlock_resetCurrent(alignments_finalAlignments_multi[queryNum]);
 
-    while ((finalAlignment =
-                memSingleBlock_getCurrent(alignments_finalAlignments_multi[queryNum])) != NULL) {
-        free(finalAlignment->description);
-    }
+    //while ((finalAlignment =
+                //memSingleBlock_getCurrent(alignments_finalAlignments_multi[queryNum])) != NULL) {
+        //free(finalAlignment->description);
+    //}
 
     // Free final alignments
     memSingleBlock_free(alignments_finalAlignments_multi[queryNum]);

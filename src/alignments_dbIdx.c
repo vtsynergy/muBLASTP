@@ -2,7 +2,9 @@
 #include <sys/time.h>
 
 struct alignment *goodAlignQuery[BATCH_SIZE];
+struct alignment *finalAlignQuery[BATCH_SIZE];
 int4 numGoodAlignQuery[BATCH_SIZE];
+int4 numFinalAlignQuery[BATCH_SIZE];
 
 size_t goodAlignCount_arr[MAX_NUM_THREADS] = {0};
 size_t goodExtensionCount_arr[MAX_NUM_THREADS] = {0};
@@ -20,7 +22,6 @@ size_t goodAlignBufSize_arr[MAX_NUM_THREADS],
        goodExtensionBufSize_arr[MAX_NUM_THREADS],
        gapExtensionBufSize_arr[MAX_NUM_THREADS],
        traceCodeBufSize_arr[MAX_NUM_THREADS];
-       //subjectBufSize_arr[MAX_NUM_THREADS];
 
 void prelim_search_dbIdx(
         struct PSSMatrix *PSSMatrix_arr,
@@ -70,15 +71,12 @@ void alignments_dbIdx(
         goodAlignBufSize_arr[ii] = MAX_ALIGNMENTS_PER_QUERY * numQueriesPerThread;
         goodExtensionBufSize_arr[ii] = MAX_EXTENSIONS_PER_QUERY * numQueriesPerThread;
         gapExtensionBufSize_arr[ii] = MAX_NUM_GAPEXT_PER_QUERY * numQueriesPerThread;
-        traceCodeBufSize_arr[ii] = 200 * MAX_NUM_GAPEXT_PER_QUERY * numQueriesPerThread;
-        //subjectBufSize_arr[ii] = 200 * MAX_ALIGNMENTS_PER_QUERY * numQueriesPerThread; 
+        traceCodeBufSize_arr[ii] = 1000 * parameters_numDisplayAlignments * numQueriesPerThread;
 
         goodAlignBuf_arr[ii] = 
             (struct alignment *)malloc(
                     sizeof(struct alignment) * goodAlignBufSize_arr[ii]);
 
-        //subjectBuf_arr[ii] = 
-        //(char *)malloc(sizeof(char) * goodAlignBufSize_arr[ii]);
 
         gappedExtension_arr[ii] = (struct gappedExtension *)malloc(
                 sizeof(struct gappedExtension) * 
@@ -93,31 +91,30 @@ void alignments_dbIdx(
             (unsigned char *)malloc(traceCodeBufSize_arr[ii]);
     }
 
+    for(ii = 0; ii < numQuery; ii++)
+    {
+        finalAlignQuery[ii] = (struct alignment *)global_malloc(
+                sizeof(struct alignment) * parameters_numDisplayAlignments * 2);
+    }
+
+    memset(numFinalAlignQuery, 0, sizeof(int4) * numQuery);
+
     int goodAlignOffset[MAX_NUM_THREADS] = {0};
     
     while(1)
     {
         prelim_search_dbIdx(PSSMatrix_arr, scoreMatrix, numQuery);
 
-        struct timeval start, end;
-        gettimeofday(&start, NULL);
+        merge(numQuery);
 
-        int tid;
-        for(tid = 0; tid < parameters_num_threads; tid++)
-        {
-            for(ii = goodAlignOffset[tid]; ii < goodAlignCount_arr[tid]; ii++)
-            {
-                struct alignment *alignment = &goodAlignBuf_arr[tid][ii];
-                loadSubject(alignment);
-                alignment->description = descriptions_getDescription_mem(alignment->descriptionLocation, alignment->descriptionLength);
-            }
+        //struct timeval start, end;
+        //gettimeofday(&start, NULL);
 
-            goodAlignOffset[tid] = goodAlignCount_arr[tid];
-        }
+        
 
-        gettimeofday(&end, NULL);
-        long post_time = ((end.tv_sec * 1000000 + end.tv_usec) -
-                (start.tv_sec * 1000000 + start.tv_usec));
+        //gettimeofday(&end, NULL);
+        //long post_time = ((end.tv_sec * 1000000 + end.tv_usec) -
+        //(start.tv_sec * 1000000 + start.tv_usec));
 
         //fprintf(stderr, "postprocess time: %f\n", (float)post_time * 1e-6);
 
@@ -133,7 +130,6 @@ void alignments_dbIdx(
 
     }
 
-    merge(numQuery);
 
 #if 1
     traceback(PSSMatrix_arr, scoreMatrix, query_arr, queryDescription_arr, numQuery);
@@ -151,10 +147,10 @@ void alignments_dbIdx(
         struct finalAlignment *currentAlignment = 
             alignments_finalAlignments_multi[ii]->block;
 
-        int aa;
-        for(aa = 0; 
-                aa < alignments_finalAlignments_multi[ii]->numEntries; 
-                aa++, currentAlignment++)
+        int jj;
+        for(jj = 0; 
+                jj < alignments_finalAlignments_multi[ii]->numEntries; 
+                jj++, currentAlignment++)
         {
 
             int thread_id = currentAlignment->thread_id;
@@ -189,18 +185,29 @@ void alignments_dbIdx(
         print_gappedAlignmentsFull_multi(query_arr[ii], PSSMatrix_arr[ii], ii);
 
         alignments_free_multi2(ii);
+
+        for(jj = 0; jj < numFinalAlignQuery[ii]; jj++)
+        {
+            struct alignment *alignment = &finalAlignQuery[ii][jj];
+            free(alignment->subject - 1);
+            free(alignment->description);
+            free(alignment->ungappedExtensions);
+        }
+
+        //free(goodAlignQuery[ii]);
+        free(finalAlignQuery[ii]);
     }
 
-    int tid;
-    for(tid = 0; tid < parameters_num_threads; tid++)
-    {
-        for(ii = 0; ii < goodAlignCount_arr[tid]; ii++)
-        {
-            struct alignment *alignment = &goodAlignBuf_arr[tid][ii];
-            free(alignment->subject - 1);
-            //free(alignment->description);
-        }
-    }
+    //int tid;
+    //for(tid = 0; tid < parameters_num_threads; tid++)
+    //{
+        //for(ii = 0; ii < goodAlignCount_arr[tid]; ii++)
+        //{
+            //struct alignment *alignment = &goodAlignBuf_arr[tid][ii];
+            //free(alignment->subject - 1);
+            ////free(alignment->description);
+        //}
+    //}
 
     gettimeofday(&end, NULL);
 
@@ -229,7 +236,6 @@ void alignments_dbIdx(
         //free(subjectBuf_arr[ii]);
     }
 
-    free(goodAlignQuery[0]);
 
 }
 
@@ -397,25 +403,20 @@ void merge(int numQuery)
 
     memset(numGoodAlignQuery, 0, sizeof(int4) * numQuery);
 
-    int8 totalNumGoodAlign = 0;
-
-    int tid, ii;
+    int tid, ii, jj;
     for(tid = 0; tid < parameters_num_threads; tid++)
     {
         for(ii = 0; ii < goodAlignCount_arr[tid]; ii++)
         {
             struct alignment alignment = goodAlignBuf_arr[tid][ii];
             numGoodAlignQuery[alignment.queryCount]++;
-            totalNumGoodAlign++;
         }
     }
 
-    goodAlignQuery[0] = (struct alignment *)malloc(
-            sizeof(struct alignment) * totalNumGoodAlign);
-
-    for(ii = 1; ii < numQuery; ii++)
+    for(ii = 0; ii < numQuery; ii++)
     {
-        goodAlignQuery[ii] = goodAlignQuery[ii - 1] + numGoodAlignQuery[ii - 1];
+        goodAlignQuery[ii] = (struct alignment *)global_malloc(
+                sizeof(struct alignment) * numGoodAlignQuery[ii]);
     }
 
     memset(numGoodAlignQuery, 0, sizeof(int4) * numQuery);
@@ -425,11 +426,76 @@ void merge(int numQuery)
         for(ii = 0; ii < goodAlignCount_arr[tid]; ii++)
         {
             struct alignment alignment = goodAlignBuf_arr[tid][ii];
-            alignment.ungappedExtensions = goodExtensionBuf_arr[tid] + alignment.ungappedExtensionOffset;
+            alignment.ungappedExtensions = 
+                goodExtensionBuf_arr[tid] + alignment.ungappedExtensionOffset;
             goodAlignQuery[alignment.queryCount]
                 [numGoodAlignQuery[alignment.queryCount]] = alignment;
             numGoodAlignQuery[alignment.queryCount]++;
         }
+
+    }
+
+    for(ii = 0; ii < numQuery; ii++)
+    {
+        alignments_sortGoodAlignments_multi(goodAlignQuery[ii], numGoodAlignQuery[ii]);
+
+        for(jj = 0; jj < numGoodAlignQuery[ii]; jj++)
+        {
+            if(jj < parameters_numDisplayAlignments)
+            {
+                finalAlignQuery[ii][numFinalAlignQuery[ii]] = goodAlignQuery[ii][jj];
+                numFinalAlignQuery[ii]++;
+            }
+        }
+
+        ASSERT(numFinalAlignQuery[ii] <= 2 * parameters_numDisplayAlignments);
+
+        alignments_sortGoodAlignments_multi(finalAlignQuery[ii], numFinalAlignQuery[ii]);
+
+        for(jj = 0; jj < numFinalAlignQuery[ii]; jj++)
+        {
+            if(jj < parameters_numDisplayAlignments)
+            {
+                struct alignment *alignment = &finalAlignQuery[ii][jj];
+                if(alignment->inMemorySubject == 0)
+                {
+                    loadSubject(alignment);
+                    alignment->description = 
+                        descriptions_getDescription_mem(alignment->descriptionLocation, 
+                                alignment->descriptionLength);
+                    struct ungappedExtension *ungappedExtensions = 
+                        (struct ungappedExtension*)global_malloc(sizeof(struct ungappedExtension) * 
+                                alignment->numExtensions);
+                    memcpy(ungappedExtensions, alignment->ungappedExtensions, 
+                            sizeof(struct ungappedExtension) * alignment->numExtensions);
+                    alignment->ungappedExtensions = ungappedExtensions; 
+
+                    alignment->inMemorySubject = 1;
+                }
+            }
+            else
+            {
+                struct alignment *alignment = &finalAlignQuery[ii][jj];
+                if(alignment->inMemorySubject != 0)
+                {
+                    free(alignment->subject - 1);
+                    free(alignment->description);
+                    free(alignment->ungappedExtensions);
+                }
+            }
+        }
+
+        if(numFinalAlignQuery[ii] > parameters_numDisplayAlignments)
+            numFinalAlignQuery[ii] = parameters_numDisplayAlignments;
+
+        free(goodAlignQuery[ii]);
+    }
+
+    for(tid = 0; tid < parameters_num_threads; tid++)
+    {
+
+        goodAlignCount_arr[tid] = 0;
+        goodExtensionCount_arr[tid] = 0;
     }
 
     gettimeofday(&end, NULL);
@@ -516,15 +582,18 @@ void traceback(
 #pragma omp parallel num_threads(parameters_num_threads) default(shared) private(ii, jj)
     {
 
+        struct timeval start_t, end_t;
+        gettimeofday(&start_t, NULL);
+
         int4 thread_id = omp_get_thread_num();
 
         int qid;
-#pragma omp for schedule(dynamic)
+#pragma omp for schedule(dynamic) nowait
         for (qid = 0; qid < numQuery; qid++) {
             alignments_getTracebacks_ncbi(
                     thread_id,
-                    goodAlignQuery[qid],
-                    numGoodAlignQuery[qid],     
+                    finalAlignQuery[qid],
+                    numFinalAlignQuery[qid],     
                     PSSMatrix_arr[qid], 
                     scoreMatrix, &query_composition_arr[qid], 
                     qid, NRrecord_arr[thread_id], 
@@ -548,6 +617,16 @@ void traceback(
                     &traceCodeCount_arr[thread_id],
                     &traceCodeBufSize_arr[thread_id]);
         }
+
+        gettimeofday(&end_t, NULL);
+        long traceback_time_t = ((end_t.tv_sec * 1000000 + end_t.tv_usec) -
+                (start_t.tv_sec * 1000000 + start_t.tv_usec));
+
+
+        //fprintf(stderr, "tid: %d traceback time: %f\n", 
+                //thread_id,
+                //(float)traceback_time_t * 1e-6);
+
     }
 
     gettimeofday(&end, NULL);

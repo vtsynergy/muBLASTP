@@ -7,6 +7,7 @@ struct initialWord_neighborLookup *neighborLookup;
 uint4 proteinLookup_numBlocks = 0;
 uint4 proteinLookup_numWords = 0;
 uint4 maxNumSeqBlk = 0;
+uint4 maxBinSize = 0;
 
 uint8 total_allocHits = 0;
 uint8 numHits_blk = 0;
@@ -18,10 +19,8 @@ FILE *dbLookupFile;
 
 void write_dbIdxBlock(FILE *dbLookupFile, int blockNum);
 void write_dbLookupAux(char *write_dbLookupFilename);
-//uint32_t **subSequencePositions_t;
-//uint4 *allocSubPositions;
 
-inline int4 getCodeword(unsigned char *codes, int4 wordLength) {
+int4 getCodeword(unsigned char *codes, int4 wordLength) {
     int4 codeword;
     uint4 codeCount;
 
@@ -36,6 +35,116 @@ inline int4 getCodeword(unsigned char *codes, int4 wordLength) {
 
     return codeword;
 }
+
+// Recursively find neighbours of the current codeword
+void wordLookupSM_findNeighbours(char *seqCodes, struct scoreMatrix scoreMatrix,
+                                 int4 queryPosition, int4 *numNeighbours,
+                                 struct neighbour *neighbours) {
+  unsigned char *codes;
+  unsigned char oldValue, tempValue;
+  int4 position, oldScore, newScore, newCodeword, currentNeighbourCount;
+  int4 currentScore, codeword;
+
+  // For each neighbour in the growing list
+  currentNeighbourCount = 0;
+  while (currentNeighbourCount < *numNeighbours) {
+    codeword = neighbours[currentNeighbourCount].codeword;
+    currentScore = neighbours[currentNeighbourCount].score;
+
+    // Start at neighbour's current position
+    position = neighbours[currentNeighbourCount].position;
+
+    // Convert codeword to codes
+    codes = wordLookupDFA_getCodes(codeword, parameters_wordSize);
+
+    // Move through each position not yet altered and try changing the code at
+    // that position
+    while (position < wordLookupDFA_wordLength) {
+      // Record old code at this position, and old score associated with it
+      oldValue = codes[position];
+
+      // oldScore = PSSMatrix.matrix[queryPosition + position][oldValue];
+      oldScore =
+          scoreMatrix.matrix[seqCodes[queryPosition + position]][oldValue];
+
+      // For each code
+      tempValue = 0;
+      while (tempValue < wordLookupDFA_numCodes) {
+        // If not the existing value at that position
+        if (tempValue != oldValue) {
+          // Change the code
+          codes[position] = tempValue;
+
+          // Test if word is high scoring
+          newScore =
+              scoreMatrix.matrix[seqCodes[queryPosition + position]][tempValue];
+
+          if (currentScore - oldScore + newScore >= parameters_T) {
+            // If so get the codeword
+            newCodeword =
+                wordLookupDFA_getCodeword(codes, parameters_wordSize);
+
+            neighbours[*numNeighbours].codeword = newCodeword;
+            neighbours[*numNeighbours].score =
+                currentScore - oldScore + newScore;
+            neighbours[*numNeighbours].position = position + 1;
+            (*numNeighbours)++;
+          }
+        }
+        tempValue++;
+      }
+
+      // Change code back to old value before moving to next position
+      codes[position] = oldValue;
+
+      position++;
+    }
+
+    free(codes);
+
+    currentNeighbourCount++;
+  }
+}
+
+// Get all the neighbours for given query window
+void wordLookupSM_getNeighbours(char *codes, struct scoreMatrix scoreMatrix,
+                                int4 queryPosition, int4 *numNeighbours,
+                                struct neighbour *neighbours) {
+  int4 codeword, score = 0, count = queryPosition, containsWild = 0;
+
+  // Get score for aligning the best match codes to the query window
+  while (count < queryPosition + parameters_wordSize) {
+    if (codes[count] >= encoding_numRegularLetters)
+      containsWild = 1;
+
+    // score += PSSMatrix.matrix[count][PSSMatrix.bestMatchCodes[count]];
+    score += scoreMatrix.matrix[codes[count]][codes[count]];
+    // printf("%d %c %d\n", count, encoding_getLetter(codes[count]),
+    // scoreMatrix.matrix[codes[count]][codes[count]]);
+    count++;
+  }
+
+  // printf("score: %d\n", score);
+
+  // If a word containing wildcards only consider nearest neighbour if high
+  // scoring
+  if (!containsWild || score >= parameters_T) {
+    // Convert query word codes to codeword
+    codeword = getCodeword(codes + queryPosition,
+                                         parameters_wordSize);
+
+    // Automatically add the query word itself to list of neighbours
+    neighbours[*numNeighbours].codeword = codeword;
+    neighbours[*numNeighbours].score = score;
+    neighbours[*numNeighbours].position = 0;
+    (*numNeighbours)++;
+
+    // Recursively find remaining neighbours
+    wordLookupSM_findNeighbours(codes, scoreMatrix, queryPosition,
+                                numNeighbours, neighbours);
+  }
+}
+
 
 void proteinLookup_db_initial(int4 numCodes, int wordLength) {
     struct initialWord_protein_db *initialLookup, *initialWord;
@@ -234,6 +343,7 @@ void proteinLookup_db_build(int4 numCodes, int wordLength,
         char *write_dbLookupFilename) 
 {
 
+
     //FILE *dbLookupFile;
 
     char *dbLookupFileName;
@@ -264,6 +374,7 @@ void proteinLookup_db_build(int4 numCodes, int wordLength,
             proteinLookup_numWords);
 
     uint4 seqStartBlk = 0;
+    maxBinSize = 0;
 
     for (jj = 0; jj < proteinLookup_numBlocks; jj++) {
 
@@ -323,6 +434,8 @@ void proteinLookup_db_build(int4 numCodes, int wordLength,
                     proteinLookup_db[ii].numSubPositions, sizeof(subPos_t), comparePos_subjectOffset);
         }
         proteinLookup_db_b[jj].subPositionOffset[proteinLookup_numWords] = numSubPositions;
+
+        maxBinSize = MAX(proteinLookup_db_b[jj].numSeqBlk * proteinLookup_db_b[jj].dbIdxblk_longestSeq, maxBinSize);
 
         maxNumSeqBlk = MAX(proteinLookup_db_b[jj].numSeqBlk, maxNumSeqBlk);
 
@@ -505,19 +618,12 @@ void write_dbLookupAux(char *write_dbLookupFilename) {
 
 #if 1
     fprintf(stderr,
-            "numBlocks:%d numWords:%d "
-            "wordLength:%d numCodes:%d "
-            "dbIdxBlockSize:%d(KB)\n"
-            "total_numPositions:%ld "
-            "maxNumSeqPerBlk:%d longestSeqLength:%d\n",
-            proteinLookup_numBlocks, 
-            proteinLookup_numWords, 
-            wordLookupDFA_wordLength,
-            wordLookupDFA_numCodes, 
+            "dbIdxBlockSize:%d(KB) "
+            "maxNumSeqPerBlk:%d longestSeqLength:%d maxBinSize: %d\n",
             dbIdx_block_size / 1024, 
-            numHits_db,
             maxNumSeqBlk, 
-            readdb_longestSequenceLength);
+            readdb_longestSequenceLength,
+            maxBinSize);
 #endif
 
     free(write_dbLookupAuxFilename);
@@ -582,7 +688,7 @@ void read_dbLookupAux(char *read_dbLookupFilename) {
 
 void read_dbLookup(char *read_dbLookupFilename) {
 
-    fprintf(stderr, "loading index(%d/%d)...", readdb_volume, readdb_numberOfVolumes);
+    fprintf(stderr, "loading index(%d/%d)...", readdb_volume + 1, readdb_numberOfVolumes);
     struct timeval start, end;
     gettimeofday(&start, NULL);
 

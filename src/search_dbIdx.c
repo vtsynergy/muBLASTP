@@ -314,7 +314,7 @@ void search_protein2hit_dbIdx_lasthit_radix(
         if(numGoodExtensions + numUngappedExtSeq >= *goodExtensionBufSize)
         {
             *goodExtensionBufSize *= 2;
-            fprintf(stderr, "goodExtensionBuf resize to %d\n", *goodAlignBufSize);
+            //fprintf(stderr, "goodExtensionBuf resize to %d\n", *goodAlignBufSize);
             *goodExtensionBuf = (struct ungappedExtension *)global_realloc(
                     *goodExtensionBuf, 
                     sizeof(struct ungappedExtension) * (*goodExtensionBufSize));
@@ -359,7 +359,7 @@ void search_protein2hit_dbIdx_lasthit_radix(
                 if(numGoodAlign >= *goodAlignBufSize)
                 {
                     *goodAlignBufSize *= 2;
-                    fprintf(stderr, "goodAlignBuf resize to %d\n", *goodAlignBufSize);
+                    //fprintf(stderr, "goodAlignBuf resize to %d\n", *goodAlignBufSize);
                     *goodAlignBuf = (struct alignment *)global_realloc(
                             *goodAlignBuf, 
                             sizeof(struct alignment) * (*goodAlignBufSize));
@@ -370,10 +370,11 @@ void search_protein2hit_dbIdx_lasthit_radix(
                 alignment->descriptionLocation = descriptionStart;
                 alignment->descriptionLength = descriptionLength;
                 alignment->subject = subject;
+                alignment->description = NULL;
                 alignment->subjectLength = subjectLength;
                 alignment->encodedLength = encodedLength;
                 //alignment->joinChecked = 0;
-                //alignment->inMemorySubject = 0;
+                alignment->inMemorySubject = 0;
                 //alignment->numUnpackRegions = 0;
                 //alignment->cluster = 0;
                 alignment->sequenceCount = sequenceCount;
@@ -413,6 +414,7 @@ void search_protein2hit_dbIdx_lasthit_radix(
             //alignment->subject = *subjectBuf + (*subjectCount) + 1;
             //*subjectCount += encodedLength;
 
+            //alignment->subject = NULL;
             numGoodAlign++;
             numGoodExtensions += numUngappedExtSeq;
 

@@ -1,4 +1,5 @@
 #include "blast.h"
+#include <sys/time.h>
 
 #define SCALING_FACTOR 32
 #define EVALUE_STRETCH 5
@@ -416,7 +417,9 @@ void alignments_getTracebacks_ncbi(
     struct alignment *alignment;
     BlastScoringParameters score_params;
 
-    alignments_sortGoodAlignments_multi(goodAlignQuery, numGoodAlignQuery);
+    struct timeval start, end;
+
+    //alignments_sortGoodAlignments_multi(goodAlignQuery, numGoodAlignQuery);
 
     score_params.gap_open = 352;
     score_params.gap_extend = 32;
@@ -460,7 +463,7 @@ void alignments_getTracebacks_ncbi(
         if(num_goodAlignment >= parameters_numDisplayAlignments 
                 && alignment->best_eValue > EVALUE_STRETCH * ecutoff)
         {
-            continue;
+            break;
         }
 
         num_goodAlignment++;
@@ -573,16 +576,28 @@ void alignments_getTracebacks_ncbi(
                     ungappedExtension->status = ungappedExtension_GAPPED;
 
                     struct trace trace;
-                    trace.length = gap_align->fwd_prelim_tback->total_num_ops + gap_align->rev_prelim_tback->total_num_ops;
+                    trace.length = 
+                        gap_align->fwd_prelim_tback->total_num_ops + 
+                        gap_align->rev_prelim_tback->total_num_ops;
+
                     trace.queryStart = gap_align->query_start;
                     trace.subjectStart = gap_align->subject_start;
                     trace.traceCodeOff = *traceCodeCount;
 
                     if(*traceCodeCount + trace.length >= *traceCodeBufSize)
                     {
+
+                        gettimeofday(&start, NULL);
                         *traceCodeBufSize *= 2;
-                        fprintf(stderr, "traceCodeBuf resized to %d\n", *traceCodeBufSize);
                         *traceCodeBuf = (unsigned char *)global_realloc(*traceCodeBuf, *traceCodeBufSize);
+                        gettimeofday(&end, NULL);
+
+                        long malloc_time = ((end.tv_sec * 1000000 + end.tv_usec) -
+                                (start.tv_sec * 1000000 + start.tv_usec));
+
+                        //fprintf(stderr, "traceCodeBuf resize to %d (%ld ms)\n", 
+                        //*traceCodeBufSize,
+                        //malloc_time);
                     }
 
                     unsigned char* traceCodes = *traceCodeBuf + *traceCodeCount;
@@ -669,7 +684,8 @@ void alignments_getTracebacks_ncbi(
 
         int bestScore = 0;
         double best_eValue = 0;
-        int hspcnt_new = s_HitlistEvaluateAndPurge(&bestScore, &best_eValue, hsp_array, hspcnt, PSSMatrix.length, alignment->subjectLength);
+        int hspcnt_new = s_HitlistEvaluateAndPurge(
+                &bestScore, &best_eValue, hsp_array, hspcnt, PSSMatrix.length, alignment->subjectLength);
 
         //for(ii = hspcnt_new; ii < hspcnt; ii++)
         //{
@@ -685,10 +701,22 @@ void alignments_getTracebacks_ncbi(
 
                 if(gappedExtensionCount_t + 1 >= *gapExtensionBufSize)
                 {
+
+                    gettimeofday(&start, NULL);
                     *gapExtensionBufSize *= 2;
-                    fprintf(stderr, "gappedExtensionBuf resize to %d\n", *gapExtensionBufSize);
+                    //fprintf(stderr, "gappedExtensionBuf resized to %d\n", *gapExtensionBufSize);
                     *gappedExtensionBuf = (struct gappedExtension *)
-                        global_realloc(*gappedExtensionBuf, sizeof(struct gappedExtension) * (*gapExtensionBufSize));
+                        global_realloc(*gappedExtensionBuf, 
+                                sizeof(struct gappedExtension) * (*gapExtensionBufSize));
+
+                    gettimeofday(&end, NULL);
+
+                    long malloc_time = ((end.tv_sec * 1000000 + end.tv_usec) -
+                            (start.tv_sec * 1000000 + start.tv_usec));
+
+                    //fprintf(stderr, "traceCodeBuf resize to %d (%ld ms)\n", 
+                    //*traceCodeBufSize,
+                    //malloc_time);
                 }
 
                 struct gappedExtension *gappedExtension = *gappedExtensionBuf + gappedExtensionCount_t;
