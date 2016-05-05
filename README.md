@@ -21,11 +21,11 @@
 ```
 * 4(a). Run muBLASTP with a single thread 
 ```
-    $ ./mublastp -i query/unisprot_sprot/query_100/query_0 -d database/uniprot_sport_sort.fasta
+    $ ./mublastp -i query/unisprot_sprot/query_100/query_1 -d database/uniprot_sport_sort.fasta
 ```
 * 4(b). Run muBLASTP with multiple threads (e.g., 12 threads) 
 ```
-    $ ./mublastp -i query/unisprot_sprot/query_100/query_batch_1000 -d database/uniprot_sport_sort.fasta -t 12
+    $ ./mublastp -i query/unisprot_sprot/query_100/query_batch_100 -d database/uniprot_sport_sort.fasta -t 12
 ```
 ###License
 Please refer to the included LICENSE file.
