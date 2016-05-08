@@ -524,7 +524,7 @@ void alignments_getTracebacks_ncbi(
 
                 if(hsp_index == 0 || (shouldTestIdentical != oldNearIdenticalStatus))
                 {
-                    if(!shouldTestIdentical)
+                    //if(!shouldTestIdentical)
                     {
                         s_DoSegSequenceData(&seqData, eBlastTypeBlastp,
                                 &subject_maybe_biased);
@@ -566,7 +566,7 @@ void alignments_getTracebacks_ncbi(
                         seqData.data, 
                         gap_align, &score_params, 
                         ungappedExtension->gap_start.queryOffset, 
-                        ungappedExtension->gap_start.subjectOffset, 
+                        ungappedExtension->gap_start.subjectOffset + 1, 
                         PSSMatrix.length, alignment->subjectLength, NULL, matrix);
 
                 int cutoff_s = 1;

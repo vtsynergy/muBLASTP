@@ -47,8 +47,8 @@ void loadSubject(struct alignment *alignment)
     unsigned char *subject = 
         (unsigned char *)global_malloc(sizeof(unsigned char) *
                                              alignment->encodedLength);
-    subject++;
-    memcpy(subject - 1, alignment->subject - 1, alignment->encodedLength);
+    //subject++;
+    memcpy(subject, alignment->subject - 1, alignment->encodedLength);
     alignment->subject = subject;
 }
 
@@ -191,7 +191,7 @@ void alignments_dbIdx(
         for(jj = 0; jj < numFinalAlignQuery[ii]; jj++)
         {
             struct alignment *alignment = &finalAlignQuery[ii][jj];
-            free(alignment->subject - 1);
+            free(alignment->subject);
             free(alignment->description);
             free(alignment->ungappedExtensions);
         }
@@ -487,7 +487,7 @@ void merge(int numQuery)
                 struct alignment *alignment = &finalAlignQuery[ii][jj];
                 if(alignment->inMemorySubject != 0)
                 {
-                    free(alignment->subject - 1);
+                    free(alignment->subject);
                     free(alignment->description);
                     free(alignment->ungappedExtensions);
                 }
