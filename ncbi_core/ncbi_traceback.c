@@ -54,6 +54,11 @@
 
 #define FENCE_SENTRY 201
 
+
+Int4 edit_script_num_rows_t[MAX_NUM_THREADS];
+Uint1** edit_script_t[MAX_NUM_THREADS];
+Int4 *edit_start_offset_t[MAX_NUM_THREADS];
+
 /** Values for the editing script operations in traceback */
 enum {
     SCRIPT_SUB           = eGapAlignSub,     /**< Substitution */
@@ -349,7 +354,7 @@ GapPrelimEditBlockAdd(GapPrelimEditBlock *edit_block,
 
 
     Int4
-ALIGN_EX(const Uint1* A, const Uint1* B, Int4 M, Int4 N, Int4* a_offset, 
+ALIGN_EX(int tid, const Uint1* A, const Uint1* B, Int4 M, Int4 N, Int4* a_offset, 
         Int4* b_offset, GapPrelimEditBlock *edit_block, 
         BlastGapAlignStruct* gap_align, 
         const BlastScoringParameters* score_params, Int4 query_offset, 
@@ -385,9 +390,9 @@ ALIGN_EX(const Uint1* A, const Uint1* B, Int4 M, Int4 N, Int4* a_offset,
 
     GapStateArrayStruct* state_struct;
     Uint1* edit_script_row;
-    Uint1** edit_script;
-    Int4 *edit_start_offset;
-    Int4 edit_script_num_rows;
+    //Uint1** edit_script_t[tid];
+    //Int4 *edit_start_offset_t[tid];
+    //Int4 edit_script_num_rows_t[tid];
     Int4 orig_b_index;
     Uint1 script, next_script, script_row, script_col;
     Int4 num_extra_cells;
@@ -410,7 +415,7 @@ ALIGN_EX(const Uint1* A, const Uint1* B, Int4 M, Int4 N, Int4* a_offset,
     if(N <= 0 || M <= 0) 
         return 0;
 
-    /* Initialize traceback information. edit_script[] is
+    /* Initialize traceback information. edit_script_t[tid][] is
        a 2-D array which is filled in row by row as the 
        dynamic programming takes place */
 
@@ -418,15 +423,15 @@ ALIGN_EX(const Uint1* A, const Uint1* B, Int4 M, Int4 N, Int4* a_offset,
 
     /* Conceptually, traceback requires a byte array of size
        MxN. To save on memory, each row of the array is allocated
-       separately. edit_script[i] points to the storage reserved
-       for row i, and edit_start_offset[i] gives the offset into
-       the B sequence corresponding to element 0 of edit_script[i].
+       separately. edit_script_t[tid][i] points to the storage reserved
+       for row i, and edit_start_offset_t[tid][i] gives the offset into
+       the B sequence corresponding to element 0 of edit_script_t[tid][i].
 
        Also make the number of edit script rows grow dynamically */
 
-    edit_script_num_rows = EDIT_SCRIPT_MAX_NUM_ROWS;
-    edit_script = (Uint1**) malloc(sizeof(Uint1*) * edit_script_num_rows);
-    edit_start_offset = (Int4*) malloc(sizeof(Int4) * edit_script_num_rows);
+    //edit_script_num_rows_t[tid] = EDIT_SCRIPT_MAX_NUM_ROWS;
+    //edit_script_t[tid] = (Uint1**) malloc(sizeof(Uint1*) * edit_script_num_rows_t[tid]);
+    //edit_start_offset_t[tid] = (Int4*) malloc(sizeof(Int4) * edit_script_num_rows_t[tid]);
 
     /* allocate storage for the first row of the traceback
        array. Because row elements correspond to gaps in A,
@@ -448,8 +453,8 @@ ALIGN_EX(const Uint1* A, const Uint1* B, Int4 M, Int4 N, Int4* a_offset,
 
     state_struct = s_GapGetState(&gap_align->state_struct, num_extra_cells);
 
-    edit_script[0] = state_struct->state_array;
-    edit_start_offset[0] = 0;
+    edit_script_t[tid][0] = state_struct->state_array;
+    edit_start_offset_t[tid][0] = 0;
     edit_script_row = state_struct->state_array;
 
     score = -gap_open_extend;
@@ -499,24 +504,24 @@ ALIGN_EX(const Uint1* A, const Uint1* B, Int4 M, Int4 N, Int4* a_offset,
             state_struct = s_GapGetState(&gap_align->state_struct, 
                     N + 3 - first_b_index);
 
-        if (a_index == edit_script_num_rows) {
-            edit_script_num_rows = edit_script_num_rows * 2;
-            edit_script = (Uint1 **)realloc(edit_script, 
-                    edit_script_num_rows *
+        if (a_index == edit_script_num_rows_t[tid]) {
+            edit_script_num_rows_t[tid] = edit_script_num_rows_t[tid] * 2;
+            edit_script_t[tid] = (Uint1 **)realloc(edit_script_t[tid], 
+                    edit_script_num_rows_t[tid] *
                     sizeof(Uint1 *));
-            edit_start_offset = (Int4 *)realloc(edit_start_offset, 
-                    edit_script_num_rows *
+            edit_start_offset_t[tid] = (Int4 *)realloc(edit_start_offset_t[tid], 
+                    edit_script_num_rows_t[tid] *
                     sizeof(Int4));
         }
 
-        edit_script[a_index] = state_struct->state_array + 
+        edit_script_t[tid][a_index] = state_struct->state_array + 
             state_struct->used + 1;
-        edit_start_offset[a_index] = first_b_index;
+        edit_start_offset_t[tid][a_index] = first_b_index;
 
         /* the inner loop assumes the current traceback
            row begins at offset zero of B */
 
-        edit_script_row = edit_script[a_index] - first_b_index;
+        edit_script_row = edit_script_t[tid][a_index] - first_b_index;
         orig_b_index = first_b_index;
 
         //if (!(gap_align->positionBased))
@@ -549,7 +554,7 @@ ALIGN_EX(const Uint1* A, const Uint1* B, Int4 M, Int4 N, Int4* a_offset,
                actions specified by the dynamic programming.
                when the inner loop has finished, 'script' con-
                tains all of the actions to perform, and is
-               written to edit_script[a_index][b_index]. Otherwise,
+               written to edit_script_t[tid][a_index][b_index]. Otherwise,
                this inner loop is exactly the same as the one
                in Blast_SemiGappedAlign() */
 
@@ -644,7 +649,7 @@ ALIGN_EX(const Uint1* A, const Uint1* B, Int4 M, Int4 N, Int4* a_offset,
     }
 
     /* Pick the optimal path through the now complete
-       edit_script[][]. This is equivalent to flattening 
+       edit_script_t[tid][][]. This is equivalent to flattening 
        the 2-D array into a 1-D list of actions. */
 
     a_index = *a_offset;
@@ -664,7 +669,7 @@ ALIGN_EX(const Uint1* A, const Uint1* B, Int4 M, Int4 N, Int4* a_offset,
            to point to the correct position */
 
         next_script = 
-            edit_script[a_index][b_index - edit_start_offset[a_index]];
+            edit_script_t[tid][a_index][b_index - edit_start_offset_t[tid][a_index]];
 
         switch(script) {
             case SCRIPT_GAP_IN_A:
@@ -699,8 +704,8 @@ ALIGN_EX(const Uint1* A, const Uint1* B, Int4 M, Int4 N, Int4* a_offset,
     }
 
 done:
-    free(edit_start_offset);
-    free(edit_script);
+    //free(edit_start_offset_t[tid]);
+    //free(edit_script_t[tid]);
     return best_score;
 }
 
@@ -786,6 +791,7 @@ Blast_PrelimEditBlockToGapEditScript (GapPrelimEditBlock* rev_prelim_tback,
 
 
 Int2 BLAST_GappedAlignmentWithTraceback( 
+        int tid,
         const Uint1* query, const Uint1* subject, BlastGapAlignStruct* gap_align, 
         const BlastScoringParameters* score_params,
         Int4 q_start, Int4 s_start, Int4 query_length, Int4 subject_length,
@@ -818,7 +824,7 @@ Int2 BLAST_GappedAlignmentWithTraceback(
     found_start = TRUE;
 
     //fprintf(stderr, "q_start: %d s_start: %d gap_open: %d gap_extend: %d dropoff: %d\n", q_start, s_start, score_params->gap_open, score_params->gap_extend, gap_align->gap_x_dropoff);
-    score_left = ALIGN_EX(query, subject, q_start+1, s_start+1, 
+    score_left = ALIGN_EX(tid, query, subject, q_start+1, s_start+1, 
             &private_q_length, &private_s_length, rev_prelim_tback,
             gap_align, 
             score_params, q_start, FALSE /*reversed*/, TRUE /*reverse_sequence*/,
@@ -836,7 +842,7 @@ Int2 BLAST_GappedAlignmentWithTraceback(
 
     found_end = TRUE;
     score_right = 
-        ALIGN_EX(query+q_start, subject+s_start, 
+        ALIGN_EX(tid, query+q_start, subject+s_start, 
                 q_length-q_start-1, s_length-s_start-1, &private_q_length, 
                 &private_s_length, fwd_prelim_tback, gap_align, 
                 score_params, q_start, FALSE, FALSE,

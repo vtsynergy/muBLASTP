@@ -98,7 +98,13 @@ BLAST_GapAlignStructFree(BlastGapAlignStruct* gap_align);
 
 
 Int2 BLAST_GappedAlignmentWithTraceback( 
+        int tid,
         const Uint1* query, const Uint1* subject, BlastGapAlignStruct* gap_align, 
         const BlastScoringParameters* score_params,
         Int4 q_start, Int4 s_start, Int4 query_length, Int4 subject_length,
         Boolean * fence_hit, Int4 **matrix );
+
+
+extern Int4 edit_script_num_rows_t[];
+extern Uint1** edit_script_t[];
+extern Int4 *edit_start_offset_t[];

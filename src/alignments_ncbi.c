@@ -562,7 +562,9 @@ void alignments_getTracebacks_ncbi(
 
                 }
 
-                BLAST_GappedAlignmentWithTraceback(querySeq, 
+                BLAST_GappedAlignmentWithTraceback(
+                        tid,
+                        querySeq, 
                         seqData.data, 
                         gap_align, &score_params, 
                         ungappedExtension->gap_start.queryOffset, 

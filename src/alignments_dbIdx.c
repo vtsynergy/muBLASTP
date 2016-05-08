@@ -581,9 +581,14 @@ void traceback(
         z_arr[ii] = (double *) calloc( mA + 1,   sizeof(double));
         old_scores_arr[ii] = (double *) malloc(n * sizeof(double));
         workspace_arr[ii] = (double *) malloc(n * sizeof(double));
+
+        edit_script_num_rows_t[ii] = EDIT_SCRIPT_MAX_NUM_ROWS;
+        edit_script_t[ii] = (Uint1**) malloc(sizeof(Uint1*) * edit_script_num_rows_t[ii]);
+        edit_start_offset_t[ii] = (Int4*) malloc(sizeof(Int4) * edit_script_num_rows_t[ii]);
     }
 
 
+    fprintf(stderr, "traceback search...");
 
     struct timeval start, end;
     gettimeofday(&start, NULL);
@@ -642,7 +647,7 @@ void traceback(
     long traceback_time = ((end.tv_sec * 1000000 + end.tv_usec) -
             (start.tv_sec * 1000000 + start.tv_usec));
 
-    fprintf(stderr, "traceback time: %f\n", (float)traceback_time * 1e-6);
+    fprintf(stderr, "time: %f\n", (float)traceback_time * 1e-6);
 
     for(ii = 0; ii < numQuery; ii++)
     {
@@ -664,6 +669,8 @@ void traceback(
         BLAST_GapAlignStructFree(gap_align_arr[ii]);
         Blast_CompositionWorkspaceFree(&NRrecord_arr[ii]);
         Blast_MatrixInfoFree2(&matrixInfo_arr[ii]);
+        free(edit_start_offset_t[ii]);
+        free(edit_script_t[ii]);
     }
 
     free(gap_align_arr);

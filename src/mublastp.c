@@ -26,6 +26,13 @@ int4 main(int4 argc, char *argv[]) {
     // Process command line arguments
     parameters_processArguments(argc, argv);
 
+    if(parameters_num_threads >= MAX_NUM_THREADS)
+    {
+        fprintf(stderr, "number of threads larger than MAX_NUM_THREADS, "
+                "please increase MAX_NUM_THREADS\n");
+        exit(0);
+    }
+
     // Read the first sequence from FASTA file (the query)
     readFasta_open(parameters_queryFile);
     if (!(readFasta_readSequence())) {
