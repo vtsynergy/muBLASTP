@@ -524,7 +524,7 @@ void alignments_getTracebacks_ncbi(
 
                 if(hsp_index == 0 || (shouldTestIdentical != oldNearIdenticalStatus))
                 {
-                    //if(!shouldTestIdentical)
+                    if(!shouldTestIdentical)
                     {
                         s_DoSegSequenceData(&seqData, eBlastTypeBlastp,
                                 &subject_maybe_biased);
