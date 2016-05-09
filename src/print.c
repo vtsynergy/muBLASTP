@@ -917,11 +917,11 @@ void print_gappedExtension(struct gappedExtension *gappedExtension,
             " Score = %.1f bits (%d), Expect = %s\n Identities = %d/%d (%d%%)",
             gappedExtension->normalizedScore, gappedExtension->nominalScore/SCALING_FACTOR,
             print_eValue2String(gappedExtension->eValue), identities, length,
-            (int4)ceil((double)identities * 100 / length));
+            (int4)((double)identities * 100 / length));
 
     if (encoding_alphabetType == encoding_protein) {
         sprintf(temp, ", Positives = %d/%d (%d%%)", positives, length,
-                (int4)ceil((double)positives * 100 / length));
+                (int4)((double)positives * 100 / length));
         strcat(finalText, temp);
     }
 
