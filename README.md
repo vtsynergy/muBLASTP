@@ -15,7 +15,7 @@
 ```
     $ ./formatdb database/uniprot_sport_sort.fasta
 ```
-* 4 Build database index with block of 128k bases (recommand 128K for multithreading, can use larger block for single thread for better performance)
+* 4 Build database index with block of 128k bases (recommand 128K for multithreading, can use larger block for single thread for better performance; define "COMPRESSED_INDEX" in include/blast.h to enable compressed index)
 ```
     $ ./indexdb database/uniprot_sport_sort.fasta 128
 ```

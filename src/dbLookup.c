@@ -13,7 +13,6 @@ uint8 total_allocHits = 0;
 uint8 numHits_blk = 0;
 uint8 numHits_db = 0;
 
-FILE *dbLookupFile;
 
 #define min(a, b) ((a) <= (b) ? (a) : (b))
 
@@ -344,7 +343,7 @@ void proteinLookup_db_build(int4 numCodes, int wordLength,
 {
 
 
-    //FILE *dbLookupFile;
+    FILE *dbLookupFile;
 
     char *dbLookupFileName;
 
@@ -354,8 +353,6 @@ void proteinLookup_db_build(int4 numCodes, int wordLength,
     sprintf(dbLookupFileName, 
             "%s.sequence%d.dbLookup", write_dbLookupFilename, readdb_volume);
 
-    proteinLookup_db_initial(numCodes, wordLength);
-
     if ((dbLookupFile = fopen(dbLookupFileName, "w")) == NULL) {
         fprintf(stderr, "Error opening file %s for writing\n",
                 dbLookupFileName);
@@ -363,6 +360,8 @@ void proteinLookup_db_build(int4 numCodes, int wordLength,
     }
 
     free(dbLookupFileName);
+
+    proteinLookup_db_initial(numCodes, wordLength);
 
     int4 ii, jj;
 
@@ -470,6 +469,7 @@ void proteinLookup_db_build(int4 numCodes, int wordLength,
     write_dbLookupAux(write_dbLookupFilename);
 
     fclose(dbLookupFile);
+    free_dbindex();
 }
 
 void write_dbIdxBlock(FILE *write_dbIdxBlockFile, int blockNum) {
@@ -704,6 +704,7 @@ void read_dbLookup(char *read_dbLookupFilename) {
 
     //proteinLookup_db_initial(numCodes, wordLength);
 
+    FILE *dbLookupFile;
     if ((dbLookupFile = fopen(dbLookupFileName, "r")) == NULL) {
         fprintf(stderr, "Error opening file %s for reading\n",
                 dbLookupFileName);

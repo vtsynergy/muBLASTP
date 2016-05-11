@@ -37,8 +37,13 @@ void traceback(
 
 void loadDbIdx_nextVolumn()
 {
+#ifndef COMPRESSED_INDEX
     free_dbindex();
     read_dbLookup(parameters_subjectDatabaseFile);
+#else
+    free_indexdb_cp();
+    read_dbLookup_cp(parameters_subjectDatabaseFile);
+#endif
 }
 
 void loadSubject(struct alignment *alignment)
@@ -264,8 +269,13 @@ void prelim_search_dbIdx(
     int ii, jj;
     for(jj = 0; jj < proteinLookup_numBlocks; jj++)
     {
+#ifndef COMPRESSED_INDEX
         size_t numSeqBlk = proteinLookup_db_b[jj].numSeqBlk;
         size_t maxDiag = longestQueryLength + proteinLookup_db_b[jj].dbIdxblk_longestSeq;
+#else
+        size_t numSeqBlk = proteinLookup_db_blk_cp[jj].numSeqBlk;
+        size_t maxDiag = longestQueryLength + proteinLookup_db_blk_cp[jj].dbIdxblk_longestSeq;
+#endif
         size_t numSeqBins = (((numSeqBlk + 1) * maxDiag)) + 1; 
         if(numSeqBins > maxNumSecondBins)
         {
@@ -347,7 +357,11 @@ void prelim_search_dbIdx(
 #pragma omp for schedule(dynamic) nowait
             for (kk = 0; kk < numQuery; kk++)
             {
+#ifndef COMPRESSED_INDEX
                 search_protein2hit_dbIdx_lasthit_radix(
+#else
+                search_protein2hit_dbIdx_lasthit_radix_cp(
+#endif
                         thread_id, PSSMatrix_arr, scoreMatrix, 
                         kk, readdb_sequenceData, bid,
                         lastHits, 

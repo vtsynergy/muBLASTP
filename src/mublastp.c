@@ -43,7 +43,11 @@ int4 main(int4 argc, char *argv[]) {
     // Open sequence data file and read information
     readdb_open_mem(parameters_subjectDatabaseFile);
 
+#ifndef COMPRESSED_INDEX
     read_dbLookup(parameters_subjectDatabaseFile);
+#else
+    read_dbLookup_cp(parameters_subjectDatabaseFile);
+#endif
 
 #ifdef NEIGHBOR_INDEX
     neighbourLookup_init();
@@ -156,7 +160,12 @@ int4 main(int4 argc, char *argv[]) {
 
     scoreMatrix_free(scoreMatrix); 
 
+#ifndef COMPRESSED_INDEX
     free_dbindex();
+#else
+    free_indexdb_cp();
+#endif
+
     readdb_close_mem();
 
     parameters_free();

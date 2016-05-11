@@ -32,10 +32,15 @@ int4 main(int4 argc, char *argv[]) {
 
   while(1)
   {
+
+#ifndef COMPRESSED_INDEX
       proteinLookup_db_build(encoding_numRegularLetters, parameters_wordSize,
               scoreMatrix, filename);
+#else
+      proteinLookup_db_cp_build(encoding_numRegularLetters, parameters_wordSize,
+              scoreMatrix, filename);
+#endif
 
-      free_dbindex();
 
       if(readdb_volume + 1 < readdb_numberOfVolumes)
       {
