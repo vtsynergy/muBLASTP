@@ -823,7 +823,7 @@ Int2 BLAST_GappedAlignmentWithTraceback(
     score_left = 0;
     found_start = TRUE;
 
-    fprintf(stderr, "q_start: %d s_start: %d gap_open: %d gap_extend: %d dropoff: %d\n", q_start, s_start, score_params->gap_open, score_params->gap_extend, gap_align->gap_x_dropoff);
+    //fprintf(stderr, "q_start: %d s_start: %d gap_open: %d gap_extend: %d dropoff: %d\n", q_start, s_start, score_params->gap_open, score_params->gap_extend, gap_align->gap_x_dropoff);
     score_left = ALIGN_EX(tid, query, subject, q_start+1, s_start+1, 
             &private_q_length, &private_s_length, rev_prelim_tback,
             gap_align, 
@@ -836,7 +836,7 @@ Int2 BLAST_GappedAlignmentWithTraceback(
     gap_align->subject_start = s_start - private_s_length + 1;
 
 
-    fprintf(stderr, "score_left: %d query_start: %d subject_start: %d\n", score_left, gap_align->query_start, gap_align->subject_start);
+    //fprintf(stderr, "score_left: %d query_start: %d subject_start: %d\n", score_left, gap_align->query_start, gap_align->subject_start);
 
     score_right = 0;
 
@@ -854,7 +854,7 @@ Int2 BLAST_GappedAlignmentWithTraceback(
     gap_align->subject_stop = s_start + private_s_length + 1;
 
 
-    fprintf(stderr, "score_right: %d query_stop: %d subject_stop: %d\n", score_right, gap_align->query_stop, gap_align->subject_stop);
+    //fprintf(stderr, "score_right: %d query_stop: %d subject_stop: %d\n", score_right, gap_align->query_stop, gap_align->subject_stop);
 
     if (found_start == FALSE) {	/* Start never found */
         gap_align->query_start = q_start;
