@@ -807,7 +807,8 @@ void print_gappedExtension(struct gappedExtension *gappedExtension,
             trace, query, subject, PSSMatrix);
 
     // Allocate memory for building final pairwise alignment
-    length = trace.length + 1;
+    //fprintf(stderr, "%d - %d\n", trace.length + 1, gappedExtension->subjectEnd);
+    length = MIN(trace.length + 1, gappedExtension->subjectEnd);
     numberOfSections = ((length - 1) / 60) + 1;
     pairwiseAlignment =
         (char *)global_malloc(sizeof(char) * (numberOfSections * 250));
@@ -816,9 +817,14 @@ void print_gappedExtension(struct gappedExtension *gappedExtension,
     if (reverseComplement) {
         queryPosition = PSSMatrix.length - gappedExtension->queryEnd - 1;
         subjectPosition = gappedExtension->subjectEnd;
+
     } else {
         queryPosition = trace.queryStart;
-        subjectPosition = trace.subjectStart;
+
+        if(trace.length + 1 > gappedExtension->subjectEnd)
+            subjectPosition = trace.subjectStart;
+        else
+            subjectPosition = trace.subjectStart - 1;
     }
 
     // Until we reach end of the alignment
@@ -880,7 +886,7 @@ void print_gappedExtension(struct gappedExtension *gappedExtension,
         charCount = lineStart;
         strcat(pairwiseAlignment, "Sbjct: ");
         sprintf(temp2, "%%-%dd ", longestNumber);
-        sprintf(temp, temp2, subjectPosition);
+        sprintf(temp, temp2, subjectPosition + 1);
         strcat(pairwiseAlignment, temp);
 
         count = 0;
@@ -903,9 +909,9 @@ void print_gappedExtension(struct gappedExtension *gappedExtension,
         strcat(pairwiseAlignment, temp);
 
         if (reverseComplement)
-            sprintf(temp, " %d\n\n", subjectPosition + 1);
+            sprintf(temp, " %d\n\n", subjectPosition + 2);
         else
-            sprintf(temp, " %d\n\n", subjectPosition - 1);
+            sprintf(temp, " %d\n\n", subjectPosition);
 
         strcat(pairwiseAlignment, temp);
     }
