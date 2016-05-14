@@ -51,6 +51,7 @@ void print_constructAlignment(char *queryLine, char *subjectLine, char *midLine,
         queryPosition = trace.queryStart;
         subjectPosition = trace.subjectStart;
     }
+
     traceCodes = trace.traceCodes;
 
     while (count < trace.length && queryPosition < PSSMatrix.length) {
@@ -806,8 +807,7 @@ void print_gappedExtension(struct gappedExtension *gappedExtension,
             trace, query, subject, PSSMatrix);
 
     // Allocate memory for building final pairwise alignment
-    //length = trace.length + 1;
-    length = trace.length;
+    length = trace.length + 1;
     numberOfSections = ((length - 1) / 60) + 1;
     pairwiseAlignment =
         (char *)global_malloc(sizeof(char) * (numberOfSections * 250));
@@ -880,7 +880,7 @@ void print_gappedExtension(struct gappedExtension *gappedExtension,
         charCount = lineStart;
         strcat(pairwiseAlignment, "Sbjct: ");
         sprintf(temp2, "%%-%dd ", longestNumber);
-        sprintf(temp, temp2, subjectPosition + 1);
+        sprintf(temp, temp2, subjectPosition);
         strcat(pairwiseAlignment, temp);
 
         count = 0;
@@ -903,9 +903,9 @@ void print_gappedExtension(struct gappedExtension *gappedExtension,
         strcat(pairwiseAlignment, temp);
 
         if (reverseComplement)
-            sprintf(temp, " %d\n\n", subjectPosition + 2);
+            sprintf(temp, " %d\n\n", subjectPosition + 1);
         else
-            sprintf(temp, " %d\n\n", subjectPosition);
+            sprintf(temp, " %d\n\n", subjectPosition - 1);
 
         strcat(pairwiseAlignment, temp);
     }

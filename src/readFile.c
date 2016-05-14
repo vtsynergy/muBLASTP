@@ -73,7 +73,11 @@ struct readFile_mem readFile_open_mem(char *filename) {
 
   readFile.address = global_malloc(readFile.fileSize);
 
-  fread(readFile.address, 1, readFile.fileSize, readFile.fileDescriptor);
+  if(fread(readFile.address, 1, readFile.fileSize, readFile.fileDescriptor) != readFile.fileSize)
+  {
+      fprintf(stderr, "readFile_open faialed\n");
+      exit(0);
+  }
 
   return readFile;
 
@@ -102,7 +106,11 @@ struct readFile_mem readFile_open_mem_offset(char *filename, int8 offset, int8 s
 
   readFile.address = global_malloc(size);
 
-  fread(readFile.address, 1, size, readFile.fileDescriptor);
+  if(fread(readFile.address, 1, size, readFile.fileDescriptor) != size)
+  {
+      fprintf(stderr, "readFile_open faialed\n");
+      exit(0);
+  }
 
   return readFile;
 
