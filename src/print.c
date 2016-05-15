@@ -51,7 +51,6 @@ void print_constructAlignment(char *queryLine, char *subjectLine, char *midLine,
         queryPosition = trace.queryStart;
         subjectPosition = trace.subjectStart;
     }
-
     traceCodes = trace.traceCodes;
 
     while (count < trace.length && queryPosition < PSSMatrix.length) {
@@ -807,8 +806,8 @@ void print_gappedExtension(struct gappedExtension *gappedExtension,
             trace, query, subject, PSSMatrix);
 
     // Allocate memory for building final pairwise alignment
-    //fprintf(stderr, "%d - %d\n", trace.length + 1, gappedExtension->subjectEnd);
-    length = MIN(trace.length + 1, gappedExtension->subjectEnd);
+    //length = trace.length + 1;
+    length = trace.length;
     numberOfSections = ((length - 1) / 60) + 1;
     pairwiseAlignment =
         (char *)global_malloc(sizeof(char) * (numberOfSections * 250));
@@ -817,14 +816,9 @@ void print_gappedExtension(struct gappedExtension *gappedExtension,
     if (reverseComplement) {
         queryPosition = PSSMatrix.length - gappedExtension->queryEnd - 1;
         subjectPosition = gappedExtension->subjectEnd;
-
     } else {
         queryPosition = trace.queryStart;
-
-        if(trace.length + 1 > gappedExtension->subjectEnd)
-            subjectPosition = trace.subjectStart;
-        else
-            subjectPosition = trace.subjectStart - 1;
+        subjectPosition = trace.subjectStart;
     }
 
     // Until we reach end of the alignment
@@ -923,17 +917,17 @@ void print_gappedExtension(struct gappedExtension *gappedExtension,
             " Score = %.1f bits (%d), Expect = %s\n Identities = %d/%d (%d%%)",
             gappedExtension->normalizedScore, gappedExtension->nominalScore/SCALING_FACTOR,
             print_eValue2String(gappedExtension->eValue), identities, length,
-            (int4)round((double)identities * 100 / length));
+            (int4)ceil((double)identities * 100 / length));
 
     if (encoding_alphabetType == encoding_protein) {
         sprintf(temp, ", Positives = %d/%d (%d%%)", positives, length,
-                (int4)round((double)positives * 100 / length));
+                (int4)ceil((double)positives * 100 / length));
         strcat(finalText, temp);
     }
 
     if (gaps > 0) {
         sprintf(temp, ", Gaps = %d/%d (%d%%)", gaps, length,
-                (int4)round((double)gaps * 100 / length));
+                (int4)ceil(gaps * 100 / length));
         strcat(finalText, temp);
     }
 

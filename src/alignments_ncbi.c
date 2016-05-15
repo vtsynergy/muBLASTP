@@ -568,7 +568,7 @@ void alignments_getTracebacks_ncbi(
                         seqData.data, 
                         gap_align, &score_params, 
                         ungappedExtension->gap_start.queryOffset, 
-                        ungappedExtension->gap_start.subjectOffset + 1, 
+                        ungappedExtension->gap_start.subjectOffset, 
                         PSSMatrix.length, alignment->subjectLength, NULL, matrix);
 
                 int cutoff_s = 1;
