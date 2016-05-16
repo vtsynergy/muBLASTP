@@ -396,6 +396,8 @@ void proteinLookup_db_build(int4 numCodes, int wordLength,
                 ii < readdb_numVolumeSequences && numLetterBlk < dbIdx_block_size;
                 ii++) {
 
+            int4 sequenceCount = ii + readdb_volumeOffset;
+
             numLetterBlk += readdb_sequenceData[ii + readdb_volumeOffset].sequenceLength;
 
             ASSERT(readdb_sequenceData[ii + readdb_volumeOffset].sequenceLength > 0);

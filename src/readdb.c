@@ -395,7 +395,7 @@ int readdb_nextVolume_mem() {
         readdb_sequenceData[readdb_volumeOffset + sequenceCount].encodedLength = encodedLength;
 
         // Record pointer to sequence
-        readdb_sequenceData[readdb_volumeOffset + sequenceCount].sequence = readdb_sequences + offset;
+        readdb_sequenceData[readdb_volumeOffset + sequenceCount].sequence = readdb_sequences + offset - 1;
 
         // If protein data skip past sentinal byte
         if (encoding_alphabetType == encoding_protein)
