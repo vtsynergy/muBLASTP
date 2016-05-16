@@ -957,7 +957,6 @@ char *print_eValue2String(double evalue) {
         sprintf(print_eValueBuf, "0.0");
     } else if (evalue < 1.0e-99) {
         sprintf(print_eValueBuf, "%2.0le", evalue);
-        eValueBuffer++; /* Knock off digit. */
     } else if (evalue < 0.0009) {
         sprintf(print_eValueBuf, "%3.0le", evalue);
     } else if (evalue < 0.1) {
