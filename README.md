@@ -29,3 +29,8 @@
 ```
 ###License
 Please refer to the included LICENSE file.
+
+###Acknowledgement
+This research was supported in part by the NSF BIGDATA Program via IIS-1247693
+and the NSF XPS Program via CCF-1337131. We also acknowledge Advanced Research
+Computing at Virginia Tech for the use of their computational resources.
