@@ -109,6 +109,7 @@
 #include "ncbi_matrix.h"
 #include "ncbi_composition_adjustment.h"
 #include "ncbi_filter.h"
+#include "blast_kappa.h"
 #include "search_queryIdx.h"
 #include "search_dbIdx.h"
 #include "alignments_dbIdx.h"

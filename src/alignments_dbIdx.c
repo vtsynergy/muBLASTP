@@ -51,7 +51,7 @@ void loadSubject(struct alignment *alignment)
     // Make copy of sequence
     unsigned char *subject = 
         (unsigned char *)global_malloc(sizeof(unsigned char) *
-                                             alignment->encodedLength);
+                alignment->encodedLength);
     subject++;
     memcpy(subject - 1, alignment->subject - 1, alignment->encodedLength);
     alignment->subject = subject;
@@ -107,7 +107,7 @@ void alignments_dbIdx(
     //memset(numFinalAlignQuery, 0, sizeof(int4) * numQuery);
 
     int goodAlignOffset[MAX_NUM_THREADS] = {0};
-    
+
     while(1)
     {
         prelim_search_dbIdx(PSSMatrix_arr, scoreMatrix, numQuery);
@@ -117,7 +117,7 @@ void alignments_dbIdx(
         //struct timeval start, end;
         //gettimeofday(&start, NULL);
 
-        
+
 
         //gettimeofday(&end, NULL);
         //long post_time = ((end.tv_sec * 1000000 + end.tv_usec) -
@@ -141,7 +141,7 @@ void alignments_dbIdx(
 #if 1
     traceback(PSSMatrix_arr, scoreMatrix, query_arr, queryDescription_arr, numQuery);
 
-    
+
 
     struct timeval start, end;
     gettimeofday(&start, NULL);
@@ -149,7 +149,7 @@ void alignments_dbIdx(
     for (ii = 0; ii < numQuery; ii++) {
 
         printf("Query= %s\n\n", queryDescription_arr[ii]);
-        printf("Length=%ld\n\n", strlen(query_arr[ii]));
+        printf("Length=%ld\n", strlen(query_arr[ii]));
 
         struct finalAlignment *currentAlignment = 
             alignments_finalAlignments_multi[ii]->block;
@@ -208,12 +208,12 @@ void alignments_dbIdx(
     //int tid;
     //for(tid = 0; tid < parameters_num_threads; tid++)
     //{
-        //for(ii = 0; ii < goodAlignCount_arr[tid]; ii++)
-        //{
-            //struct alignment *alignment = &goodAlignBuf_arr[tid][ii];
-            //free(alignment->subject - 1);
-            ////free(alignment->description);
-        //}
+    //for(ii = 0; ii < goodAlignCount_arr[tid]; ii++)
+    //{
+    //struct alignment *alignment = &goodAlignBuf_arr[tid][ii];
+    //free(alignment->subject - 1);
+    ////free(alignment->description);
+    //}
     //}
 
     gettimeofday(&end, NULL);
@@ -227,11 +227,11 @@ void alignments_dbIdx(
     //int tid;
     //for(tid = 0; tid < parameters_num_threads; tid++)
     //{
-        //for(ii = 0; ii < goodAlignCount_arr[tid]; ii++)
-        //{
-            //struct alignment alignment = goodAlignBuf_arr[tid][ii];
-            //free(alignment.subject - 1);
-        //}
+    //for(ii = 0; ii < goodAlignCount_arr[tid]; ii++)
+    //{
+    //struct alignment alignment = goodAlignBuf_arr[tid][ii];
+    //free(alignment.subject - 1);
+    //}
     //}
 
     for(ii = 0; ii < parameters_num_threads; ii++)
@@ -310,10 +310,10 @@ void prelim_search_dbIdx(
     uint2 *lastHits_arr = (uint2 *)global_malloc(sizeof(uint2) * maxNumSecondBins * parameters_num_threads);
 
     //fprintf(stderr, "maxNumSecondBins: %d maxMaxNumSeq: %d maxMaxDiag: %d lasthit_arr: %d selectHits_arr: %d\n",
-            //maxNumSecondBins, maxMaxNumSeq, maxMaxDiag,
-            //sizeof(uint2) * maxNumSecondBins * parameters_num_threads >> 20,
-            //sizeof(HitPair) * maxNumSecondBins * 2 >> 20
-            //);
+    //maxNumSecondBins, maxMaxNumSeq, maxMaxDiag,
+    //sizeof(uint2) * maxNumSecondBins * parameters_num_threads >> 20,
+    //sizeof(HitPair) * maxNumSecondBins * 2 >> 20
+    //);
 
     if(lastHits_arr == NULL)
     {
@@ -360,26 +360,26 @@ void prelim_search_dbIdx(
 #ifndef COMPRESSED_INDEX
                 search_protein2hit_dbIdx_lasthit_radix(
 #else
-                search_protein2hit_dbIdx_lasthit_radix_cp(
+                        search_protein2hit_dbIdx_lasthit_radix_cp(
 #endif
-                        thread_id, PSSMatrix_arr, scoreMatrix, 
-                        kk, readdb_sequenceData, bid,
-                        lastHits, 
-                        selectHits1_arr[thread_id], 
-                        selectHits2_arr[thread_id], 
-                        &goodAlignBuf_arr[thread_id], 
-                        &goodAlignCount_arr[thread_id], 
-                        &goodAlignBufSize_arr[thread_id], 
-                        &goodExtensionBuf_arr[thread_id], 
-                        &goodExtensionCount_arr[thread_id], 
-                        &goodExtensionBufSize_arr[thread_id], 
-                        ungappedExtension_new_arr[thread_id], dp_mem, 
-                        tree, private_tree, 
-                        &blast_numHits_t, 
-                        &blast_numUngappedExtensions_t, 
-                        &blast_numTriggerExtensions_t, 
-                        &blast_numTriggerSequences_t, 
-                        BlastHSP);
+                            thread_id, PSSMatrix_arr, scoreMatrix, 
+                            kk, readdb_sequenceData, bid,
+                            lastHits, 
+                            selectHits1_arr[thread_id], 
+                            selectHits2_arr[thread_id], 
+                            &goodAlignBuf_arr[thread_id], 
+                            &goodAlignCount_arr[thread_id], 
+                            &goodAlignBufSize_arr[thread_id], 
+                            &goodExtensionBuf_arr[thread_id], 
+                            &goodExtensionCount_arr[thread_id], 
+                            &goodExtensionBufSize_arr[thread_id], 
+                            ungappedExtension_new_arr[thread_id], dp_mem, 
+                            tree, private_tree, 
+                            &blast_numHits_t, 
+                            &blast_numUngappedExtensions_t, 
+                            &blast_numTriggerExtensions_t, 
+                            &blast_numTriggerSequences_t, 
+                            BlastHSP);
             }
 
             //#pragma omp single
@@ -398,7 +398,7 @@ void prelim_search_dbIdx(
 
     fprintf(stderr, "time: %f\n", (float)prelim_time * 1e-6);
 
-    
+
 
     for(ii = 0; ii < parameters_num_threads; ii++)
     {
@@ -652,8 +652,8 @@ void traceback(
 
 
         //fprintf(stderr, "tid: %d traceback time: %f\n", 
-                //thread_id,
-                //(float)traceback_time_t * 1e-6);
+        //thread_id,
+        //(float)traceback_time_t * 1e-6);
 
     }
 

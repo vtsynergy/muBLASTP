@@ -522,9 +522,13 @@ void alignments_getTracebacks_ncbi(
                             ungappedExtension,
                             cutoff);
 
+                Uint8 query_words[100];
                 if(hsp_index == 0 || (shouldTestIdentical != oldNearIdenticalStatus))
                 {
-                    if(!shouldTestIdentical)
+                    if(!shouldTestIdentical || (shouldTestIdentical) 
+                            && (!s_TestNearIdentical(&seqData, 0, 
+                                    querySeq, 0, query_words, 
+                                    ungappedExtension)))
                     {
                         s_DoSegSequenceData(&seqData, eBlastTypeBlastp,
                                 &subject_maybe_biased);
@@ -539,7 +543,8 @@ void alignments_getTracebacks_ncbi(
 
                     Blast_CompositionWorkspaceInit(NRrecord,
                             "BLOSUM62");
-                    s_GetComposition(&subject_composition, BLASTAA_SIZE, seqData.data, alignment->subjectLength);
+                    s_GetComposition(&subject_composition, 
+                            BLASTAA_SIZE, seqData.data, alignment->subjectLength);
 
                     int compositionTestIndex = 0;
                     int RE_pseudocounts = 20;
@@ -558,7 +563,9 @@ void alignments_getTracebacks_ncbi(
                             &pvalueForThisPair,
                             compositionTestIndex,
                             &LambdaRatio,
-                            newton_system, z, resids_x, resids_z, old_scores, workspace, grads, Scores);
+                            newton_system, z, 
+                            resids_x, resids_z, old_scores, 
+                            workspace, grads, Scores);
 
                 }
 

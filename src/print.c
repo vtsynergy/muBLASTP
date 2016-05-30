@@ -230,12 +230,12 @@ char *print_formatDescription_mem(char *description, int4 firstLineIndent,
                 newDescriptionPos++;
 
                 // Add indent
-                count = 0;
-                while (count < remainingLinesIndent) {
-                    newDescription[newDescriptionPos] = ' ';
-                    newDescriptionPos++;
-                    count++;
-                }
+                //count = 0;
+                //while (count < remainingLinesIndent) {
+                    //newDescription[newDescriptionPos] = ' ';
+                    //newDescriptionPos++;
+                    //count++;
+                //}
 
                 // Set pointers for next line
                 startLine += maxLineLength;
@@ -253,12 +253,12 @@ char *print_formatDescription_mem(char *description, int4 firstLineIndent,
                 newDescriptionPos++;
 
                 // Add indent
-                count = 0;
-                while (count < remainingLinesIndent) {
-                    newDescription[newDescriptionPos] = ' ';
-                    newDescriptionPos++;
-                    count++;
-                }
+                //count = 0;
+                //while (count < remainingLinesIndent) {
+                    //newDescription[newDescriptionPos] = ' ';
+                    //newDescriptionPos++;
+                    //count++;
+                //}
 
                 // Set pointers for next line
                 startLine = endWord = startWord;
@@ -503,7 +503,8 @@ void print_gappedAlignmentsFull_multi(char *query, struct PSSMatrix PSSMatrix,
                     description = print_untilWhitespace(description);
                 } else {
                     //description = print_formatDescription(description, 0, 11, 68);
-                    description = print_formatDescription_mem(description, 0, 11, 68, alignment->descriptionLength);
+                    //description = print_formatDescription_mem(description, 0, 11, 68, alignment->descriptionLength);
+                    description = print_formatDescription_mem(description, 0, 0, 68, alignment->descriptionLength);
                 }
             } else {
                 description = (char *)global_malloc(sizeof(char));
@@ -522,14 +523,14 @@ void print_gappedAlignmentsFull_multi(char *query, struct PSSMatrix PSSMatrix,
                 printf("          <Hit_hsps>\n");
             } else if (parameters_outputType == parameters_tabular) {
             } else {
-                printf(">%s\n", description);
+                printf("> %s\n", description);
                 //if (!parameters_allClusterMembers &&
                 //clusterSizes[alignment->cluster] > 1) {
                 //printf("          [%d near-identical alignment(s) not displayed]\n",
                 //clusterSizes[alignment->cluster] - 1);
                 //clusterSizes[alignment->cluster] = 0;
                 //}
-                printf("          Length = %d\n\n", alignment->subjectLength);
+                printf("Length=%d\n\n", alignment->subjectLength);
             }
 
             // Get list of gapped extensions
@@ -583,7 +584,7 @@ void print_gappedAlignmentsBrief_multi(int queryNum) {
     printf("                                                                 "
             "Score    E\n");
     printf("Sequences producing significant alignments:                      "
-            "(bits) Value\n\n");
+            "(Bits) Value\n\n");
 
     alignments_sortFinalAlignments_multi2(queryNum);
 
@@ -648,9 +649,19 @@ void print_gappedAlignmentsBrief_multi(int queryNum) {
             sprintf(line, "  %s  %.1f %s\n", description, normalizedScore,
                     print_eValue2String(eValue));
         } else {
-            sprintf(line, "  %s  %.1f  %s\n", description,
-                    currentExtension->normalizedScore,
-                    print_eValue2String(currentExtension->eValue));
+
+            if(currentExtension->normalizedScore >= 100)
+            {
+                sprintf(line, "  %s  %d  %s\n", description,
+                        (int)currentExtension->normalizedScore,
+                        print_eValue2String(currentExtension->eValue));
+            }
+            else
+            {
+                sprintf(line, "  %s  %.1f  %s\n", description,
+                        currentExtension->normalizedScore,
+                        print_eValue2String(currentExtension->eValue));
+            }
         }
 
         printf("%s", line);
@@ -661,7 +672,7 @@ void print_gappedAlignmentsBrief_multi(int queryNum) {
 
         count++;
     }
-    printf("\n");
+    printf("\n\n");
 }
 
 // Print 1 line description of gapped alignments
@@ -830,7 +841,7 @@ void print_gappedExtension(struct gappedExtension *gappedExtension,
         // First build the query line. Example:
         // Query:    4 GDESERIVIN-----HQTYRSTLRTLPGTRLAWLAEPDAHSH-----EDYDPRADEFFFD
         // 58
-        strcat(pairwiseAlignment, "Query: ");
+        strcat(pairwiseAlignment, "Query ");
         sprintf(temp2, "%%-%dd ", longestNumber);
         sprintf(temp, temp2, queryPosition + 1);
         strcat(pairwiseAlignment, temp);
@@ -878,7 +889,7 @@ void print_gappedExtension(struct gappedExtension *gappedExtension,
         // Sbjct: 2194 GEVSRRVILNVGGVKHEVLWRTLDRVPHTRLGKLKDCNTHDAIVDLCDDYSLAENEYFFD
         // 2784
         charCount = lineStart;
-        strcat(pairwiseAlignment, "Sbjct: ");
+        strcat(pairwiseAlignment, "Sbjct ");
         sprintf(temp2, "%%-%dd ", longestNumber);
         sprintf(temp, temp2, subjectPosition + 1);
         strcat(pairwiseAlignment, temp);
@@ -913,29 +924,45 @@ void print_gappedExtension(struct gappedExtension *gappedExtension,
     // Construct the final text
     finalText = (char *)global_malloc(numberOfSections * 300 + 300);
 
-    sprintf(finalText,
-            " Score = %.1f bits (%d), Expect = %s\n Identities = %d/%d (%d%%)",
-            gappedExtension->normalizedScore, gappedExtension->nominalScore/SCALING_FACTOR,
+    if(gappedExtension->normalizedScore >= 100)
+    {
+        sprintf(finalText,
+            " Score = %d bits (%d), Expect = %s, Method: Compositional matrix adjust.\n Identities = %d/%d (%d%%)",
+            (int)gappedExtension->normalizedScore, 
+            (int4)round((double)gappedExtension->nominalScore/SCALING_FACTOR),
             print_eValue2String(gappedExtension->eValue), identities, length,
             (int4)round((double)identities * 100 / length));
-
+    }
+    else
+    {
+        sprintf(finalText,
+            " Score = %.1f bits (%d), Expect = %s, Method: Compositional matrix adjust.\n Identities = %d/%d (%d%%)",
+            gappedExtension->normalizedScore, 
+            (int4)round((double)gappedExtension->nominalScore/SCALING_FACTOR),
+            print_eValue2String(gappedExtension->eValue), identities, length,
+            (int4)round((double)identities * 100 / length));
+    }
+        
     if (encoding_alphabetType == encoding_protein) {
         sprintf(temp, ", Positives = %d/%d (%d%%)", positives, length,
                 (int4)round((double)positives * 100 / length));
         strcat(finalText, temp);
     }
 
-    if (gaps > 0) {
+    //if (gaps > 0) 
+    {
         sprintf(temp, ", Gaps = %d/%d (%d%%)", gaps, length,
-                (int4)round(gaps * 100 / length));
+                (int4)round((double)gaps * 100 / length));
         strcat(finalText, temp);
     }
 
-    if (reverseComplement) {
-        strcat(finalText, "\n Strand = Plus / Minus\n\n");
-    } else {
-        strcat(finalText, "\n Strand = Plus / Plus\n\n");
-    }
+    strcat(finalText, "\n\n");
+
+    //if (reverseComplement) {
+        //strcat(finalText, "\n Strand = Plus / Minus\n\n");
+    //} else {
+        //strcat(finalText, "\n Strand = Plus / Plus\n\n");
+    //}
 
     strcat(finalText, pairwiseAlignment);
     free(pairwiseAlignment);

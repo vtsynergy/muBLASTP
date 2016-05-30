@@ -2226,13 +2226,13 @@ Blast_AdjustScores2(Int4 ** matrix,
                    int RE_pseudocounts,
                    Blast_CompositionWorkspace *NRrecord,
                    EMatrixAdjustRule *matrix_adjust_rule,
-                   //double calc_lambda(double *,int,int,double),
                    double *pvalueForThisPair,
                    int compositionTestIndex,
                    double *ratioToPassBack,
                    ReNewtonSystem *newton_system,
                    double *z, double *resids_x, double *resids_z, 
-                   double *old_scores, double *workspace, double **grads, double **Scores)
+                   double *old_scores, double *workspace, 
+                   double **grads, double **Scores)
 {
     const int alphsize = matrixInfo->cols;
 
