@@ -125,7 +125,7 @@ void alignments_dbIdx(
 
     while(1)
     {
-        prelim_search_dbIdx2(PSSMatrix_arr, scoreMatrix, numQuery);
+        prelim_search_dbIdx(PSSMatrix_arr, scoreMatrix, numQuery);
 
         merge(numQuery);
 
