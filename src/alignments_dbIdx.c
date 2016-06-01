@@ -10,20 +10,26 @@ int4 goodAlignCount_arr[MAX_NUM_THREADS] = {0};
 int4 goodExtensionCount_arr[MAX_NUM_THREADS] = {0};
 int4 gappedExtensionCount_arr[MAX_NUM_THREADS] = {0};
 int4 traceCodeCount_arr[MAX_NUM_THREADS] = {0};
-//int4 subjectCount_arr[MAX_NUM_THREADS] = {0};
+int4 extHitsCount_arr[BATCH_SIZE] = {0};
 
 struct alignment *goodAlignBuf_arr[MAX_NUM_THREADS];
 struct ungappedExtension *goodExtensionBuf_arr[MAX_NUM_THREADS];
 struct gappedExtension *gappedExtension_arr[MAX_NUM_THREADS];
 unsigned char *traceCodeBuf_arr[MAX_NUM_THREADS];
-//char *subjectBuf_arr[MAX_NUM_THREADS];
+HitPair *extHitsBuff_arr[BATCH_SIZE];
 
 size_t goodAlignBufSize_arr[MAX_NUM_THREADS], 
        goodExtensionBufSize_arr[MAX_NUM_THREADS],
        gapExtensionBufSize_arr[MAX_NUM_THREADS],
-       traceCodeBufSize_arr[MAX_NUM_THREADS];
+       traceCodeBufSize_arr[MAX_NUM_THREADS],
+       extHitsBuffSize_arr[BATCH_SIZE];
 
 void prelim_search_dbIdx(
+        struct PSSMatrix *PSSMatrix_arr,
+        struct scoreMatrix scoreMatrix, 
+        int numQuery);
+
+void prelim_search_dbIdx2(
         struct PSSMatrix *PSSMatrix_arr,
         struct scoreMatrix scoreMatrix, 
         int numQuery);
@@ -37,6 +43,7 @@ void traceback(
 
 void loadDbIdx_nextVolumn()
 {
+
 #ifndef COMPRESSED_INDEX
     free_dbindex();
     read_dbLookup(parameters_subjectDatabaseFile);
@@ -44,6 +51,7 @@ void loadDbIdx_nextVolumn()
     free_indexdb_cp();
     read_dbLookup_cp(parameters_subjectDatabaseFile);
 #endif
+
 }
 
 void loadSubject(struct alignment *alignment)
@@ -66,6 +74,8 @@ void alignments_dbIdx(
         char *queryDescription_arr[],
         int numQuery)
 {
+
+
 
     int numQueriesPerThread = ceil((float)numQuery / parameters_num_threads);
 
@@ -98,32 +108,26 @@ void alignments_dbIdx(
 
     for(ii = 0; ii < numQuery; ii++)
     {
+        extHitsBuffSize_arr[ii] = MAX_EXTENSIONS_PER_QUERY;
+        extHitsBuff_arr[ii] = (HitPair *)global_malloc(sizeof(HitPair) * 
+                extHitsBuffSize_arr[ii]); 
+    }
+
+    for(ii = 0; ii < numQuery; ii++)
+    {
         finalAlignQuery[ii] = (struct alignment *)global_malloc(
                 sizeof(struct alignment) * parameters_numDisplayAlignments * 2);
 
         numFinalAlignQuery[ii] = 0;
     }
 
-    //memset(numFinalAlignQuery, 0, sizeof(int4) * numQuery);
-
     int goodAlignOffset[MAX_NUM_THREADS] = {0};
 
     while(1)
     {
-        prelim_search_dbIdx(PSSMatrix_arr, scoreMatrix, numQuery);
+        prelim_search_dbIdx2(PSSMatrix_arr, scoreMatrix, numQuery);
 
         merge(numQuery);
-
-        //struct timeval start, end;
-        //gettimeofday(&start, NULL);
-
-
-
-        //gettimeofday(&end, NULL);
-        //long post_time = ((end.tv_sec * 1000000 + end.tv_usec) -
-        //(start.tv_sec * 1000000 + start.tv_usec));
-
-        //fprintf(stderr, "postprocess time: %f\n", (float)post_time * 1e-6);
 
         if(readdb_volume + 1 < readdb_numberOfVolumes)
         {
@@ -201,6 +205,7 @@ void alignments_dbIdx(
             free(alignment->ungappedExtensions);
         }
 
+        free(extHitsBuff_arr[ii]);
         //free(goodAlignQuery[ii]);
         free(finalAlignQuery[ii]);
     }
@@ -244,6 +249,180 @@ void alignments_dbIdx(
     }
 
 
+}
+
+void prelim_search_dbIdx2(
+        struct PSSMatrix *PSSMatrix_arr,
+        struct scoreMatrix scoreMatrix, 
+        int numQuery)
+{
+
+    fprintf(stderr, "prelim search...");
+
+    struct ungappedExtension **ungappedExtension_new_arr[parameters_num_threads];
+    HitPair *selectHits1_arr[parameters_num_threads], 
+            *selectHits2_arr[parameters_num_threads];
+
+    BlastGapDP *dp_mem_arr = (BlastGapDP *)malloc(sizeof(BlastGapDP) * DP_MEM_SIZE * parameters_num_threads);
+    BlastHSP *BlastHSP_arr = (BlastHSP *)malloc(sizeof(BlastHSP) * MAX_NUM_HSP * parameters_num_threads);
+
+    size_t maxNumSecondBins = 0;
+
+    int maxMaxNumSeq = 0, maxMaxDiag = 0;
+
+    int ii, jj;
+    for(jj = 0; jj < proteinLookup_numBlocks; jj++)
+    {
+#ifndef COMPRESSED_INDEX
+        size_t numSeqBlk = proteinLookup_db_b[jj].numSeqBlk;
+        size_t maxDiag = longestQueryLength + proteinLookup_db_b[jj].dbIdxblk_longestSeq;
+#else
+        size_t numSeqBlk = proteinLookup_db_blk_cp[jj].numSeqBlk;
+        size_t maxDiag = longestQueryLength + proteinLookup_db_blk_cp[jj].dbIdxblk_longestSeq;
+#endif
+        size_t numSeqBins = (((numSeqBlk + 1) * maxDiag)) + 1; 
+        if(numSeqBins > maxNumSecondBins)
+        {
+            maxNumSecondBins = numSeqBins;
+            maxMaxNumSeq = numSeqBlk;
+            maxMaxDiag = maxDiag;
+        }
+        //maxNumSecondBins = MAX(numSeqBins, maxNumSecondBins);
+    }
+
+    //fprintf(stderr, "maxNumSecondBins: %d\n", maxNumSecondBins);
+    //
+
+    
+
+
+    for(ii = 0; ii < parameters_num_threads; ii++)
+    {
+
+        selectHits2_arr[ii] = (HitPair *)global_malloc(sizeof(HitPair) * 
+                MAX_EXTENSIONS_PER_QUERY); 
+
+        ungappedExtension_new_arr[ii] = 
+            (struct ungappedExtension **)global_malloc(sizeof(struct ungappedExtension *) 
+                    * MAX_EXTENSIONS_PER_QUERY);
+    }
+
+
+    uint2 *lastHits_arr = (uint2 *)global_malloc(sizeof(uint2) * maxNumSecondBins * parameters_num_threads);
+
+    //fprintf(stderr, "maxNumSecondBins: %d maxMaxNumSeq: %d maxMaxDiag: %d lasthit_arr: %d selectHits_arr: %d\n",
+    //maxNumSecondBins, maxMaxNumSeq, maxMaxDiag,
+    //sizeof(uint2) * maxNumSecondBins * parameters_num_threads >> 20,
+    //sizeof(HitPair) * maxNumSecondBins * 2 >> 20
+    //);
+
+    if(lastHits_arr == NULL)
+    {
+        fprintf(stderr, "failed to malloc lasthit_arr: %d\n", sizeof(uint2) * maxNumSecondBins * parameters_num_threads);
+    }
+
+    struct timeval start, end;
+    gettimeofday(&start, NULL);
+
+
+#pragma omp parallel num_threads(parameters_num_threads) default(shared) private(ii, jj)
+    {
+        int4 thread_id = omp_get_thread_num();
+
+        uint2 *lastHits = lastHits_arr + maxNumSecondBins * thread_id;
+
+        //int goodAlignCount = 0, goodExtensionCount = 0, gappedExtensionCount = 0;
+
+        BlastGapDP *dp_mem = dp_mem_arr + DP_MEM_SIZE * thread_id;
+
+        uint4 blast_numHits_t = 0;
+        uint4 blast_numUngappedExtensions_t = 0;
+        uint4 blast_numTriggerExtensions_t = 0;
+        uint4 blast_numTriggerSequences_t = 0;
+
+        BlastHSP *BlastHSP = BlastHSP_arr + MAX_NUM_HSP * thread_id;
+
+
+        BlastIntervalTree *tree = Blast_IntervalTreeInit(0, longestQueryLength + 1,
+                0, SEMIGAPPED_ROWSIZE + 1);
+        BlastIntervalTree *private_tree = Blast_IntervalTreeInit(0, 
+                longestQueryLength + 1, 0, SEMIGAPPED_ROWSIZE + 1);
+
+
+        int bid;
+        for (bid = 0; bid < proteinLookup_numBlocks; bid++) 
+        {
+
+            //#pragma omp single
+            //read_dbIdxBlock(parameters_subjectDatabaseFile, bid);
+
+            int kk;
+#pragma omp for schedule(dynamic)
+            for (kk = 0; kk < numQuery; kk++)
+            {
+                search_protein2hit_dbIdx_hitDetect(
+                        thread_id, PSSMatrix_arr, 
+                        kk, bid,
+                        lastHits, 
+                        &extHitsBuff_arr[kk],
+                        &extHitsCount_arr[kk],
+                        &extHitsBuffSize_arr[kk]);
+            }
+
+
+#if 1
+
+#pragma omp for schedule(dynamic)
+            for (kk = 0; kk < numQuery; kk++)
+            {
+                search_protein2hit_dbIdx_ungapExt(
+                        thread_id, PSSMatrix_arr, scoreMatrix, 
+                        kk, readdb_sequenceData, bid,
+                        extHitsBuff_arr[kk],
+                        extHitsCount_arr[kk],
+                        selectHits2_arr[thread_id], 
+                        &goodAlignBuf_arr[thread_id], 
+                        &goodAlignCount_arr[thread_id], 
+                        &goodAlignBufSize_arr[thread_id], 
+                        &goodExtensionBuf_arr[thread_id], 
+                        &goodExtensionCount_arr[thread_id], 
+                        &goodExtensionBufSize_arr[thread_id], 
+                        ungappedExtension_new_arr[thread_id], dp_mem, 
+                        tree, private_tree, 
+                        &blast_numHits_t, 
+                        &blast_numUngappedExtensions_t, 
+                        &blast_numTriggerExtensions_t, 
+                        &blast_numTriggerSequences_t, 
+                        BlastHSP);
+            }
+
+#endif
+        }
+
+        Blast_IntervalTreeFree2(private_tree);
+        Blast_IntervalTreeFree2(tree);
+
+    }
+
+    gettimeofday(&end, NULL);
+
+    long prelim_time = ((end.tv_sec * 1000000 + end.tv_usec) -
+            (start.tv_sec * 1000000 + start.tv_usec));
+
+    fprintf(stderr, "time: %f\n", (float)prelim_time * 1e-6);
+
+
+
+    for(ii = 0; ii < parameters_num_threads; ii++)
+    {
+        //free(selectHits1_arr[ii]);
+        free(selectHits2_arr[ii]);
+        free(ungappedExtension_new_arr[ii]);
+    }
+
+    free(lastHits_arr);
+    free(dp_mem_arr);
+    free(BlastHSP_arr);
 }
 
 

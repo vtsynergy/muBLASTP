@@ -735,13 +735,6 @@ struct ungappedExtension *ungappedExtension_extend_ncbi_multi2(
     int4 diagonal;
     struct ungappedExtension *newUngappedExtension = goodExtensionBuf + *goodExtensionCount;
     (*goodExtensionCount)++;
-    //if(*goodExtensionCount >= MAX_EXTENSIONS_PER_QUERY)
-    //{
-        //fprintf(stderr, "goodExtensionCount larger than MAX_EXTENSIONS_PER_QUERY\n");
-        //exit(1);
-    //}
-    //newUngappedExtension = memBlocks_newEntry(
-    //ungappedExtension_extensions_multi2[queryNum][blockNum]);
 
     // Determine offsets from pointers
     newUngappedExtension->start.subjectOffset = subjectStart;
