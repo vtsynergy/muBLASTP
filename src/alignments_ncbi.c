@@ -466,7 +466,6 @@ void alignments_getTracebacks_ncbi(
             break;
         }
 
-        num_goodAlignment++;
         BlastCompo_SequenceData seqData;
         seqData.buffer = seq_data; 
         for(ii = 0; ii < (alignment->subjectLength + 2); ii++)
@@ -581,6 +580,7 @@ void alignments_getTracebacks_ncbi(
                 int cutoff_s = 1;
                 if(ungappedExtension->nominalScore > cutoff_s)
                 {
+                    num_goodAlignment++;
                     ungappedExtension->start.queryOffset = gap_align->query_start;
                     ungappedExtension->start.subjectOffset = gap_align->subject_start;
                     ungappedExtension->end.queryOffset = gap_align->query_stop;

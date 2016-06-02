@@ -4,13 +4,13 @@
 struct alignment *goodAlignQuery[BATCH_SIZE];
 struct alignment *finalAlignQuery[BATCH_SIZE];
 int4 numGoodAlignQuery[BATCH_SIZE];
-int4 numFinalAlignQuery[BATCH_SIZE];
 
 int4 goodAlignCount_arr[MAX_NUM_THREADS] = {0};
 int4 goodExtensionCount_arr[MAX_NUM_THREADS] = {0};
 int4 gappedExtensionCount_arr[MAX_NUM_THREADS] = {0};
 int4 traceCodeCount_arr[MAX_NUM_THREADS] = {0};
 int4 extHitsCount_arr[BATCH_SIZE] = {0};
+int4 numFinalAlignQuery[BATCH_SIZE] = {0};
 
 struct alignment *goodAlignBuf_arr[MAX_NUM_THREADS];
 struct ungappedExtension *goodExtensionBuf_arr[MAX_NUM_THREADS];
@@ -23,6 +23,8 @@ size_t goodAlignBufSize_arr[MAX_NUM_THREADS],
        gapExtensionBufSize_arr[MAX_NUM_THREADS],
        traceCodeBufSize_arr[MAX_NUM_THREADS],
        extHitsBuffSize_arr[BATCH_SIZE];
+
+size_t finalAlignQueryBufSize[BATCH_SIZE];
 
 void prelim_search_dbIdx(
         struct PSSMatrix *PSSMatrix_arr,
@@ -116,9 +118,8 @@ void alignments_dbIdx(
     for(ii = 0; ii < numQuery; ii++)
     {
         finalAlignQuery[ii] = (struct alignment *)global_malloc(
-                sizeof(struct alignment) * parameters_numDisplayAlignments * 2);
-
-        numFinalAlignQuery[ii] = 0;
+                sizeof(struct alignment) * parameters_numDisplayAlignments);
+        finalAlignQueryBufSize[ii] = parameters_numDisplayAlignments;
     }
 
     int goodAlignOffset[MAX_NUM_THREADS] = {0};
@@ -318,7 +319,8 @@ void prelim_search_dbIdx2(
 
     if(lastHits_arr == NULL)
     {
-        fprintf(stderr, "failed to malloc lasthit_arr: %d\n", sizeof(uint2) * maxNumSecondBins * parameters_num_threads);
+        fprintf(stderr, "failed to malloc lasthit_arr: %lu\n", 
+                sizeof(uint2) * maxNumSecondBins * parameters_num_threads);
     }
 
     struct timeval start, end;
@@ -477,7 +479,8 @@ void prelim_search_dbIdx(
 
         if(selectHits1_arr == NULL || selectHits2_arr == NULL)
         {
-            fprintf(stderr, "failed to malloc selectHits_arr: %d\n", maxNumSecondBins);
+            fprintf(stderr, "failed to malloc selectHits_arr: %lu\n", 
+                    maxNumSecondBins);
         }
 
         ungappedExtension_new_arr[ii] = 
@@ -496,7 +499,8 @@ void prelim_search_dbIdx(
 
     if(lastHits_arr == NULL)
     {
-        fprintf(stderr, "failed to malloc lasthit_arr: %d\n", sizeof(uint2) * maxNumSecondBins * parameters_num_threads);
+        fprintf(stderr, "failed to malloc lasthit_arr: %lu\n", 
+                sizeof(uint2) * maxNumSecondBins * parameters_num_threads);
     }
 
     struct timeval start, end;
@@ -639,24 +643,28 @@ void merge(int numQuery)
 
     for(ii = 0; ii < numQuery; ii++)
     {
-        alignments_sortGoodAlignments_multi(goodAlignQuery[ii], numGoodAlignQuery[ii]);
+        //alignments_sortGoodAlignments_multi(goodAlignQuery[ii], numGoodAlignQuery[ii]);
+
+        if(numFinalAlignQuery[ii] + numGoodAlignQuery[ii] >= finalAlignQueryBufSize[ii])
+        {
+            finalAlignQueryBufSize[ii] *= 2;
+            finalAlignQuery[ii] = (struct alignment *)realloc(finalAlignQuery[ii], 
+                    sizeof(struct alignment) * finalAlignQueryBufSize[ii]);
+        }
 
         for(jj = 0; jj < numGoodAlignQuery[ii]; jj++)
         {
-            if(jj < parameters_numDisplayAlignments)
-            {
                 finalAlignQuery[ii][numFinalAlignQuery[ii]] = goodAlignQuery[ii][jj];
                 numFinalAlignQuery[ii]++;
-            }
         }
 
-        ASSERT(numFinalAlignQuery[ii] <= 2 * parameters_numDisplayAlignments);
+        //ASSERT(numFinalAlignQuery[ii] <= 2 * parameters_numDisplayAlignments);
 
         alignments_sortGoodAlignments_multi(finalAlignQuery[ii], numFinalAlignQuery[ii]);
 
         for(jj = 0; jj < numFinalAlignQuery[ii]; jj++)
         {
-            if(jj < parameters_numDisplayAlignments)
+            //if(jj < parameters_numDisplayAlignments)
             {
                 struct alignment *alignment = &finalAlignQuery[ii][jj];
                 if(alignment->inMemorySubject == 0)
@@ -675,27 +683,26 @@ void merge(int numQuery)
                     alignment->inMemorySubject = 1;
                 }
             }
-            else
-            {
-                struct alignment *alignment = &finalAlignQuery[ii][jj];
-                if(alignment->inMemorySubject != 0)
-                {
-                    free(alignment->subject - 1);
-                    free(alignment->description);
-                    free(alignment->ungappedExtensions);
-                }
-            }
+            //else
+            //{
+                //struct alignment *alignment = &finalAlignQuery[ii][jj];
+                //if(alignment->inMemorySubject != 0)
+                //{
+                    //free(alignment->subject - 1);
+                    //free(alignment->description);
+                    //free(alignment->ungappedExtensions);
+                //}
+            //}
         }
 
-        if(numFinalAlignQuery[ii] > parameters_numDisplayAlignments)
-            numFinalAlignQuery[ii] = parameters_numDisplayAlignments;
+        //if(numFinalAlignQuery[ii] > parameters_numDisplayAlignments)
+        //numFinalAlignQuery[ii] = parameters_numDisplayAlignments;
 
         free(goodAlignQuery[ii]);
     }
 
     for(tid = 0; tid < parameters_num_threads; tid++)
     {
-
         goodAlignCount_arr[tid] = 0;
         goodExtensionCount_arr[tid] = 0;
     }

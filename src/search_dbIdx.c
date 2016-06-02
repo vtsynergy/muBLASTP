@@ -135,9 +135,6 @@ void search_protein2hit_dbIdx_hitDetect(
 
     int4 numSecondBins = (((numSeqBlk + 1) * maxDiag)) + 1;
 
-    //int4 numGoodAlign = *goodAlignCount;
-    //int4 numGoodExtensions = *goodExtensionCount;
-
     for(ii = 0; ii < numSecondBins; ii++)
     {
         lastHits[ii] = 0xFFFF;
