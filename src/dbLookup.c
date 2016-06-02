@@ -393,12 +393,19 @@ void proteinLookup_db_build(int4 numCodes, int wordLength,
         proteinLookup_db_b[jj].seqOffset = seqStartBlk + readdb_volumeOffset;
 
         for (ii = seqStartBlk;
-                ii < readdb_numVolumeSequences && numLetterBlk < dbIdx_block_size;
+                ii < readdb_numVolumeSequences;
                 ii++) {
 
             int4 sequenceCount = ii + readdb_volumeOffset;
 
             numLetterBlk += readdb_sequenceData[ii + readdb_volumeOffset].sequenceLength;
+
+            if(numLetterBlk >= dbIdx_block_size || (ii - seqStartBlk) >= (1 << 16))
+            {
+                numLetterBlk -= readdb_sequenceData[ii + readdb_volumeOffset].sequenceLength;
+                ii--;
+                break;
+            }
 
             ASSERT(readdb_sequenceData[ii + readdb_volumeOffset].sequenceLength > 0);
 
@@ -410,16 +417,16 @@ void proteinLookup_db_build(int4 numCodes, int wordLength,
                 MAX(proteinLookup_db_b[jj].dbIdxblk_longestSeq,
                         readdb_sequenceData[ii + readdb_volumeOffset].sequenceLength);
 
-            if((ii - seqStartBlk) >= ((1 << 16) - 2))
-            {
-                break;
-            }
+            //if((ii - seqStartBlk) >= ((1 << 16) - 2))
+            //{
+                //break;
+            //}
         }
 
-        if (numLetterBlk >= dbIdx_block_size) {
-            numLetterBlk -= readdb_sequenceData[ii + readdb_volumeOffset - 1].sequenceLength;
-            ii--;
-        }
+        //if (numLetterBlk >= dbIdx_block_size) {
+            //numLetterBlk -= readdb_sequenceData[ii + readdb_volumeOffset - 1].sequenceLength;
+            //ii--;
+        //}
 
         proteinLookup_db_b[jj].numSeqBlk = ii - seqStartBlk + 1;
 
