@@ -2174,7 +2174,9 @@ Blast_MessageWrite(Blast_Message* *blast_msg, EBlastSeverity severity,
 const int kBlastMessageNoContext = -1;
 
 
-Int2 SBlastFilterOptionsValidate(EBlastProgramType program_number, const SBlastFilterOptions* filter_options, Blast_Message* *blast_message)
+Int2 SBlastFilterOptionsValidate(EBlastProgramType program_number, 
+        const SBlastFilterOptions* filter_options, 
+        Blast_Message* *blast_message)
 {
        Int2 status = 0;
 

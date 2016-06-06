@@ -294,9 +294,6 @@ void prelim_search_dbIdx2(
     //fprintf(stderr, "maxNumSecondBins: %d\n", maxNumSecondBins);
     //
 
-    
-
-
     for(ii = 0; ii < parameters_num_threads; ii++)
     {
 
@@ -307,7 +304,6 @@ void prelim_search_dbIdx2(
             (struct ungappedExtension **)global_malloc(sizeof(struct ungappedExtension *) 
                     * MAX_EXTENSIONS_PER_QUERY);
     }
-
 
     uint2 *lastHits_arr = (uint2 *)global_malloc(sizeof(uint2) * maxNumSecondBins * parameters_num_threads);
 
@@ -643,11 +639,10 @@ void merge(int numQuery)
 
     for(ii = 0; ii < numQuery; ii++)
     {
-        //alignments_sortGoodAlignments_multi(goodAlignQuery[ii], numGoodAlignQuery[ii]);
 
         if(numFinalAlignQuery[ii] + numGoodAlignQuery[ii] >= finalAlignQueryBufSize[ii])
         {
-            finalAlignQueryBufSize[ii] *= 2;
+            finalAlignQueryBufSize[ii] = numFinalAlignQuery[ii] + numGoodAlignQuery[ii];
             finalAlignQuery[ii] = (struct alignment *)realloc(finalAlignQuery[ii], 
                     sizeof(struct alignment) * finalAlignQueryBufSize[ii]);
         }
@@ -657,10 +652,6 @@ void merge(int numQuery)
                 finalAlignQuery[ii][numFinalAlignQuery[ii]] = goodAlignQuery[ii][jj];
                 numFinalAlignQuery[ii]++;
         }
-
-        //ASSERT(numFinalAlignQuery[ii] <= 2 * parameters_numDisplayAlignments);
-
-        alignments_sortGoodAlignments_multi(finalAlignQuery[ii], numFinalAlignQuery[ii]);
 
         for(jj = 0; jj < numFinalAlignQuery[ii]; jj++)
         {
@@ -722,19 +713,28 @@ void traceback(
         int numQuery)
 {
 
-    Blast_AminoAcidComposition *query_composition_arr = (Blast_AminoAcidComposition *)malloc(sizeof(Blast_AminoAcidComposition) * numQuery);
+    Uint8 **query_words_arr = 
+        (Uint8 **)malloc(sizeof(Uint8 *) * parameters_num_threads);
 
-    Blast_CompositionWorkspace **NRrecord_arr = (Blast_CompositionWorkspace **)malloc(sizeof(Blast_CompositionWorkspace *) * parameters_num_threads); ;
+    Blast_AminoAcidComposition *query_composition_arr = 
+        (Blast_AminoAcidComposition *)malloc(sizeof(Blast_AminoAcidComposition) * numQuery);
 
-    Blast_MatrixInfo *matrixInfo_arr = (Blast_MatrixInfo *)malloc(sizeof(Blast_MatrixInfo) * parameters_num_threads);
+    Blast_CompositionWorkspace **NRrecord_arr = 
+        (Blast_CompositionWorkspace **)malloc(sizeof(Blast_CompositionWorkspace *) * parameters_num_threads); ;
 
-    BlastGapAlignStruct **gap_align_arr = (BlastGapAlignStruct **)malloc(sizeof(BlastGapAlignStruct *) * parameters_num_threads);
+    Blast_MatrixInfo *matrixInfo_arr = 
+        (Blast_MatrixInfo *)malloc(sizeof(Blast_MatrixInfo) * parameters_num_threads);
+
+    BlastGapAlignStruct **gap_align_arr = 
+        (BlastGapAlignStruct **)malloc(sizeof(BlastGapAlignStruct *) * parameters_num_threads);
 
     void **matrix_arr = (void **)malloc(sizeof(void *) * parameters_num_threads);
 
-    unsigned char **seq_data_arr = (unsigned char **)malloc(sizeof(unsigned char *) * parameters_num_threads);
+    unsigned char **seq_data_arr = 
+        (unsigned char **)malloc(sizeof(unsigned char *) * parameters_num_threads);
 
-    ReNewtonSystem **newton_system_arr = (ReNewtonSystem **)malloc(sizeof(ReNewtonSystem *) * parameters_num_threads);
+    ReNewtonSystem **newton_system_arr = 
+        (ReNewtonSystem **)malloc(sizeof(ReNewtonSystem *) * parameters_num_threads);
 
     double ***grads_arr = (double ***)malloc(sizeof(double **) * parameters_num_threads);
     double ***Scores_arr = (double ***)malloc(sizeof(double **) * parameters_num_threads);
@@ -757,7 +757,12 @@ void traceback(
             ASSERT(PSSMatrix_arr[ii].queryCodes[jj] < FSA_AA_SIZE);
             querySeq_arr[ii][jj] = to_ncbi[PSSMatrix_arr[ii].queryCodes[jj]];
         }
-        Blast_ReadAaComposition_fsa(&query_composition_arr[ii], BLASTAA_SIZE, PSSMatrix_arr[ii].queryCodes, PSSMatrix_arr[ii].length);
+
+        Blast_ReadAaComposition_fsa(
+                &query_composition_arr[ii], 
+                BLASTAA_SIZE, 
+                PSSMatrix_arr[ii].queryCodes, 
+                PSSMatrix_arr[ii].length);
 
     }
 
@@ -784,7 +789,10 @@ void traceback(
 
         edit_script_num_rows_t[ii] = EDIT_SCRIPT_MAX_NUM_ROWS;
         edit_script_t[ii] = (Uint1**) malloc(sizeof(Uint1*) * edit_script_num_rows_t[ii]);
-        edit_start_offset_t[ii] = (Int4*) malloc(sizeof(Int4) * edit_script_num_rows_t[ii]);
+        edit_start_offset_t[ii] = 
+            (Int4*) malloc(sizeof(Int4) * edit_script_num_rows_t[ii]);
+
+        query_words_arr[ii] = (Uint8 *)malloc(sizeof(Uint8) * longestQueryLength);
     }
 
 
@@ -829,13 +837,13 @@ void traceback(
                     &gapExtensionBufSize_arr[thread_id],
                     &traceCodeBuf_arr[thread_id],
                     &traceCodeCount_arr[thread_id],
-                    &traceCodeBufSize_arr[thread_id]);
+                    &traceCodeBufSize_arr[thread_id],
+                    query_words_arr[thread_id]);
         }
 
         gettimeofday(&end_t, NULL);
         long traceback_time_t = ((end_t.tv_sec * 1000000 + end_t.tv_usec) -
                 (start_t.tv_sec * 1000000 + start_t.tv_usec));
-
 
         //fprintf(stderr, "tid: %d traceback time: %f\n", 
         //thread_id,
@@ -871,8 +879,10 @@ void traceback(
         Blast_MatrixInfoFree2(&matrixInfo_arr[ii]);
         free(edit_start_offset_t[ii]);
         free(edit_script_t[ii]);
+        free(query_words_arr[ii]);
     }
 
+    free(query_words_arr);
     free(gap_align_arr);
     free(query_composition_arr);
     free(NRrecord_arr);

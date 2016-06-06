@@ -398,19 +398,20 @@ void proteinLookup_db_build(int4 numCodes, int wordLength,
 
             int4 sequenceCount = ii + readdb_volumeOffset;
 
-            numLetterBlk += readdb_sequenceData[ii + readdb_volumeOffset].sequenceLength;
-
             if(numLetterBlk >= dbIdx_block_size || (ii - seqStartBlk) >= (1 << 16))
             {
-                numLetterBlk -= readdb_sequenceData[ii + readdb_volumeOffset].sequenceLength;
                 ii--;
                 break;
             }
 
+            numLetterBlk += readdb_sequenceData[ii + readdb_volumeOffset].sequenceLength;
+
             ASSERT(readdb_sequenceData[ii + readdb_volumeOffset].sequenceLength > 0);
 
-            proteinLookup_db_sub(ii - seqStartBlk, readdb_sequenceData[ii + readdb_volumeOffset].sequence,
-                    readdb_sequenceData[ii + readdb_volumeOffset].sequenceLength, wordLength,
+            proteinLookup_db_sub(ii - seqStartBlk, 
+                    readdb_sequenceData[sequenceCount].sequence,
+                    readdb_sequenceData[sequenceCount].sequenceLength, 
+                    wordLength,
                     jj);
 
             proteinLookup_db_b[jj].dbIdxblk_longestSeq =
@@ -419,7 +420,6 @@ void proteinLookup_db_build(int4 numCodes, int wordLength,
         }
 
         proteinLookup_db_b[jj].numSeqBlk = ii - seqStartBlk + 1;
-
         seqStartBlk = ii;
         numHits_db += numHits_blk;
 
@@ -428,8 +428,8 @@ void proteinLookup_db_build(int4 numCodes, int wordLength,
         for (ii = 0; ii < proteinLookup_numWords; ii++) {
             proteinLookup_db_b[jj].subPositionOffset[ii] = numSubPositions;
             numSubPositions += proteinLookup_db[ii].numSubPositions;
-            qsort(proteinLookup_db[ii].subSequencePositions,
-                    proteinLookup_db[ii].numSubPositions, sizeof(subPos_t), comparePos_subjectOffset);
+            //qsort(proteinLookup_db[ii].subSequencePositions,
+            //proteinLookup_db[ii].numSubPositions, sizeof(subPos_t), comparePos_subjectOffset);
         }
         proteinLookup_db_b[jj].subPositionOffset[proteinLookup_numWords] = numSubPositions;
 

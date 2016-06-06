@@ -384,6 +384,22 @@ alignments_sortGoodAlignments_multi(struct alignment *goodAlignQuery,
             alignments_compareGoodAlignments);
 }
 
+int EarlyTermination(double evalue, int numAlign, double worse_eValue)
+{
+    double ecutoff = 0.002;
+
+    if(numAlign >= parameters_numDisplayAlignments && 
+            worse_eValue <= evalue)
+    {
+        if(evalue <= EVALUE_STRETCH * ecutoff)
+            return FALSE;
+    }
+    else{
+        return FALSE;
+    }
+
+    return TRUE;
+}
 
 void alignments_getTracebacks_ncbi(
         int tid,
@@ -410,7 +426,8 @@ void alignments_getTracebacks_ncbi(
         int4 *gapExtensionBufSize,
         unsigned char **traceCodeBuf,
         int4 *traceCodeCount,
-        int4 *traceCodeBufSize
+        int4 *traceCodeBufSize,
+        Uint8 *query_words
         )
 {
     struct finalAlignment *goodAlignment;
@@ -419,7 +436,7 @@ void alignments_getTracebacks_ncbi(
 
     struct timeval start, end;
 
-    //alignments_sortGoodAlignments_multi(goodAlignQuery, numGoodAlignQuery);
+    alignments_sortGoodAlignments_multi(goodAlignQuery, numGoodAlignQuery);
 
     score_params.gap_open = 352;
     score_params.gap_extend = 32;
@@ -438,33 +455,32 @@ void alignments_getTracebacks_ncbi(
 
     int hspcnt = 0;
     int num_goodAlignment = 0;
+    //double worse_eValue = INT2_MAX;
+    //fprintf(stderr, "numGoodAlignQuery:%d\n", numGoodAlignQuery);
 
-    //ASSERT(alignments_finalAlignments_multi[queryNum]->numEntries == 0);
-
-    //while ((goodAlignment = memSingleBlock_getCurrent(
-    //alignments_goodAlignments_multi[queryNum])) != NULL) {
     int alignId;
     for(alignId = 0; alignId < numGoodAlignQuery; alignId++)
     {
-
         alignment = &goodAlignQuery[alignId];
 
         Boolean oldNearIdenticalStatus = FALSE;
 
         //fprintf(stderr, "trace: seqId: %d queryId: %d extOff: %d numExt: %d\n",
-                //alignment->sequenceCount, alignment->queryCount, 
-                //alignment->ungappedExtensionOffset,
-                //alignment->numExtensions);
+        //alignment->sequenceCount, alignment->queryCount, 
+        //alignment->ungappedExtensionOffset,
+        //alignment->numExtensions);
 
         int hsp_index = 0;
         int num_adjustments = 0;
 
-        double ecutoff = 0.002;
-        if(num_goodAlignment >= parameters_numDisplayAlignments 
-                && alignment->best_eValue > EVALUE_STRETCH * ecutoff)
-        {
-            break;
-        }
+        //if(EarlyTermination(
+                    //alignment->best_eValue, 
+                    //num_goodAlignment, 
+                    //worse_eValue))
+        //{
+            //fprintf(stderr, "seqId: %d worse_eValue: %f best_eValue: %f skip\n", alignment->sequenceCount, worse_eValue, alignment->best_eValue);
+            //break;
+        //}
 
         BlastCompo_SequenceData seqData;
         seqData.buffer = seq_data; 
@@ -521,7 +537,6 @@ void alignments_getTracebacks_ncbi(
                             ungappedExtension,
                             cutoff);
 
-                Uint8 query_words[100];
                 if(hsp_index == 0 || (shouldTestIdentical != oldNearIdenticalStatus))
                 {
                     if(!shouldTestIdentical || (shouldTestIdentical) 
@@ -701,10 +716,6 @@ void alignments_getTracebacks_ncbi(
                 &bestScore, &best_eValue, hsp_array, 
                 hspcnt, PSSMatrix.length, alignment->subjectLength);
 
-        //for(ii = hspcnt_new; ii < hspcnt; ii++)
-        //{
-            //free(hsp_array[ii]->trace.traceCodes);
-        //}
 
         if(hspcnt_new)
         {
