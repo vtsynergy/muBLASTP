@@ -15,7 +15,7 @@ int4 blast_gappedScoreTime = 0, blast_gappedExtendTime = 0,
      blast_finalizeTime = 0;
 int4 blast_semiGappedScoreTime = 0, blast_copyTime = 0, blast_unpackTime = 0;
 uint4 blast_numQuery = 0;
-uint4 blast_numBlocks = 0;
+//uint4 blast_numBlocks = 0;
 uint2 blast_tgSize = 1;
 
 int rank = 0, num_procs = 1;

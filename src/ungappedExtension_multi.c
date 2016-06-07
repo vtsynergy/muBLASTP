@@ -26,14 +26,14 @@ void ungappedExtension_initialize_multi() {
 
   int ii;
   for (ii = 0; ii < blast_numQuery; ii++) {
-    ungappedExtension_extensions_multi2[ii] = (struct memBlocks **)malloc(
-        sizeof(struct memBlocks *) * blast_numBlocks);
-    int jj;
-    for (jj = 0; jj < blast_numBlocks; jj++) {
-      ungappedExtension_extensions_multi2[ii][jj] = memBlocks_initialize(
-          sizeof(struct ungappedExtension),
-          constants_initialAllocUngappedExtensions);
-    }
+    //ungappedExtension_extensions_multi2[ii] = (struct memBlocks **)malloc(
+        //sizeof(struct memBlocks *) * blast_numBlocks);
+    //int jj;
+    //for (jj = 0; jj < blast_numBlocks; jj++) {
+      //ungappedExtension_extensions_multi2[ii][jj] = memBlocks_initialize(
+          //sizeof(struct ungappedExtension),
+          //constants_initialAllocUngappedExtensions);
+    //}
 
     ungappedExtension_extensions_multi[ii] =
         memBlocks_initialize(sizeof(struct ungappedExtension),

@@ -10,13 +10,13 @@ uint4 maxNumSeqBlk = 0;
 uint4 maxBinSize = 0;
 
 uint8 total_allocHits = 0;
-uint8 numHits_blk = 0;
-uint8 numHits_db = 0;
+uint8 totalNumPositions = 0;
 
 
 #define min(a, b) ((a) <= (b) ? (a) : (b))
 
-void write_dbIdxBlock(FILE *dbLookupFile, int blockNum);
+void write_dbIdxBlock(FILE *write_dbIdxBlockFile2, int blockNum);
+void write_dbIdxBlockAux(FILE *write_dbIdxBlockFile1);
 void write_dbLookupAux(char *write_dbLookupFilename);
 
 int4 getCodeword(unsigned char *codes, int4 wordLength) {
@@ -150,7 +150,7 @@ void proteinLookup_db_initial(int4 numCodes, int wordLength) {
     struct initialWord_neighborLookup *initialLookup_n;
     uint4 codeword, numEntries;
 
-    numHits_db = 0;
+    totalNumPositions = 0;
     maxNumSeqBlk = 0;
     wordLookupDFA_numCodes = numCodes;
     wordLookupDFA_wordLength = wordLength;
@@ -174,7 +174,8 @@ void proteinLookup_db_initial(int4 numCodes, int wordLength) {
     // Iterate through every possible codeword
     codeword = 0;
     while (codeword < numBlocks) {
-        proteinLookup_db_b[codeword].subPositionOffset = (uint4 *)global_malloc(sizeof(uint4) * (numEntries + 1));
+        proteinLookup_db_b[codeword].subPositionOffset = 
+            (uint4 *)global_malloc(sizeof(uint4) * (numEntries + 1));
         proteinLookup_db_b[codeword].dbIdxblk_longestSeq = 0;
         proteinLookup_db_b[codeword].numSeqBlk = 0;
         proteinLookup_db_b[codeword].subSequencePositions = NULL;
@@ -191,27 +192,11 @@ void proteinLookup_db_initial(int4 numCodes, int wordLength) {
     }
 }
 
-
-void free_dbIdxBlock(int bid)
-{
-    free(proteinLookup_db_b[bid].subPositionOffset);
-    free(proteinLookup_db_b[bid].subSequencePositions);
-}
-
-void free_dbIdxAux()
-{
+void free_dbindex() {
     free(proteinLookup_db_b);
     free(proteinLookup_db);
-}
-
-void free_dbindex() {
-    uint4 bid;
-    bid = 0;
-    while (bid < proteinLookup_numBlocks) {
-        free_dbIdxBlock(bid);
-        bid++;
-    }
-    free_dbIdxAux();
+    free(proteinLookup_db_b[0].subPositionOffset);
+    free(proteinLookup_db_b[0].subSequencePositions);
 }
 
 
@@ -252,7 +237,7 @@ void proteinLookup_db_sub(uint4 sequenceOffset, unsigned char *sequence,
         if (initialWord->numSubPositions > initialWord->allocSubPositions) {
             // total_allocHits += allocSubPositions[codeword];
             initialWord->allocSubPositions = initialWord->allocSubPositions == 0
-                ? 50
+                ? 100
                 : 2 * initialWord->allocSubPositions;
             initialWord->subSequencePositions = (subPos_t *)global_realloc(
                     initialWord->subSequencePositions,
@@ -268,7 +253,6 @@ void proteinLookup_db_sub(uint4 sequenceOffset, unsigned char *sequence,
         //initialWord->subSequencePositions[initialWord->numSubPositions - 1] =
         //(queryPosition << 16) + (sequenceNum - startSeqNum);
 
-        numHits_blk++;
         //queryPosition++;
     }
 }
@@ -343,34 +327,49 @@ void proteinLookup_db_build(int4 numCodes, int wordLength,
 {
 
 
-    FILE *dbLookupFile;
+    FILE *dbLookupFile1;
+    FILE *dbLookupFile2;
 
-    char *dbLookupFileName;
+    char *dbLookupFileName1;
+    char *dbLookupFileName2;
 
-    dbLookupFileName = (char *)
+    dbLookupFileName1 = (char *)
         malloc(sizeof(char *) * strlen(write_dbLookupFilename) + 40);
 
-    sprintf(dbLookupFileName, 
-            "%s.sequence%d.dbLookup", write_dbLookupFilename, readdb_volume);
+    dbLookupFileName2 = (char *)
+        malloc(sizeof(char *) * strlen(write_dbLookupFilename) + 40);
 
-    if ((dbLookupFile = fopen(dbLookupFileName, "w")) == NULL) {
+    sprintf(dbLookupFileName1, 
+            "%s.sequence%d.dbLookup1", write_dbLookupFilename, readdb_volume);
+
+    sprintf(dbLookupFileName2, 
+            "%s.sequence%d.dbLookup2", write_dbLookupFilename, readdb_volume);
+
+    if ((dbLookupFile1 = fopen(dbLookupFileName1, "w")) == NULL) {
         fprintf(stderr, "Error opening file %s for writing\n",
-                dbLookupFileName);
+                dbLookupFileName1);
         exit(-1);
     }
 
-    free(dbLookupFileName);
+    if ((dbLookupFile2 = fopen(dbLookupFileName2, "w")) == NULL) {
+        fprintf(stderr, "Error opening file %s for writing\n",
+                dbLookupFileName2);
+        exit(-1);
+    }
+
+    free(dbLookupFileName1);
+    free(dbLookupFileName2);
 
     proteinLookup_db_initial(numCodes, wordLength);
 
     int4 ii, jj;
 
-    fprintf(stderr, "volumn: %d seqOffset: %d volumNumSeq: %d numBlocks: %d numWords: %d\nindexing...", 
+    fprintf(stderr, "volumn: %d seqOffset: %d volumNumSeq: %d\nindexing...", 
             readdb_volume,
             readdb_volumeOffset,
-            readdb_numVolumeSequences,
-            proteinLookup_numBlocks,
-            proteinLookup_numWords);
+            readdb_numVolumeSequences);
+            //proteinLookup_numBlocks,
+            //proteinLookup_numWords);
 
     uint4 seqStartBlk = 0;
     maxBinSize = 0;
@@ -378,7 +377,6 @@ void proteinLookup_db_build(int4 numCodes, int wordLength,
     for (jj = 0; jj < proteinLookup_numBlocks; jj++) {
 
         uint4 numLetterBlk = 0;
-        numHits_blk = 0;
 
         if(!(jj % 10))
         {
@@ -421,7 +419,6 @@ void proteinLookup_db_build(int4 numCodes, int wordLength,
 
         proteinLookup_db_b[jj].numSeqBlk = ii - seqStartBlk + 1;
         seqStartBlk = ii;
-        numHits_db += numHits_blk;
 
 #if 1
         uint4 numSubPositions = 0;
@@ -432,22 +429,27 @@ void proteinLookup_db_build(int4 numCodes, int wordLength,
             //proteinLookup_db[ii].numSubPositions, sizeof(subPos_t), comparePos_subjectOffset);
         }
         proteinLookup_db_b[jj].subPositionOffset[proteinLookup_numWords] = numSubPositions;
+        totalNumPositions += numSubPositions;
 
         maxBinSize = MAX(proteinLookup_db_b[jj].numSeqBlk * proteinLookup_db_b[jj].dbIdxblk_longestSeq, maxBinSize);
 
         maxNumSeqBlk = MAX(proteinLookup_db_b[jj].numSeqBlk, maxNumSeqBlk);
 
-        if(proteinLookup_db_b[jj].numSeqBlk > 0)
-            write_dbIdxBlock(dbLookupFile, jj);
+        if(numSubPositions > 0)
+        {
+            write_dbIdxBlock(dbLookupFile2, jj);
+        }
+
 #endif
 
 #if 0
-        printf("numSeq: %u numLetterBlk: %u idxblockSize: %lu = %lu + %lu (KB)\n",
+        printf("%d: numSeq: %u numLetterBlk: %u idxblockSize: %lu = %lu + %lu (KB)\n",
+                jj,
                 proteinLookup_db_b[jj].numSeqBlk, numLetterBlk,
                 (sizeof(struct initialWord_protein_db) * proteinLookup_numWords +
-                 sizeof(subPos_t) * numHits_blk) >> 10,
+                 sizeof(subPos_t) * numSubPositions) >> 10,
                 sizeof(struct initialWord_protein_db) * proteinLookup_numWords >> 10,
-                sizeof(subPos_t) * numHits_blk >> 10);
+                sizeof(subPos_t) * numSubPositions >> 10);
 #endif
 
         for (ii = 0; ii < proteinLookup_numWords; ii++) {
@@ -457,9 +459,8 @@ void proteinLookup_db_build(int4 numCodes, int wordLength,
             proteinLookup_db[ii].numSubPositions = 0;
         }
 
-        if(proteinLookup_db_b[jj].numSeqBlk == 0)
+        if(numSubPositions == 0)
         {
-            jj--;
             break;
         }
     }
@@ -468,103 +469,97 @@ void proteinLookup_db_build(int4 numCodes, int wordLength,
 
     proteinLookup_numBlocks = jj;
 
+    write_dbIdxBlockAux(dbLookupFile1);
     write_dbLookupAux(write_dbLookupFilename);
 
-    fclose(dbLookupFile);
-    free_dbindex();
+    fclose(dbLookupFile1);
+    fclose(dbLookupFile2);
+
+    free(proteinLookup_db);
+    free(proteinLookup_db_b);
+    //free_dbindex();
 }
 
-void write_dbIdxBlock(FILE *write_dbIdxBlockFile, int blockNum) {
-    //char *write_dbIdxBlockFilename;
-    //FILE *write_dbIdxBlockFile;
+void write_dbIdxBlockAux(FILE *write_dbIdxBlockFile1)
+{
+    int ii;
+    for(ii = 0; ii < proteinLookup_numBlocks; ii++)
+    {
+        if (fwrite(proteinLookup_db_b[ii].subPositionOffset,
+                    sizeof(uint4), proteinLookup_numWords + 1,
+                    write_dbIdxBlockFile1) != proteinLookup_numWords + 1) {
+            fprintf(stderr, "Error writing header to dbIdxBlock file\n");
+            exit(-1);
+        }
 
-    //write_dbIdxBlockFilename =
-        //(char *)global_malloc(strlen(write_dbLookupFilename) + 40);
+    }
+}
 
-    //sprintf(write_dbIdxBlockFilename, "%s.sequence%d.dbLookup%d", write_dbLookupFilename, readdb_volume,
-            //blockNum);
-
-    //if ((write_dbIdxBlockFile = fopen(write_dbIdxBlockFilename, "w")) == NULL) {
-        //fprintf(stderr, "Error opening file %s for writing\n",
-                //write_dbIdxBlockFilename);
-        //exit(-1);
-    //}
+void write_dbIdxBlock(FILE *write_dbIdxBlockFile2, int blockNum) {
 
     int ii;
-    if (fwrite(proteinLookup_db_b[blockNum].subPositionOffset,
-                sizeof(uint4), proteinLookup_numWords + 1,
-                write_dbIdxBlockFile) != proteinLookup_numWords + 1) {
-        fprintf(stderr, "Error writing header to dbIdxBlock file\n");
-        exit(-1);
-    }
-
     for (ii = 0; ii < proteinLookup_numWords; ii++) {
 
         int4 numSubPositions =
             proteinLookup_db[ii].numSubPositions;
 
-        if (numSubPositions == 0)
-            continue;
         if (fwrite(proteinLookup_db[ii].subSequencePositions, sizeof(subPos_t), numSubPositions,
-                    write_dbIdxBlockFile) != numSubPositions) {
+                    write_dbIdxBlockFile2) != numSubPositions) {
             fprintf(stderr, "Error writing numSubPositions to dbIdxBlock file\n");
             exit(-1);
         }
     }
-
-    //fclose(write_dbIdxBlockFile);
-    //free(write_dbIdxBlockFilename);
 }
 
 size_t totalIndexSize = 0;
 
-void read_dbIdxBlock(FILE *read_dbIdxBlockFile, int blockNum) {
+void read_dbIdxBlock(FILE *read_dbIdxBlockFile1, FILE *read_dbIdxBlockFile2) {
 
-    //char *read_dbIdxBlockFilename;
-    //FILE *read_dbIdxBlockFile;
+    int4 totalNumEntries = 
+                (proteinLookup_numWords + 1) * 
+                proteinLookup_numBlocks;
 
-    //read_dbIdxBlockFilename =
-        //(char *)global_malloc(strlen(read_dbLookupFilename) + 40);
+    proteinLookup_db_b[0].subPositionOffset = 
+        (uint4 *)global_malloc(sizeof(uint4) * totalNumEntries); 
 
-    //sprintf(read_dbIdxBlockFilename, "%s.sequence%d.dbLookup%d", 
-            //read_dbLookupFilename,
-            //readdb_volume,
-            //blockNum);
+    totalIndexSize += sizeof(uint4) * totalNumEntries; 
 
-    //if ((read_dbIdxBlockFile = fopen(read_dbIdxBlockFilename, "r")) == NULL) {
-        //fprintf(stderr, "Error opening file %s for writing\n",
-                //read_dbIdxBlockFilename);
-        //exit(-1);
-    //}
-
-
-    proteinLookup_db_b[blockNum].subPositionOffset = 
-        (uint4 *)global_malloc(sizeof(uint4) * (proteinLookup_numWords + 1));
-
-    totalIndexSize += sizeof(uint4) * (proteinLookup_numWords + 1);
-
-    if (fread(proteinLookup_db_b[blockNum].subPositionOffset, sizeof(uint4),
-                proteinLookup_numWords + 1,
-                read_dbIdxBlockFile) != proteinLookup_numWords + 1) {
+    if (fread(proteinLookup_db_b[0].subPositionOffset, sizeof(uint4),
+            totalNumEntries,
+            read_dbIdxBlockFile1) != totalNumEntries) {
         fprintf(stderr, "Error reading LoopkupHeader to dbIdxBlock file\n");
         exit(-1);
     }
 
+    int ii;
+    uint8 totalHits = 0;
+    for(ii = 0; ii < proteinLookup_numBlocks; ii++)
+    {
+        proteinLookup_db_b[ii].subPositionOffset = 
+            proteinLookup_db_b[0].subPositionOffset + (proteinLookup_numWords + 1) * ii;
+        totalHits += proteinLookup_db_b[ii].subPositionOffset[proteinLookup_numWords]; 
+    }
 
-    int totalHits = proteinLookup_db_b[blockNum].subPositionOffset[proteinLookup_numWords];
+    //int totalHits = proteinLookup_db_b[blockNum].subPositionOffset[proteinLookup_numWords];
 
-    proteinLookup_db_b[blockNum].subSequencePositions = (subPos_t *)global_malloc(sizeof(subPos_t) * totalHits);
+    ASSERT(totalNumPositions == totalHits);
+    proteinLookup_db_b[0].subSequencePositions = (subPos_t *)global_malloc(sizeof(subPos_t) * totalHits);
 
     totalIndexSize += sizeof(subPos_t) * totalHits;
 
-    if (fread(proteinLookup_db_b[blockNum].subSequencePositions, sizeof(subPos_t), totalHits,
-                read_dbIdxBlockFile) != totalHits) {
+    if (fread(proteinLookup_db_b[0].subSequencePositions, sizeof(subPos_t), totalHits,
+                read_dbIdxBlockFile2) != totalHits) {
         fprintf(stderr, "Error reading numSubPositions to dbIdxBlock file\n");
         exit(-1);
     }
 
-    //fclose(read_dbIdxBlockFile);
-    //free(read_dbIdxBlockFilename);
+    for(ii = 1; ii < proteinLookup_numBlocks; ii++)
+    {
+        proteinLookup_db_b[ii].subSequencePositions = 
+            proteinLookup_db_b[ii - 1].subSequencePositions +
+            proteinLookup_db_b[ii - 1].subPositionOffset[proteinLookup_numWords];
+    }
+
 }
 
 struct dbLookupAux {
@@ -573,8 +568,8 @@ struct dbLookupAux {
     uint4 proteinLookup_wordLength;
     int4 proteinLookup_numCodes;
     int4 dbIdx_block_size;
-    uint8 totalNumPositions;
     int4 maxNumSeqBlk;
+    uint8 totalNumPositions;
 };
 
 void write_dbLookupAux(char *write_dbLookupFilename) {
@@ -599,7 +594,7 @@ void write_dbLookupAux(char *write_dbLookupFilename) {
     dbLookupAux.proteinLookup_wordLength = wordLookupDFA_wordLength;
     dbLookupAux.proteinLookup_numCodes = wordLookupDFA_numCodes;
     dbLookupAux.dbIdx_block_size = dbIdx_block_size;
-    dbLookupAux.totalNumPositions = numHits_db;
+    dbLookupAux.totalNumPositions = totalNumPositions;
     dbLookupAux.maxNumSeqBlk = maxNumSeqBlk;
 
     if (fwrite(&dbLookupAux, sizeof(struct dbLookupAux), 1,
@@ -655,13 +650,12 @@ void read_dbLookupAux(char *read_dbLookupFilename) {
         exit(0);
     }
 
-    blast_numBlocks = proteinLookup_numBlocks =
-        dbLookupAux.proteinLookup_numBlocks;
+    proteinLookup_numBlocks = dbLookupAux.proteinLookup_numBlocks;
     proteinLookup_numWords = dbLookupAux.proteinLookup_numWords;
     wordLookupDFA_wordLength = dbLookupAux.proteinLookup_wordLength;
     wordLookupDFA_numCodes = dbLookupAux.proteinLookup_numCodes;
     dbIdx_block_size = dbLookupAux.dbIdx_block_size;
-    numHits_db = dbLookupAux.totalNumPositions;
+    totalNumPositions = dbLookupAux.totalNumPositions;
     maxNumSeqBlk = dbLookupAux.maxNumSeqBlk;
 
     proteinLookup_db_b = (struct proteinLookup_db_blk *)malloc(
@@ -696,29 +690,42 @@ void read_dbLookup(char *read_dbLookupFilename) {
 
     read_dbLookupAux(read_dbLookupFilename);
 
-    char *dbLookupFileName;
+    char *dbLookupFileName1;
+    char *dbLookupFileName2;
 
-    dbLookupFileName = (char *)
+    dbLookupFileName1 = (char *)
         malloc(sizeof(char *) * strlen(read_dbLookupFilename) + 40);
 
-    sprintf(dbLookupFileName, 
-            "%s.sequence%d.dbLookup", read_dbLookupFilename, readdb_volume);
+    dbLookupFileName2 = (char *)
+        malloc(sizeof(char *) * strlen(read_dbLookupFilename) + 40);
+
+    sprintf(dbLookupFileName1, 
+            "%s.sequence%d.dbLookup1", read_dbLookupFilename, readdb_volume);
+
+    sprintf(dbLookupFileName2, 
+            "%s.sequence%d.dbLookup2", read_dbLookupFilename, readdb_volume);
 
     //proteinLookup_db_initial(numCodes, wordLength);
 
-    FILE *dbLookupFile;
-    if ((dbLookupFile = fopen(dbLookupFileName, "r")) == NULL) {
+    FILE *dbLookupFile1;
+    FILE *dbLookupFile2;
+
+    if ((dbLookupFile1 = fopen(dbLookupFileName1, "r")) == NULL) {
         fprintf(stderr, "Error opening file %s for reading\n",
-                dbLookupFileName);
+                dbLookupFileName2);
         exit(-1);
     }
 
-    free(dbLookupFileName);
-
-    int ii;
-    for (ii = 0; ii < proteinLookup_numBlocks; ii++) {
-        read_dbIdxBlock(dbLookupFile, ii);
+    if ((dbLookupFile2 = fopen(dbLookupFileName2, "r")) == NULL) {
+        fprintf(stderr, "Error opening file %s for reading\n",
+                dbLookupFileName1);
+        exit(-1);
     }
+
+    free(dbLookupFileName1);
+    free(dbLookupFileName2);
+
+    read_dbIdxBlock(dbLookupFile1, dbLookupFile2);
 
     gettimeofday(&end, NULL);
     long read_time = ((end.tv_sec * 1000000 + end.tv_usec) -
@@ -727,7 +734,8 @@ void read_dbLookup(char *read_dbLookupFilename) {
     fprintf(stderr, "time: %f numBlocks: %d blockSize: %dK\n", 
             (float)read_time * 1e-6, proteinLookup_numBlocks, dbIdx_block_size/1024);
 
-    fclose(dbLookupFile);
+    fclose(dbLookupFile1);
+    fclose(dbLookupFile2);
 
 }
 
