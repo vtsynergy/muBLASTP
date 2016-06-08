@@ -467,13 +467,22 @@ void proteinLookup_db_build(int4 numCodes, int wordLength,
 
     fprintf(stderr, "\n");
 
+    int orig_numBlocks = proteinLookup_numBlocks;
     proteinLookup_numBlocks = jj;
 
     write_dbIdxBlockAux(dbLookupFile1);
+
+    for(ii = 0; ii < orig_numBlocks; ii++)
+    {
+        free(proteinLookup_db_b[ii].subPositionOffset);
+    }
+
     write_dbLookupAux(write_dbLookupFilename);
 
     fclose(dbLookupFile1);
     fclose(dbLookupFile2);
+
+    
 
     free(proteinLookup_db);
     free(proteinLookup_db_b);
