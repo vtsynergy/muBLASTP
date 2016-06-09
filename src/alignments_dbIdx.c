@@ -67,6 +67,8 @@ void loadSubject(struct alignment *alignment)
     alignment->subject = subject;
 }
 
+int maxNumAlign = 0;
+
 void merge(int numQuery);
 
 void alignments_dbIdx(
@@ -78,6 +80,7 @@ void alignments_dbIdx(
 {
 
 
+    maxNumAlign = parameters_numDisplayAlignments * 2 + 50;
 
     int numQueriesPerThread = ceil((float)numQuery / parameters_num_threads);
 
@@ -117,9 +120,9 @@ void alignments_dbIdx(
 
     for(ii = 0; ii < numQuery; ii++)
     {
+        finalAlignQueryBufSize[ii] = maxNumAlign;
         finalAlignQuery[ii] = (struct alignment *)global_malloc(
-                sizeof(struct alignment) * parameters_numDisplayAlignments);
-        finalAlignQueryBufSize[ii] = parameters_numDisplayAlignments;
+                sizeof(struct alignment) * finalAlignQueryBufSize[ii]);
     }
 
     int goodAlignOffset[MAX_NUM_THREADS] = {0};
@@ -591,6 +594,8 @@ void prelim_search_dbIdx(
     free(BlastHSP_arr);
 }
 
+double worst_evalue = 0.0;
+
 void merge(int numQuery)
 {
     struct timeval start, end;
@@ -643,7 +648,7 @@ void merge(int numQuery)
         if(numFinalAlignQuery[ii] + numGoodAlignQuery[ii] >= finalAlignQueryBufSize[ii])
         {
             finalAlignQueryBufSize[ii] = numFinalAlignQuery[ii] + numGoodAlignQuery[ii];
-            finalAlignQuery[ii] = (struct alignment *)realloc(finalAlignQuery[ii], 
+            finalAlignQuery[ii] = (struct alignment *)global_realloc(finalAlignQuery[ii], 
                     sizeof(struct alignment) * finalAlignQueryBufSize[ii]);
         }
 
@@ -653,9 +658,12 @@ void merge(int numQuery)
                 numFinalAlignQuery[ii]++;
         }
 
+        alignments_sortGoodAlignments_multi(finalAlignQuery[ii],
+                numFinalAlignQuery[ii]);
+
         for(jj = 0; jj < numFinalAlignQuery[ii]; jj++)
         {
-            //if(jj < parameters_numDisplayAlignments)
+            if(jj < maxNumAlign)
             {
                 struct alignment *alignment = &finalAlignQuery[ii][jj];
                 if(alignment->inMemorySubject == 0)
@@ -674,20 +682,21 @@ void merge(int numQuery)
                     alignment->inMemorySubject = 1;
                 }
             }
-            //else
-            //{
-                //struct alignment *alignment = &finalAlignQuery[ii][jj];
-                //if(alignment->inMemorySubject != 0)
-                //{
-                    //free(alignment->subject - 1);
-                    //free(alignment->description);
-                    //free(alignment->ungappedExtensions);
-                //}
-            //}
+            else
+            {
+                struct alignment *alignment = &finalAlignQuery[ii][jj];
+                if(alignment->inMemorySubject != 0)
+                {
+                    free(alignment->subject - 1);
+                    free(alignment->description);
+                    free(alignment->ungappedExtensions);
+                }
+            }
         }
 
-        //if(numFinalAlignQuery[ii] > parameters_numDisplayAlignments)
-        //numFinalAlignQuery[ii] = parameters_numDisplayAlignments;
+
+        if(numFinalAlignQuery[ii] > maxNumAlign)
+            numFinalAlignQuery[ii] = maxNumAlign;
 
         free(goodAlignQuery[ii]);
     }

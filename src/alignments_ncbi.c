@@ -456,7 +456,6 @@ void alignments_getTracebacks_ncbi(
     int hspcnt = 0;
     int num_goodAlignment = 0;
     //double worse_eValue = INT2_MAX;
-    //fprintf(stderr, "numGoodAlignQuery:%d\n", numGoodAlignQuery);
 
     int alignId;
     for(alignId = 0; alignId < numGoodAlignQuery; alignId++)
