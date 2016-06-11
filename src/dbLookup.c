@@ -192,10 +192,11 @@ void proteinLookup_db_initial(int4 numCodes, int wordLength) {
 }
 
 void free_dbindex() {
-    free(proteinLookup_db_b);
-    free(proteinLookup_db);
     free(proteinLookup_db_b[0].subPositionOffset);
     free(proteinLookup_db_b[0].subSequencePositions);
+
+    free(proteinLookup_db_b);
+    free(proteinLookup_db);
 }
 
 
@@ -236,7 +237,7 @@ void proteinLookup_db_sub(uint4 sequenceOffset, unsigned char *sequence,
         if (initialWord->numSubPositions > initialWord->allocSubPositions) {
             // total_allocHits += allocSubPositions[codeword];
             initialWord->allocSubPositions = initialWord->allocSubPositions == 0
-                ? 100
+                ? 10
                 : 2 * initialWord->allocSubPositions;
             initialWord->subSequencePositions = (subPos_t *)global_realloc(
                     initialWord->subSequencePositions,

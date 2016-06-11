@@ -5,8 +5,12 @@ OBJ=obj
 
 NCBI_CORE=ncbi_core/
 
-CC=gcc
-CCPLUS=g++
+#CC=gcc
+#CCPLUS=g++
+
+CC=icc
+CCPLUS=icpc
+
 CFLAGS=-fopenmp -g -I$(INC) -I$(NCBI_CORE) -O3 -D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE #-DNEIGHBOR_INDEX
 LDFLAGS=-g -lm -lpthread -lstdc++
 
