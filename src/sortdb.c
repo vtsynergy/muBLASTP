@@ -36,14 +36,14 @@ char* getSequence(uint4 seqId)
     return sequenceBuffer;
 }
 
-void print_sequence(int seqId)
+void print_sequence(int seqId, FILE *output_file)
 {
     char *seqDes = 
         descriptions_getDescription_mem(
                 readdb_sequenceData[seqId].descriptionStart, 
                 readdb_sequenceData[seqId].descriptionLength);
 
-    //char *seq = getSequence(seqId); 
+    char *seq = getSequence(seqId); 
 
     writedb_addSequence(
             readdb_sequenceData[seqId].sequence, 
@@ -52,7 +52,9 @@ void print_sequence(int seqId)
             readdb_sequenceData[seqId].descriptionLength, 
             NULL, 0, NULL, 0);
 
-    //free(seq);
+    fprintf(output_file, ">%s\n%s\n", seqDes, seq);
+
+    free(seq);
     free(seqDes); 
 }
 
@@ -81,6 +83,10 @@ int4 main(int4 argc, char* argv[])
         fprintf(stderr, "Useage: sortdb -i <Database> -o <Sorted database>\n");
         exit(-1);
     }
+
+
+    FILE *output_file;
+    output_file = fopen(ofilename, "w");
 
     // Open sequence data file and read information
 	encoding_initialize(encoding_protein);
@@ -112,7 +118,7 @@ int4 main(int4 argc, char* argv[])
                 fprintf(stderr, ".");
             }
 
-            print_sequence(seqId[ii]);
+            print_sequence(seqId[ii], output_file);
         }
 
         fprintf(stderr, "\n");
@@ -129,6 +135,7 @@ int4 main(int4 argc, char* argv[])
     }
 
     writedb_close();
+    fclose(output_file);
 
     free(seqId);
     readdb_close_mem();
