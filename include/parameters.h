@@ -5,8 +5,6 @@
 extern int parameters_num_threads;
 extern int parameters_batch_size;
 
-extern char* mpi_parameters_subjectDatabaseFile;
-
 extern char* parameters_queryFile;
 extern char* parameters_subjectDatabaseFile;
 extern char* parameters_hspindexFilename;
@@ -76,8 +74,6 @@ extern int4 parameters_verboseDloc;
 
 // Process command line arguments and set parameters value
 void parameters_processArguments(int4 argc, char* argv[]);
-
-void mpi_parameters_processArguments(int rank, int4 argc, char *argv[]);
 
 // Given the alphabet type of the query, use the relevant parameter defaults
 void parameters_loadDefaults(unsigned char alphabetType);

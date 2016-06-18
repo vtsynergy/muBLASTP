@@ -7,64 +7,87 @@
 // Main code for blast
 
 #include "blast.h"
+#include <unistd.h>
+
 int4 main(int4 argc, char *argv[]) {
-  // User must provide FASTA format file at command line
-    if (argc == 3) {
-        dbIdx_block_size = atoi(argv[2]) * 1024;
+
+    char *filename = NULL;
+    dbIdx_block_size = 0;
+
+    int c;
+    while((c = getopt(argc, argv, "i:s:")) != -1)
+    {
+        switch (c)
+        {
+            case 'i':
+                filename = optarg;
+                break;
+            case 's':
+                dbIdx_block_size = atoi(optarg);
+                break;
+            default:
+                fprintf(stderr, "Useage: indexdb -i <Database>"
+                        " -s [Block size, default 128(K)]\n");
+                exit(-1);
+        }
     }
-    else if(argc == 2)
+
+    if(filename == NULL)
+    {
+        fprintf(stderr, "Useage: indexdb -i <Database>"
+                " -s [Block size, default 128(K)]\n");
+        exit(-1);
+    }
+
+    if(dbIdx_block_size == 0)
     {
         dbIdx_block_size = 128 * 1024;
     }
     else
     {
-        fprintf(stderr,
-                "Useage: indexdb <DB filename> <DB index block size (K letters)>\n");
-        exit(-1);
-
+        dbIdx_block_size *= 1024;
     }
 
-  char *filename = argv[1];
+    
+    // Open sequence data file and read information
+    readdb_open_mem(filename);
 
-  // Open sequence data file and read information
-  readdb_open_mem(filename);
+    encoding_initialize(encoding_protein);
+    struct scoreMatrix scoreMatrix;
 
-  encoding_initialize(encoding_protein);
-  struct scoreMatrix scoreMatrix;
+    parameters_wordSize = 3;
 
-  parameters_wordSize = 3;
+    parameters_findScoringMatrix();
+    scoreMatrix = scoreMatrix_load(parameters_scoringMatrixPath);
 
-  parameters_findScoringMatrix();
-  scoreMatrix = scoreMatrix_load(parameters_scoringMatrixPath);
-
-  while(1)
-  {
+    while(1)
+    {
 
 #ifndef COMPRESSED_INDEX
-      proteinLookup_db_build(encoding_numRegularLetters, parameters_wordSize,
-              scoreMatrix, filename);
+        proteinLookup_db_build(encoding_numRegularLetters, parameters_wordSize,
+                scoreMatrix, filename);
 #else
-      proteinLookup_db_cp_build(encoding_numRegularLetters, parameters_wordSize,
-              scoreMatrix, filename);
+        proteinLookup_db_cp_build(encoding_numRegularLetters, parameters_wordSize,
+                scoreMatrix, filename);
 #endif
 
 
-      if(readdb_volume + 1 < readdb_numberOfVolumes)
-      {
-          readdb_nextVolume_mem();
-      }
-      else
-      {
-          break;
-      }
-  }
+        if(readdb_volume + 1 < readdb_numberOfVolumes)
+        {
+            readdb_nextVolume_mem();
+        }
+        else
+        {
+            break;
+        }
+    }
 
 
-  // write_dbLookup(filename);
-  scoreMatrix_free(scoreMatrix);
-  encoding_free();
+    // write_dbLookup(filename);
+    scoreMatrix_free(scoreMatrix);
+    encoding_free();
 
-  // close database
-  readdb_close_mem();
-  return 0;
+    // close database
+    readdb_close_mem();
+    return 0;
 }

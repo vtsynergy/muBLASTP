@@ -7,6 +7,7 @@
 // Program for creating a database .sequences file from a FASTA format database
 
 #include <blast.h>
+#include <unistd.h>
 
 uint4 determineDbAlphabetType(char *filename);
 
@@ -18,12 +19,30 @@ int4 main(int argc, char *argv[]) {
     struct wildcardEdit *wildcardEdit;
     char *wildcardData = NULL, *startWildcardData = NULL;
 
-    // User must provide FASTA format file at command line
-    if (argc < 2) {
-        fprintf(stderr, "Useage: formatdb <FASTA file>\n");
+    int c;
+    if((c = getopt(argc, argv, "i:")) != -1)
+    {
+        switch (c)
+        {
+            case 'i':
+                filename = optarg;
+                break;
+            default:
+                fprintf(stderr, "Useage: formatdb -i <FASTA file>\n");
+                exit(-1);
+        }
+    }
+    else
+    {
+        fprintf(stderr, "Useage: formatdb -i <FASTA file>\n");
         exit(-1);
     }
-    filename = argv[1];
+
+    // User must provide FASTA format file at command line
+    //if (argc < 2) {
+        //fprintf(stderr, "Useage: formatdb <FASTA file>\n");
+        //exit(-1);
+    //}
 
     // Initialize array to store wildcard edits
     wildcardEdits = memSingleBlock_initialize(sizeof(struct wildcardEdit), 10);

@@ -7,6 +7,7 @@
 #include "blast.h"
 #include <stdio.h>
 #include <errno.h>
+#include <unistd.h>
 
 char *sequenceBuffer;
 
@@ -55,15 +56,39 @@ void print_sequence(int seqId, FILE *output_file)
 
 int4 main(int4 argc, char* argv[])
 {
-    // User must provide FASTA format file at command line
-	if (argc < 3)
-	{
-		fprintf(stderr, "Useage: indexdb <DB filename> <Output filename>\n");
-		exit(-1);
-	}
+    char *ifilename = NULL, *ofilename = NULL;
+    int c;
+    while((c = getopt(argc, argv, "i:o:")) != -1)
+    {
+        switch (c)
+        {
+            case 'i':
+                ifilename = optarg;
+                break;
+            case 'o':
+                ofilename = optarg;
+                break;
+            default:
+                fprintf(stderr, "Useage: sortdb -i <Database> -o <Sorted database>\n");
+                exit(-1);
+        }
+    }
 
-	char *ifilename = argv[1];
-	char *ofilename = argv[2];
+
+    if(ifilename == NULL || ofilename == NULL)
+    {
+        fprintf(stderr, "Useage: sortdb -i <Database> -o <Sorted database>\n");
+        exit(-1);
+    }
+    // User must provide FASTA format file at command line
+	//if (argc < 3)
+	//{
+		//fprintf(stderr, "Useage: sortdb <DB filename> <Output filename>\n");
+		//exit(-1);
+	//}
+
+	//char *ifilename = argv[1];
+	//char *ofilename = argv[2];
 
     // Open sequence data file and read information
 	encoding_initialize(encoding_protein);

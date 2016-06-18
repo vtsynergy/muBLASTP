@@ -20,8 +20,6 @@ char *readFasta_filename;
 FILE *readFasta_file;
 int4 readFasta_lineLength;
 
-
-static int mpi_init = 0;
 static int bytes_read = 0;
 
 // Open FASTA file for reading

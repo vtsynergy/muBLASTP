@@ -32,8 +32,4 @@ void print_gappedAlignmentsBrief_multi(int queryNum);
 void print_gappedAlignmentsFull_multi(char *query, struct PSSMatrix PSSMatrix,
                                       int queryNum);
 
-int print_gappedExtension_mpi(struct gappedExtension *gappedExtension,
-                           struct PSSMatrix PSSMatrix, char *query,
-                           unsigned char *subject, char *finalText_p);
- 
 #endif
