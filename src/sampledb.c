@@ -28,6 +28,16 @@ char* getSequence(uint4 seqId)
     return sequence;
 }
 
+void print_tex(int seqId)
+{
+    char * pch;
+    char *seqDes = descriptions_getDescription_mem(readdb_sequenceData[seqId].descriptionStart, readdb_sequenceData[seqId].descriptionLength);
+    pch = strtok (seqDes,"|");
+    pch = strtok (NULL, "|");
+    fprintf(stderr, "%d & %s & %d \\\\ \n", seqId, pch, readdb_sequenceData[seqId].sequenceLength);
+    free(seqDes);
+}
+
 void print_sequence(int seqId)
 {
     char *seqDes = descriptions_getDescription_mem(readdb_sequenceData[seqId].descriptionStart, readdb_sequenceData[seqId].descriptionLength);
@@ -51,28 +61,22 @@ int4 main(int4 argc, char* argv[])
 
     // Open sequence data file and read information
 	encoding_initialize(encoding_protein);
-    readdb_open(filename);
+    readdb_open_mem(filename);
 
     int ii;
     int interval = readdb_numVolumeSequences / numSeqs; 
 
-    int target_length = 931, target_id = 0;
-
     for(ii = 0; ii < readdb_numVolumeSequences; ii++)
     {
         if(!(ii % interval))
-            print_sequence(ii);
-
-        if(readdb_sequenceData[ii].sequenceLength == target_length)
         {
-            target_id = ii;
+            print_sequence(ii);
+            print_tex(ii);
         }
     }
 
-    print_sequence(target_id);
-
     //close database
-    readdb_close();
+    readdb_close_mem();
     return 0;
 }
 

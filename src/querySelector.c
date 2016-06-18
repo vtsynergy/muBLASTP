@@ -64,7 +64,7 @@ int4 main(int4 argc, char* argv[])
 
     // Open sequence data file and read information
 	encoding_initialize(encoding_protein);
-    readdb_open(filename);
+    readdb_open_mem(filename);
 
     int ii;
     //int interval = readdb_numberOfSequences / numSeqs; 
@@ -72,11 +72,11 @@ int4 main(int4 argc, char* argv[])
     int queryCnt = 0;
     for(ii = 0; ii < readdb_numVolumeSequences && queryCnt < numSeqs; ii++)
     {
-        if(readdb_sequenceData[ii].sequenceLength >= queryLen && 
-                readdb_sequenceData[ii].sequenceLength < queryLen + (readdb_sequenceData[ii].sequenceLength * 0.05))
+        if(readdb_sequenceData[ii].sequenceLength >= queryLen)
         {
             print_sequence(ii);
-            //fprint_sequence(ii, queryCnt + 1);
+            if(queryCnt < 50)
+                fprint_sequence(ii, queryCnt + 1);
             queryCnt++;
         }
     }
@@ -84,7 +84,7 @@ int4 main(int4 argc, char* argv[])
     fprintf(stderr, "maxQueryLength: %d\n", readdb_sequenceData[ii].sequenceLength);
 
     //close database
-    readdb_close();
+    readdb_close_mem();
     return 0;
 }
 

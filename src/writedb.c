@@ -165,8 +165,6 @@ void writedb_addSequence(unsigned char *sequence, uint4 sequenceLength,
     // Open next volume for writing
     writedb_volume++;
 
-    fprintf(stderr, "volume %d", writedb_volume);
-
     sprintf(writedb_sequenceFilename, "%s.sequences%d", writedb_filename,
             writedb_volume);
     if ((writedb_sequenceFile = fopen(writedb_sequenceFilename, "w")) == NULL) {
