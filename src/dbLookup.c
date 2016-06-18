@@ -353,8 +353,6 @@ void proteinLookup_db_build(int4 numCodes, int wordLength,
             readdb_volume,
             readdb_volumeOffset,
             readdb_numVolumeSequences);
-            //proteinLookup_numBlocks,
-            //proteinLookup_numWords);
 
     uint4 seqStartBlk = 0;
     maxBinSize = 0;

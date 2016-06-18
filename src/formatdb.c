@@ -38,11 +38,6 @@ int4 main(int argc, char *argv[]) {
         exit(-1);
     }
 
-    // User must provide FASTA format file at command line
-    //if (argc < 2) {
-        //fprintf(stderr, "Useage: formatdb <FASTA file>\n");
-        //exit(-1);
-    //}
 
     // Initialize array to store wildcard edits
     wildcardEdits = memSingleBlock_initialize(sizeof(struct wildcardEdit), 10);
@@ -124,7 +119,7 @@ int4 main(int argc, char *argv[]) {
 
     printf("done.\n");
     printf("%d sequences processed.\n", writedb_sequenceCount);
-    printf("%llu letters processed.\n", writedb_numberOfLetters);
+    printf("%lu letters processed.\n", writedb_numberOfLetters);
     printf("%d wildcards encoded.\n", totalWilds);
     printf("%d volume(s) created.\n", writedb_volume + 1);
     printf("Longest/shortest sequence was %d/%d letters\n",

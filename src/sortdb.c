@@ -9,8 +9,6 @@
 #include <errno.h>
 #include <unistd.h>
 
-char *sequenceBuffer;
-
 int compareSeq(const void *a, const void *b)
 {
     int seqId_a = *(int *)a;
@@ -38,19 +36,23 @@ char* getSequence(uint4 seqId)
     return sequenceBuffer;
 }
 
-void print_sequence(int seqId, FILE *output_file)
+void print_sequence(int seqId)
 {
     char *seqDes = 
         descriptions_getDescription_mem(
                 readdb_sequenceData[seqId].descriptionStart, 
                 readdb_sequenceData[seqId].descriptionLength);
 
-    char *seq = getSequence(seqId); 
+    //char *seq = getSequence(seqId); 
 
-    fprintf(output_file, ">%s\n%s\n", seqDes, seq);
-    //fprintf(output_file, ">gi|%d\n%s\n", seqId, seq);
+    writedb_addSequence(
+            readdb_sequenceData[seqId].sequence, 
+            readdb_sequenceData[seqId].sequenceLength, 
+            seqDes,
+            readdb_sequenceData[seqId].descriptionLength, 
+            NULL, 0, NULL, 0);
 
-    free(seq);
+    //free(seq);
     free(seqDes); 
 }
 
@@ -74,36 +76,21 @@ int4 main(int4 argc, char* argv[])
         }
     }
 
-
     if(ifilename == NULL || ofilename == NULL)
     {
         fprintf(stderr, "Useage: sortdb -i <Database> -o <Sorted database>\n");
         exit(-1);
     }
-    // User must provide FASTA format file at command line
-	//if (argc < 3)
-	//{
-		//fprintf(stderr, "Useage: sortdb <DB filename> <Output filename>\n");
-		//exit(-1);
-	//}
-
-	//char *ifilename = argv[1];
-	//char *ofilename = argv[2];
 
     // Open sequence data file and read information
 	encoding_initialize(encoding_protein);
     readdb_open_mem(ifilename);
 
-
-    FILE *output_file;
-
-    //output_file = stdout;
-    output_file = fopen(ofilename, "w");
+    writedb_initialize(ofilename, readdb_dbAlphabetType);
 
     int *seqId = (int *)malloc(sizeof(int) * readdb_numberOfSequences);
 
     uint4 startSeq = 0, endSeq = readdb_numVolumeSequences;
-
 
     while(1)
     {
@@ -125,7 +112,7 @@ int4 main(int4 argc, char* argv[])
                 fprintf(stderr, ".");
             }
 
-            print_sequence(seqId[ii], output_file);
+            print_sequence(seqId[ii]);
         }
 
         fprintf(stderr, "\n");
@@ -141,12 +128,9 @@ int4 main(int4 argc, char* argv[])
         }
     }
 
-    free(sequenceBuffer);
-    fclose(output_file);
+    writedb_close();
+
     free(seqId);
-
-
-    //close database
     readdb_close_mem();
     return 0;
 }
