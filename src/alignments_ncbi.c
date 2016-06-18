@@ -754,6 +754,9 @@ void alignments_getTracebacks_ncbi(
                 gappedExtension->nominalScore = hsp_array[ii]->nominalScore;
                 gappedExtension->eValue = hsp_array[ii]->eValue;
 
+                if(gappedExtension->eValue < 1.0e-180)
+                   gappedExtension->eValue = 0.0;
+
                 gappedExtension_score_ncbi_multi(gappedExtension, queryNum);
                 alignments_addGappedExtension2(alignment, gappedExtension, 
                         gappedExtensionCount_t, *gappedExtensionBuf);
@@ -761,9 +764,11 @@ void alignments_getTracebacks_ncbi(
                 gappedExtensionCount_t++;
             }
 
-            struct finalAlignment *finalAlignment = 
+            struct finalAlignment *finalAlignment;
+            finalAlignment = 
                 alignments_addFinalAlignment_multi(bestScore, alignment, queryNum);
             finalAlignment->thread_id = tid;
+
             //finalAlignment->description = descriptions_getDescription_mem(
                     //finalAlignment->alignment->descriptionLocation,
                     //finalAlignment->alignment->descriptionLength);

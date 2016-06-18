@@ -472,7 +472,11 @@ void print_gappedAlignmentsFull_multi(char *query, struct PSSMatrix PSSMatrix,
     strcpy(queryDescription, blast_queryDescription_multi[queryNum]);
     queryDescription = print_untilWhitespace(queryDescription);
 
-    while ((count < parameters_numDisplayTracebacks ||
+
+    int prevSeq = -1;
+    int displayCnt = 0;
+
+    while ((displayCnt < parameters_numDisplayTracebacks ||
                 parameters_numDisplayTracebacks == 0) &&
             count < alignments_finalAlignments_multi[queryNum]->numEntries) {
         finalAlignment = memSingleBlock_getEntry(
@@ -480,6 +484,16 @@ void print_gappedAlignmentsFull_multi(char *query, struct PSSMatrix PSSMatrix,
 
         int tid = finalAlignment->thread_id;
         alignment = finalAlignment->alignment;
+
+        if(prevSeq == alignment->sequenceCount)
+        {
+            count++;
+            continue;
+        }
+        prevSeq = alignment->sequenceCount;
+        displayCnt++;
+
+
 
         // If this alignment is to be displayed
         if (parameters_allClusterMembers) {
@@ -588,13 +602,26 @@ void print_gappedAlignmentsBrief_multi(int queryNum) {
 
     alignments_sortFinalAlignments_multi2(queryNum);
 
+    int prevSeq = -1;
+    int displayCnt = 0;
+
     // For each alignment
     while (count < alignments_finalAlignments_multi[queryNum]->numEntries &&
-            count < parameters_numDisplayAlignments) {
+            displayCnt < parameters_numDisplayAlignments) {
         finalAlignment = memSingleBlock_getEntry(
                 alignments_finalAlignments_multi[queryNum], count);
         currentAlignment = finalAlignment->alignment;
         currentExtension = currentAlignment->gappedExtensions;
+
+        if(prevSeq == currentAlignment->sequenceCount)
+        {
+            count++;
+            continue;
+        }
+        prevSeq = currentAlignment->sequenceCount;
+        displayCnt++;
+
+
 
         // Get description of subject
         if (parameters_getDescriptions) {
@@ -620,10 +647,10 @@ void print_gappedAlignmentsBrief_multi(int queryNum) {
         description = (char *)global_realloc(description, sizeof(char) * 67);
 
         // Construct line with description, normalized score and eValue
-        line = (char *)global_malloc(sizeof(char) * 90);
+        line = (char *)global_malloc(sizeof(char) * 150);
 
         // If description is more than 63 chars long
-        if (descriptionLength > 63) {
+        if (descriptionLength > 66) {
             // Cut off end and add ...
             description[63] = '\0';
             strcat(description, "...");
@@ -927,7 +954,7 @@ void print_gappedExtension(struct gappedExtension *gappedExtension,
     if(gappedExtension->normalizedScore >= 100)
     {
         sprintf(finalText,
-            " Score = %d bits (%d), Expect = %s, Method: Compositional matrix adjust.\n Identities = %d/%d (%d%%)",
+            " Score = %d bits (%d), Expect = %s\n Identities = %d/%d (%d%%)",
             (int)gappedExtension->normalizedScore, 
             (int4)round((double)gappedExtension->nominalScore/SCALING_FACTOR),
             print_eValue2String(gappedExtension->eValue), identities, length,
@@ -936,7 +963,7 @@ void print_gappedExtension(struct gappedExtension *gappedExtension,
     else
     {
         sprintf(finalText,
-            " Score = %.1f bits (%d), Expect = %s, Method: Compositional matrix adjust.\n Identities = %d/%d (%d%%)",
+            " Score = %.1f bits (%d), Expect = %s\n Identities = %d/%d (%d%%)",
             gappedExtension->normalizedScore, 
             (int4)round((double)gappedExtension->nominalScore/SCALING_FACTOR),
             print_eValue2String(gappedExtension->eValue), identities, length,
@@ -1008,47 +1035,38 @@ void print_singleSequence(unsigned char *sequence, int4 length) {
     }
 }
 
+
 // Header for XML output
-void print_XMLheader(char *query, struct PSSMatrix PSSMatrix) {
-    printf("<?xml version=\"1.0\"?>\n");
-    printf("<!DOCTYPE BlastOutput PUBLIC \"-//NCBI//NCBI BlastOutput/EN\" "
-            "\"NCBI_BlastOutput.dtd\">\n");
+void print_XMLheader(char* query, struct PSSMatrix PSSMatrix)
+{
+	printf("<?xml version=\"1.0\"?>\n");
+    printf("<!DOCTYPE BlastOutput PUBLIC \"-//NCBI//NCBI BlastOutput/EN\" \"NCBI_BlastOutput.dtd\">\n");
     printf("<BlastOutput>\n");
     if (encoding_alphabetType == encoding_protein)
-        printf("  <BlastOutput_program>blastp</BlastOutput_program>\n");
-    else
-        printf("  <BlastOutput_program>blastn</BlastOutput_program>\n");
-    printf("  <BlastOutput_version>FSA-BLAST 1.03</BlastOutput_version>\n");
-    printf("  <BlastOutput_reference>~Reference: Altschul, Stephen F., Thomas L. "
-            "Madden, Alejandro A. Schaffer, ~Jinghui Zhang, Zheng Zhang, Webb "
-            "Miller, and David J. Lipman (1997), ~&quot;Gapped BLAST and "
-            "PSI-BLAST: a new generation of protein database "
-            "search~programs&quot;,  Nucleic Acids Res. "
-            "25:3389-3402.</BlastOutput_reference>\n");
-    printf("  <BlastOutput_db>%s</BlastOutput_db>\n",
-            parameters_subjectDatabaseFile);
+		printf("  <BlastOutput_program>blastp</BlastOutput_program>\n");
+	else
+		printf("  <BlastOutput_program>blastn</BlastOutput_program>\n");
+	printf("  <BlastOutput_version>FSA-BLAST 1.03</BlastOutput_version>\n");
+    printf("  <BlastOutput_reference>~Reference: Altschul, Stephen F., Thomas L. Madden, Alejandro A. Schaffer, ~Jinghui Zhang, Zheng Zhang, Webb Miller, and David J. Lipman (1997), ~&quot;Gapped BLAST and PSI-BLAST: a new generation of protein database search~programs&quot;,  Nucleic Acids Res. 25:3389-3402.</BlastOutput_reference>\n");
+	printf("  <BlastOutput_db>%s</BlastOutput_db>\n", parameters_subjectDatabaseFile);
     printf("  <BlastOutput_query-ID>lcl|QUERY</BlastOutput_query-ID>\n");
-    printf("  <BlastOutput_query-def>%s</BlastOutput_query-def>\n",
-            blast_queryDescription);
-    printf("  <BlastOutput_query-len>%d</BlastOutput_query-len>\n",
-            PSSMatrix.length);
+    printf("  <BlastOutput_query-def>%s</BlastOutput_query-def>\n", blast_queryDescription);
+    printf("  <BlastOutput_query-len>%d</BlastOutput_query-len>\n", PSSMatrix.length);
     printf("  <BlastOutput_param>\n");
     printf("    <Parameters>\n");
-    printf("      <Parameters_matrix>%s</Parameters_matrix>\n",
-            parameters_scoringMatrix);
-    printf("      <Parameters_expect>%g</Parameters_expect>\n",
-            parameters_cutoff);
-    printf("      <Parameters_gap-open>%d</Parameters_gap-open>\n",
-            parameters_startGap);
-    printf("      <Parameters_gap-extend>%d</Parameters_gap-extend>\n",
-            parameters_extendGap);
-    if (parameters_filterEnabled) {
-        if (encoding_alphabetType == encoding_protein)
-            printf("      <Parameters_filter>S</Parameters_filter>\n");
-        else
-            printf("      <Parameters_filter>D</Parameters_filter>\n");
-    } else
-        printf("      <Parameters_filter>F</Parameters_filter>\n");
+    printf("      <Parameters_matrix>%s</Parameters_matrix>\n", parameters_scoringMatrix);
+    printf("      <Parameters_expect>%g</Parameters_expect>\n", parameters_cutoff);
+    printf("      <Parameters_gap-open>%d</Parameters_gap-open>\n", parameters_startGap);
+    printf("      <Parameters_gap-extend>%d</Parameters_gap-extend>\n", parameters_extendGap);
+	if (parameters_filterEnabled)
+    {
+    	if (encoding_alphabetType == encoding_protein)
+        	printf("      <Parameters_filter>S</Parameters_filter>\n");
+		else
+        	printf("      <Parameters_filter>D</Parameters_filter>\n");
+    }
+    else
+    printf("      <Parameters_filter>F</Parameters_filter>\n");
     printf("    </Parameters>\n");
     printf("  </BlastOutput_param>\n");
     printf("  <BlastOutput_iterations>\n");
@@ -1057,100 +1075,103 @@ void print_XMLheader(char *query, struct PSSMatrix PSSMatrix) {
     printf("      <Iteration_hits>\n");
 }
 
+// Footer of XML output
+void print_XMLfooter()
+{
+    printf("      </Iteration_hits>\n");
+    printf("      <Iteration_stat>\n");
+    printf("        <Statistics>\n");
+    printf("          <Statistics_db-num>%d</Statistics_db-num>\n", readdb_numberOfSequences);
+    printf("          <Statistics_db-len>%lu</Statistics_db-len>\n", statistics_databaseSize);
+    printf("          <Statistics_hsp-len>%d</Statistics_hsp-len>\n", statistics_lengthAdjust);
+    printf("          <Statistics_eff-space>%lu</Statistics_eff-space>\n", statistics_searchSpaceSize);
+    printf("          <Statistics_kappa>%.3f</Statistics_kappa>\n", statistics_gappedParams.K);
+    printf("          <Statistics_lambda>%.3f</Statistics_lambda>\n", statistics_gappedParams.lambda);
+    printf("          <Statistics_entropy>%.3f</Statistics_entropy>\n", statistics_gappedParams.H);
+    printf("        </Statistics>\n");
+    printf("      </Iteration_stat>\n");
+    printf("    </Iteration>\n");
+    printf("  </BlastOutput_iterations>\n");
+    printf("</BlastOutput>\n");
+}
+
 // Print a gapped extension using tabular output
-void print_tabularGappedExtension(struct gappedExtension *gappedExtension,
-        struct PSSMatrix PSSMatrix, char *query,
-        unsigned char *subject,
-        char *queryDescription,
-        char *subjectDescription) {
-    char *queryLine, *subjectLine, *midLine;
-    int4 identities = 0, positives = 0, gaps = 0, length, gapopens = 0;
-    struct trace trace;
+void print_tabularGappedExtension(struct gappedExtension* gappedExtension, struct PSSMatrix PSSMatrix,
+                                  char* query, unsigned char* subject, char* queryDescription,
+                                  char* subjectDescription)
+{
+	char *queryLine, *subjectLine, *midLine;
+	int4 identities = 0, positives = 0, gaps = 0, length, gapopens = 0;
+	struct trace trace;
     char reverseComplement = 0;
 
-    trace = gappedExtension->trace;
+	trace = gappedExtension->trace;
 
-    if (trace.queryStart >= PSSMatrix.strandLength) {
-        trace.queryStart = PSSMatrix.length - trace.queryStart - 1;
-        reverseComplement = 1;
+    if (trace.queryStart >= PSSMatrix.strandLength)
+    {
+    	trace.queryStart = PSSMatrix.length - trace.queryStart - 1;
+    	reverseComplement = 1;
     }
 
     // Declare memory for query, subject and midlines
-    queryLine = (char *)global_malloc(sizeof(char) * (trace.length + 2));
-    subjectLine = (char *)global_malloc(sizeof(char) * (trace.length + 2));
-    midLine = (char *)global_malloc(sizeof(char) * (trace.length + 2));
-    queryLine[0] = '\0';
-    subjectLine[0] = '\0';
-    midLine[0] = '\0';
+	queryLine = (char*)global_malloc(sizeof(char) * (trace.length + 2));
+	subjectLine = (char*)global_malloc(sizeof(char) * (trace.length + 2));
+	midLine = (char*)global_malloc(sizeof(char) * (trace.length + 2));
+	queryLine[0] = '\0'; subjectLine[0] = '\0'; midLine[0] = '\0';
 
     length = trace.length + 1;
 
-    print_constructAlignment(queryLine, subjectLine, midLine, &identities,
-            &positives, &gaps, &gapopens, reverseComplement,
-            trace, query, subject, PSSMatrix);
+    print_constructAlignment(queryLine, subjectLine, midLine, &identities, &positives, &gaps,
+                             &gapopens, reverseComplement, trace, query, subject, PSSMatrix);
 
-    // Fields: query id, subject ids, % identity, alignment length, mismatches,
-    // gap opens,
+    // Fields: query id, subject ids, % identity, alignment length, mismatches, gap opens,
     //         q. start, q. end, s. start, s. end, evalue, bit score
-    printf("%s	%s	%.2f	%d	%d	%d	%d	%d	"
-            "%d	"
-            "%d	%s	%.1f\n",
-            queryDescription, subjectDescription,
-            100.0 * (float)identities / (float)length, length, length - identities,
-            gapopens, trace.queryStart + 1, gappedExtension->queryEnd + 1,
-            trace.subjectStart + 1, gappedExtension->subjectEnd + 1,
-            print_eValue2String(gappedExtension->eValue),
-            gappedExtension->normalizedScore);
+    printf("%s	%s	%.2f	%d	%d	%d	%d	%d	%d	%d	%s	%.1f\n",
+           queryDescription, subjectDescription, 100.0 * (float)identities / (float)length,
+           length, length - identities, gapopens, trace.queryStart + 1,
+           gappedExtension->queryEnd + 1, trace.subjectStart + 1, gappedExtension->subjectEnd + 1,
+           print_eValue2String(gappedExtension->eValue), gappedExtension->normalizedScore);
 
     free(queryLine);
-    free(subjectLine);
-    free(midLine);
+	free(subjectLine);
+	free(midLine);
 }
 
 // Print a gapped extension using XML output
-void print_XMLgappedExtension(struct gappedExtension *gappedExtension,
-        struct PSSMatrix PSSMatrix, char *query,
-        unsigned char *subject, uint4 hspNum) {
-    char *queryLine, *subjectLine, *midLine;
-    int4 identities = 0, positives = 0, gaps = 0, gapopens = 0;
-    struct trace trace;
+void print_XMLgappedExtension(struct gappedExtension* gappedExtension, struct PSSMatrix PSSMatrix,
+                              char* query, unsigned char* subject, uint4 hspNum)
+{
+	char *queryLine, *subjectLine, *midLine;
+	int4 identities = 0, positives = 0, gaps = 0, gapopens = 0;
+	struct trace trace;
     char reverseComplement = 0;
 
-    trace = gappedExtension->trace;
+	trace = gappedExtension->trace;
 
-    if (trace.queryStart >= PSSMatrix.strandLength) {
-        trace.queryStart = PSSMatrix.length - trace.queryStart - 1;
-        reverseComplement = 1;
+    if (trace.queryStart >= PSSMatrix.strandLength)
+    {
+    	trace.queryStart = PSSMatrix.length - trace.queryStart - 1;
+    	reverseComplement = 1;
     }
 
     // Declare memory for query, subject and midlines
-    queryLine = (char *)global_malloc(sizeof(char) * (trace.length + 2));
-    subjectLine = (char *)global_malloc(sizeof(char) * (trace.length + 2));
-    midLine = (char *)global_malloc(sizeof(char) * (trace.length + 2));
-    queryLine[0] = '\0';
-    subjectLine[0] = '\0';
-    midLine[0] = '\0';
+	queryLine = (char*)global_malloc(sizeof(char) * (trace.length + 2));
+	subjectLine = (char*)global_malloc(sizeof(char) * (trace.length + 2));
+	midLine = (char*)global_malloc(sizeof(char) * (trace.length + 2));
+	queryLine[0] = '\0'; subjectLine[0] = '\0'; midLine[0] = '\0';
 
-    print_constructAlignment(queryLine, subjectLine, midLine, &identities,
-            &positives, &gaps, &gapopens, reverseComplement,
-            trace, query, subject, PSSMatrix);
+    print_constructAlignment(queryLine, subjectLine, midLine, &identities, &positives, &gaps,
+                             &gapopens, reverseComplement, trace, query, subject, PSSMatrix);
 
     printf("            <Hsp>\n");
     printf("              <Hsp_num>%d</Hsp_num>\n", hspNum);
-    printf("              <Hsp_bit-score>%.3f</Hsp_bit-score>\n",
-            gappedExtension->normalizedScore);
-    printf("              <Hsp_score>%d</Hsp_score>\n",
-            gappedExtension->nominalScore);
-    printf("              <Hsp_evalue>%g</Hsp_evalue>\n",
-            gappedExtension->eValue);
-    printf("              <Hsp_query-from>%d</Hsp_query-from>\n",
-            trace.queryStart + 1);
-    printf("              <Hsp_query-to>%d</Hsp_query-to>\n",
-            gappedExtension->queryEnd + 1);
-    printf("              <Hsp_hit-from>%d</Hsp_hit-from>\n",
-            trace.subjectStart + 1);
-    printf("              <Hsp_hit-to>%d</Hsp_hit-to>\n",
-            gappedExtension->subjectEnd + 1);
+    printf("              <Hsp_bit-score>%.3f</Hsp_bit-score>\n", gappedExtension->normalizedScore);
+    printf("              <Hsp_score>%d</Hsp_score>\n", gappedExtension->nominalScore);
+    printf("              <Hsp_evalue>%g</Hsp_evalue>\n", gappedExtension->eValue);
+    printf("              <Hsp_query-from>%d</Hsp_query-from>\n", trace.queryStart + 1);
+    printf("              <Hsp_query-to>%d</Hsp_query-to>\n", gappedExtension->queryEnd + 1);
+    printf("              <Hsp_hit-from>%d</Hsp_hit-from>\n", trace.subjectStart + 1);
+    printf("              <Hsp_hit-to>%d</Hsp_hit-to>\n", gappedExtension->subjectEnd + 1);
     printf("              <Hsp_query-frame>1</Hsp_query-frame>\n");
     printf("              <Hsp_hit-frame>1</Hsp_hit-frame>\n");
     printf("              <Hsp_identity>%d</Hsp_identity>\n", identities);
@@ -1162,7 +1183,8 @@ void print_XMLgappedExtension(struct gappedExtension *gappedExtension,
     printf("              <Hsp_midline>%s</Hsp_midline>\n", midLine);
     printf("            </Hsp>\n");
 
-    free(queryLine);
-    free(subjectLine);
-    free(midLine);
+	free(queryLine);
+	free(subjectLine);
+	free(midLine);
+
 }

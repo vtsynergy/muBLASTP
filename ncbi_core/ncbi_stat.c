@@ -1371,93 +1371,40 @@ s_BlastGetBestEvalue(struct ungappedExtension **hsp_array, Int4 hspcnt)
 }
 
 Int2 Blast_HSPListGetEvalues(
-        //EBlastProgramType program_number,
-        //const BlastQueryInfo* query_info,
         int query_length,
         Int4 subject_length,
         Blast_KarlinBlk* kbp,
         Blast_GumbelBlk* gbp,
         struct ungappedExtension **ungappedExtensions,
-        //struct alignment *alignment,
         Int4 hsp_cnt,
-        //BlastHSPList* hsp_list, 
         Boolean gapped_calculation, 
         Boolean RPS_prelim,
         double gap_decay_rate,
         double scaling_factor,
         double *best_eValue)
 {
-    //BlastHSP* hsp;
-    //BlastHSP** hsp_array;
-    //Int4 hsp_cnt;
     Int4 index;
     Int4 kbp_context;
     double gap_decay_divisor = 1.;
-
-    //struct ungappedExtension** ungappedExtensions;
-    //Boolean isRPS = Blast_ProgramIsRpsBlast(program_number);
-
-    //if (hsp_list == NULL || hsp_list->hspcnt == 0)
-    //return 0;
-
-    //kbp = (gapped_calculation ? sbp->kbp_gap : sbp->kbp);
-    //hsp_cnt = hsp_list->hspcnt;
-    //hsp_array = hsp_list->hsp_array;
 
     if (gap_decay_rate != 0.)
         gap_decay_divisor = BLAST_GapDecayDivisor(gap_decay_rate, 1);
 
     for (index=0; index<hsp_cnt; index++) {
-        //hsp = hsp_array[index];
-
-        //ASSERT(hsp != NULL);
-        //ASSERT(scaling_factor != 0.0);
-        //ASSERT(sbp->round_down == FALSE || (hsp->score & 1) == 0);
-
-        /* Divide Lambda by the scaling factor, so e-value is 
-           calculated correctly from a scaled score. This is needed only
-           for RPS BLAST, where scores are scaled, but Lambda is not. */
-        //kbp_context = hsp->context;
-        //if (RPS_prelim) {
-        ///* All kbp in preliminary stage are equivalent.  However, some
-        //may be invalid.  Search for the first populated kbp */
-        //int i;
-        //for (i=0; i<6; ++i) {
-        //if (kbp[i]) break;
-        //}
-        //kbp_context = i;
-        //}
         if(ungappedExtensions[index]->status == ungappedExtension_DELETED)
             continue;
 
         kbp->Lambda /= scaling_factor;
 
         if (gbp) {
-            /* Only try Spouge's method if gumbel parameters are available */
-            //if (ungappedExtensions[index]->status == ungappedExtension_SEMIGAPPED || ungappedExtensions[index]->status == ungappedExtension_GAPPED)
-            {
-                ungappedExtensions[index]->eValue =
-                    BLAST_SpougeStoE(ungappedExtensions[index]->nominalScore, kbp, gbp, 
-                            query_length, 
-                            subject_length);
-                //fprintf(stderr, "evalue: %f score: %d subjectlength: %d query_length: %d\n", ungappedExtensions[index]->eValue, ungappedExtensions[index]->nominalScore, subject_length, query_length);
-            }
-            //else {
-            ///* for RPS blast, query and subject is swapped */
-            //hsp->evalue =
-            //BLAST_SpougeStoE(hsp->score, kbp[kbp_context], sbp->gbp, 
-            //subject_length,
-            //query_info->contexts[hsp->context].query_length);
-            //}
+            ungappedExtensions[index]->eValue =
+                BLAST_SpougeStoE(ungappedExtensions[index]->nominalScore, kbp, gbp, 
+                        query_length, 
+                        subject_length);
         } 
-        //else {
-        ///* Get effective search space from the query information block */
-        //hsp->evalue =
-        //BLAST_KarlinStoE_simple(hsp->score, kbp[kbp_context], 
-        //query_info->contexts[hsp->context].eff_searchsp);
-        //}
 
         ungappedExtensions[index]->eValue /= gap_decay_divisor;
+
         /* Put back the unscaled value of Lambda. */
         kbp->Lambda *= scaling_factor;
     }
@@ -1465,7 +1412,6 @@ Int2 Blast_HSPListGetEvalues(
     /* Assign the best e-value field. Here the best e-value will always be
        attained for the first HSP in the list. Check that the incoming
        HSP list is properly sorted by score. */
-    //ASSERT(Blast_HSPListIsSortedByScore(hsp_list));
     *best_eValue = s_BlastGetBestEvalue(ungappedExtensions, hsp_cnt);
     return 0;
 }

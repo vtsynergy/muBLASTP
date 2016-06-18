@@ -156,8 +156,8 @@ void alignments_dbIdx(
 
     for (ii = 0; ii < numQuery; ii++) {
 
-        printf("Query= %s\n\n", queryDescription_arr[ii]);
-        printf("Length=%ld\n", strlen(query_arr[ii]));
+        //printf("Query= %s\n\n", queryDescription_arr[ii]);
+        //printf("Length=%ld\n", strlen(query_arr[ii]));
 
         struct finalAlignment *currentAlignment = 
             alignments_finalAlignments_multi[ii]->block;
@@ -196,8 +196,18 @@ void alignments_dbIdx(
         }
 
 
-        print_gappedAlignmentsBrief_multi(ii);
-        print_gappedAlignmentsFull_multi(query_arr[ii], PSSMatrix_arr[ii], ii);
+        if (parameters_outputType == parameters_xml) {
+            print_XMLheader(query_arr[ii], PSSMatrix_arr[ii]);
+            print_gappedAlignmentsFull_multi(query_arr[ii], PSSMatrix_arr[ii], ii);
+            print_XMLfooter();
+        } else if (parameters_outputType == parameters_tabular) {
+            print_gappedAlignmentsFull_multi(query_arr[ii], PSSMatrix_arr[ii], ii);
+        } else {
+            printf("Query= %s\n\n", queryDescription_arr[ii]);
+            printf("Length=%ld\n", strlen(query_arr[ii]));
+            print_gappedAlignmentsBrief_multi(ii);
+            print_gappedAlignmentsFull_multi(query_arr[ii], PSSMatrix_arr[ii], ii);
+        }
 
         alignments_free_multi2(ii);
 

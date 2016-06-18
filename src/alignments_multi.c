@@ -54,27 +54,39 @@ void alignments_initialize_multi() {
 }
 
 
-int4 alignments_compareFinalAlignments2(const void *alignment1,
-                                       const void *alignment2) {
-  const struct finalAlignment *a1, *a2;
+int4 alignments_compareFinalAlignments2(
+        const void *alignment1,
+        const void *alignment2) {
 
-  a1 = (struct finalAlignment *)alignment1;
-  a2 = (struct finalAlignment *)alignment2;
+    const struct finalAlignment *a1, *a2;
 
-  if (a1->alignment->gappedExtensions->eValue > a2->alignment->gappedExtensions->eValue) {
-    return 1;
-  } else if (a1->alignment->gappedExtensions->eValue < a2->alignment->gappedExtensions->eValue) {
-    return -1;
-  } else {
-    // Resolve conflicts using subject length
-      if (a1->highestNominalScore > a2->highestNominalScore) {
-          return -1;
-      } else if (a1->highestNominalScore < a2->highestNominalScore) {
-          return 1;
-      }
-      else
-          return 0;
-  }
+    a1 = (struct finalAlignment *)alignment1;
+    a2 = (struct finalAlignment *)alignment2;
+
+    if (a1->alignment->gappedExtensions->eValue > a2->alignment->gappedExtensions->eValue) {
+        return 1;
+    } else if (a1->alignment->gappedExtensions->eValue < a2->alignment->gappedExtensions->eValue) {
+        return -1;
+    } else {
+        // Resolve conflicts using subject length
+        if (a1->alignment->gappedExtensions->normalizedScore > 
+                a2->alignment->gappedExtensions->normalizedScore) {
+            return -1;
+        } else if (a1->alignment->gappedExtensions->normalizedScore < 
+                a2->alignment->gappedExtensions->normalizedScore) {
+            return 1;
+        }
+        else
+        {
+            if(a1->alignment->sequenceCount < a2->alignment->sequenceCount)
+                return -1;
+            else if(a1->alignment->sequenceCount > a2->alignment->sequenceCount)
+                return 1;
+            else
+                return 0;
+        }
+
+    }
 }
 
 void alignments_sortFinalAlignments_multi2(int queryNum) {
@@ -85,7 +97,8 @@ void alignments_sortFinalAlignments_multi2(int queryNum) {
 
 // Add the current alignment (which contains at least one gapped extension
 // scoring above cutoff) to to-be-sorted list of final alignments
-struct finalAlignment * alignments_addFinalAlignment_multi(int4 highestNominalScore,
+struct finalAlignment * alignments_addFinalAlignment_multi(
+        int4 highestNominalScore,
         struct alignment *alignment,
         int queryNum) {
     struct finalAlignment *finalAlignment;

@@ -9,15 +9,22 @@
 #include "blast.h"
 int4 main(int4 argc, char *argv[]) {
   // User must provide FASTA format file at command line
-  if (argc < 3) {
-    fprintf(
-        stderr,
-        "Useage: indexdb <DB filename> <DB index block size (K letters)>\n");
-    exit(-1);
-  }
+    if (argc == 3) {
+        dbIdx_block_size = atoi(argv[2]) * 1024;
+    }
+    else if(argc == 2)
+    {
+        dbIdx_block_size = 128 * 1024;
+    }
+    else
+    {
+        fprintf(stderr,
+                "Useage: indexdb <DB filename> <DB index block size (K letters)>\n");
+        exit(-1);
+
+    }
 
   char *filename = argv[1];
-  dbIdx_block_size = atoi(argv[2]) * 1024;
 
   // Open sequence data file and read information
   readdb_open_mem(filename);
