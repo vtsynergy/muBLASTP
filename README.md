@@ -5,27 +5,19 @@
 ###Usage: 
 * 1 Format FASTA database
 ```
-	$ ./formatdb database/uniprot_sport.fasta
+	$ ./formatdb -i <Database> 
 ```
 * 2 Sort FASTA database by sequence length
 ```
-    $ ./sortdb database/uniprot_sport.fasta database/uniprot_sport_sort.fasta
+    $ ./sortdb -i <Database> -o <Sorted Database>
 ```
-* 3 Format sorted database 
+* 3 Build database index with a configurable block size (default is 128K bases for multithreading, can enlarge block size for single thread for better performance; define "COMPRESSED_INDEX" in include/blast.h to can enable compressed index)
 ```
-    $ ./formatdb database/uniprot_sport_sort.fasta
+    $ ./indexdb -i <Sorted Database> [-s Block size in K bases, default 128 (K)]
 ```
-* 4 Build database index with block of 128k bases (recommand 128K for multithreading, can use larger block for single thread for better performance; define "COMPRESSED_INDEX" in include/blast.h to enable compressed index)
+* 4 Run muBLASTP 
 ```
-    $ ./indexdb database/uniprot_sport_sort.fasta 128
-```
-* 5(a). Run muBLASTP with a single thread 
-```
-    $ ./mublastp -i query/unisprot_sprot/query_100/query_1 -d database/uniprot_sport_sort.fasta
-```
-* 5(b). Run muBLASTP with multiple threads (e.g., 12 threads) 
-```
-    $ ./mublastp -i query/unisprot_sprot/query_100/query_batch_100 -d database/uniprot_sport_sort.fasta -t 12
+    $ ./mublastp -i <Query> -d <Sorted Database> [-t num of threads]
 ```
 ###License
 Please refer to the included LICENSE file.
