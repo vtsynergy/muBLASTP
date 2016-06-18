@@ -36,7 +36,7 @@ char* getSequence(uint4 seqId)
     return sequenceBuffer;
 }
 
-void print_sequence(int seqId, FILE *output_file)
+void print_sequence(int seqId, int ii, FILE *output_file)
 {
     char *seqDes = 
         descriptions_getDescription_mem(
@@ -45,12 +45,12 @@ void print_sequence(int seqId, FILE *output_file)
 
     char *seq = getSequence(seqId); 
 
-    writedb_addSequence(
+    writedb_addSequence_oid(
             readdb_sequenceData[seqId].sequence, 
             readdb_sequenceData[seqId].sequenceLength, 
             seqDes,
             readdb_sequenceData[seqId].descriptionLength, 
-            NULL, 0, NULL, 0);
+            NULL, 0, NULL, 0, ii);
 
     fprintf(output_file, ">%s\n%s\n", seqDes, seq);
 
@@ -118,7 +118,7 @@ int4 main(int4 argc, char* argv[])
                 fprintf(stderr, ".");
             }
 
-            print_sequence(seqId[ii], output_file);
+            print_sequence(seqId[ii], ii, output_file);
         }
 
         fprintf(stderr, "\n");

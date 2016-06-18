@@ -27,7 +27,7 @@ int4 main(int4 argc, char *argv[]) {
                 break;
             default:
                 fprintf(stderr, "Useage: indexdb -i <Database>"
-                        " -s [Block size, default 128(K)]\n");
+                        " [-s Block size, default 128(K)]\n");
                 exit(-1);
         }
     }
@@ -35,7 +35,7 @@ int4 main(int4 argc, char *argv[]) {
     if(filename == NULL)
     {
         fprintf(stderr, "Useage: indexdb -i <Database>"
-                " -s [Block size, default 128(K)]\n");
+                " [-s Block size, default 128(K)]\n");
         exit(-1);
     }
 

@@ -229,14 +229,6 @@ char *print_formatDescription_mem(char *description, int4 firstLineIndent,
                 newDescription[newDescriptionPos] = '\n';
                 newDescriptionPos++;
 
-                // Add indent
-                //count = 0;
-                //while (count < remainingLinesIndent) {
-                    //newDescription[newDescriptionPos] = ' ';
-                    //newDescriptionPos++;
-                    //count++;
-                //}
-
                 // Set pointers for next line
                 startLine += maxLineLength;
                 endWord = startWord = startLine;
@@ -251,14 +243,6 @@ char *print_formatDescription_mem(char *description, int4 firstLineIndent,
                 // Add carriage return
                 newDescription[newDescriptionPos] = '\n';
                 newDescriptionPos++;
-
-                // Add indent
-                //count = 0;
-                //while (count < remainingLinesIndent) {
-                    //newDescription[newDescriptionPos] = ' ';
-                    //newDescriptionPos++;
-                    //count++;
-                //}
 
                 // Set pointers for next line
                 startLine = endWord = startWord;

@@ -33,6 +33,7 @@ struct sequenceData
 	uint4 descriptionStart;
 	uint4 descriptionLength;
 	uint4 encodedLength;
+    uint4 oid;
     unsigned char* sequence;
 };
 
@@ -43,6 +44,14 @@ void writedb_initialize(char* filename, uint4 alphabetType);
 void writedb_addSequence(unsigned char* sequence, uint4 sequenceLength, unsigned char* description,
                          uint4 descriptionLength, unsigned char* wildcards, uint4 wildcardsLength,
                          struct child* children, uint4 numChildren);
+
+
+// Add sequence to the formatted collection
+void writedb_addSequence_oid(unsigned char* sequence, uint4 sequenceLength, unsigned char* description,
+                         uint4 descriptionLength, unsigned char* wildcards, uint4 wildcardsLength,
+                         struct child* children, uint4 numChildren, uint4 oid);
+
+
 
 // Finalize writing to the formatted collection
 void writedb_close();

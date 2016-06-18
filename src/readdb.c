@@ -27,7 +27,7 @@ struct sequenceData *readdb_sequenceData;
 // Open formatted collection for reading
 void readdb_open(char *filename) {
     uint4 databaseVersion, encodedLength, sequenceLength, descriptionLength,
-          sequenceCount, offset;
+          sequenceCount, offset, oid;
     char *wildcardsFile;
 
     readdb_filename = filename;
@@ -110,12 +110,14 @@ void readdb_open(char *filename) {
         vbyte_getVbyte(readdb_data, &descriptionLength);
         vbyte_getVbyte(readdb_data, &sequenceLength);
         vbyte_getVbyte(readdb_data, &encodedLength);
+        vbyte_getVbyte(readdb_data, &oid);
 
         readdb_sequenceData[sequenceCount].descriptionLength = descriptionLength;
         readdb_sequenceData[sequenceCount].descriptionStart =
             readdb_descriptionStart;
         readdb_sequenceData[sequenceCount].sequenceLength = sequenceLength;
         readdb_sequenceData[sequenceCount].encodedLength = encodedLength;
+        readdb_sequenceData[sequenceCount].oid = oid;
 
         readdb_numVolumeLetters += sequenceLength;
 
@@ -224,22 +226,24 @@ void readdb_open_mem(char *filename) {
     readdb_sequenceData = (struct sequenceData *)global_malloc(
             sizeof(struct sequenceData) * readdb_numberOfClusters);
 
-
     // For each sequence in first volume
     offset = 1;
     sequenceCount = 0;
     uint8 description_offset = 0;
+    uint4 oid;
     while (sequenceCount < readdb_numberOfClusters && offset < readdb_fileSize) {
         // Read sequence data
         vbyte_getVbyte(readdb_data, &descriptionLength);
         vbyte_getVbyte(readdb_data, &sequenceLength);
         vbyte_getVbyte(readdb_data, &encodedLength);
+        vbyte_getVbyte(readdb_data, &oid);
 
         readdb_sequenceData[sequenceCount].descriptionLength = descriptionLength;
         readdb_sequenceData[sequenceCount].descriptionStart =
             readdb_descriptionStart;
         readdb_sequenceData[sequenceCount].sequenceLength = sequenceLength;
         readdb_sequenceData[sequenceCount].encodedLength = encodedLength;
+        readdb_sequenceData[sequenceCount].oid = oid;
 
         readdb_numVolumeLetters += sequenceLength;
 
@@ -308,17 +312,20 @@ int readdb_nextVolume() {
     // For each sequence in next volume volume
     offset = 1;
     sequenceCount = 0;
+    uint4 oid;
     while (sequenceCount < readdb_numberOfClusters && offset < readdb_fileSize) {
         // Read sequence data
         vbyte_getVbyte(readdb_data, &descriptionLength);
         vbyte_getVbyte(readdb_data, &sequenceLength);
         vbyte_getVbyte(readdb_data, &encodedLength);
+        vbyte_getVbyte(readdb_data, &oid);
 
         readdb_sequenceData[readdb_volumeOffset + sequenceCount].descriptionLength = descriptionLength;
         readdb_sequenceData[readdb_volumeOffset + sequenceCount].descriptionStart =
             readdb_descriptionStart;
         readdb_sequenceData[readdb_volumeOffset + sequenceCount].sequenceLength = sequenceLength;
         readdb_sequenceData[readdb_volumeOffset + sequenceCount].encodedLength = encodedLength;
+        readdb_sequenceData[readdb_volumeOffset + sequenceCount].oid = oid;
 
         // Record pointer to sequence
         readdb_sequenceData[readdb_volumeOffset + sequenceCount].sequence = readdb_sequences + offset;
@@ -383,17 +390,20 @@ int readdb_nextVolume_mem() {
     sequenceCount = 0;
     uint8 description_offset = readdb_descriptionStart;
     readdb_descriptionStart = 0;
+    uint4 oid;
     while (sequenceCount < readdb_numberOfClusters && offset < readdb_fileSize) {
         // Read sequence data
         vbyte_getVbyte(readdb_data, &descriptionLength);
         vbyte_getVbyte(readdb_data, &sequenceLength);
         vbyte_getVbyte(readdb_data, &encodedLength);
+        vbyte_getVbyte(readdb_data, &oid);
 
         readdb_sequenceData[readdb_volumeOffset + sequenceCount].descriptionLength = descriptionLength;
         readdb_sequenceData[readdb_volumeOffset + sequenceCount].descriptionStart =
             readdb_descriptionStart;
         readdb_sequenceData[readdb_volumeOffset + sequenceCount].sequenceLength = sequenceLength;
         readdb_sequenceData[readdb_volumeOffset + sequenceCount].encodedLength = encodedLength;
+        readdb_sequenceData[readdb_volumeOffset + sequenceCount].oid = oid;
 
         // Record pointer to sequence
         readdb_sequenceData[readdb_volumeOffset + sequenceCount].sequence = readdb_sequences + offset - 1;

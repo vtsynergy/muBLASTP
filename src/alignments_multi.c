@@ -78,9 +78,11 @@ int4 alignments_compareFinalAlignments2(
         }
         else
         {
-            if(a1->alignment->sequenceCount < a2->alignment->sequenceCount)
+            if(readdb_sequenceData[a1->alignment->sequenceCount].oid 
+                    > readdb_sequenceData[a2->alignment->sequenceCount].oid)
                 return -1;
-            else if(a1->alignment->sequenceCount > a2->alignment->sequenceCount)
+            if(readdb_sequenceData[a1->alignment->sequenceCount].oid 
+                    < readdb_sequenceData[a2->alignment->sequenceCount].oid)
                 return 1;
             else
                 return 0;
