@@ -881,7 +881,7 @@ void print_gappedExtension(struct gappedExtension *gappedExtension,
         // Second build the middle line. Example:
         //             G+ S R+++NVGG +H+    TL  +P TRL  L + + H        DY    +E+FFD
         charCount = lineStart;
-        sprintf(temp2, "       %%%ds ", longestNumber);
+        sprintf(temp2, "      %%%ds ", longestNumber);
         sprintf(temp, temp2, "");
 
         strcat(pairwiseAlignment, temp);

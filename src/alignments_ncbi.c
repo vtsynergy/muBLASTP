@@ -260,6 +260,7 @@ int alignments_findGoodAlignments_ncbi(
                 continue;
             }
 
+
             if(gap_align.score >= blast_gappedNominalCutoff_multi[queryNum])
             {
                 if(gap_align.score > bestScore)

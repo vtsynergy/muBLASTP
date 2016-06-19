@@ -380,7 +380,6 @@ void prelim_search_dbIdx2(
     fprintf(stderr, "time: %f\n", (float)prelim_time * 1e-6);
 
 
-
     for(ii = 0; ii < parameters_num_threads; ii++)
     {
         free(selectHits2_arr[ii]);
