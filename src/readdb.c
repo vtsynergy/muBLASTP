@@ -215,7 +215,9 @@ void readdb_open_mem(char *filename) {
     vbyte_getVbyte(readdb_data, &readdb_numberOfClusters);
     vbyte_getVbyte(readdb_data, &readdb_numberOfVolumes);
 
-    fprintf(stderr, "numOfVolumes: %d totalNumberSequences: %d readdb_numberOfLetters: %d\n",
+    fprintf(stderr, "numOfVolumes: %d "
+            "totalNumberSequences: %d "
+            "readdb_numberOfLetters: %lu\n",
             readdb_numberOfVolumes,
             readdb_numberOfClusters,
             readdb_numberOfLetters

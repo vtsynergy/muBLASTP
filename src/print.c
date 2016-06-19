@@ -665,13 +665,15 @@ void print_gappedAlignmentsBrief_multi(int queryNum) {
             {
                 sprintf(line, "  %s  %d  %s\n", description,
                         (int)currentExtension->normalizedScore,
-                        print_eValue2String(currentExtension->eValue));
+                        print_eValue2String(currentExtension->eValue)
+                        );
             }
             else
             {
                 sprintf(line, "  %s  %.1f  %s\n", description,
                         currentExtension->normalizedScore,
-                        print_eValue2String(currentExtension->eValue));
+                        print_eValue2String(currentExtension->eValue)
+                        );
             }
         }
 

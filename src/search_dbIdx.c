@@ -190,7 +190,7 @@ void search_protein2hit_dbIdx_hitDetect(
                         *extHitsBufSize *= 2;
                         *extHitBuf = (HitPair *)realloc(*extHitBuf, 
                                 sizeof(HitPair) * *extHitsBufSize);
-                        fprintf(stderr, "extHitBuf resized to %d\n", *extHitsBufSize);
+                        fprintf(stderr, "extHitBuf resized to %lu\n", *extHitsBufSize);
                     }
 
                     (*extHitBuf)[numExtHit_t] = hp;

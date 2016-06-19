@@ -156,9 +156,6 @@ void alignments_dbIdx(
 
     for (ii = 0; ii < numQuery; ii++) {
 
-        //printf("Query= %s\n\n", queryDescription_arr[ii]);
-        //printf("Length=%ld\n", strlen(query_arr[ii]));
-
         struct finalAlignment *currentAlignment = 
             alignments_finalAlignments_multi[ii]->block;
 
@@ -220,20 +217,8 @@ void alignments_dbIdx(
         }
 
         free(extHitsBuff_arr[ii]);
-        //free(goodAlignQuery[ii]);
         free(finalAlignQuery[ii]);
     }
-
-    //int tid;
-    //for(tid = 0; tid < parameters_num_threads; tid++)
-    //{
-    //for(ii = 0; ii < goodAlignCount_arr[tid]; ii++)
-    //{
-    //struct alignment *alignment = &goodAlignBuf_arr[tid][ii];
-    //free(alignment->subject - 1);
-    ////free(alignment->description);
-    //}
-    //}
 
     gettimeofday(&end, NULL);
 
@@ -243,26 +228,13 @@ void alignments_dbIdx(
     fprintf(stderr, "print time: %f\n", (float)print_time * 1e-6);
 #endif
 
-    //int tid;
-    //for(tid = 0; tid < parameters_num_threads; tid++)
-    //{
-    //for(ii = 0; ii < goodAlignCount_arr[tid]; ii++)
-    //{
-    //struct alignment alignment = goodAlignBuf_arr[tid][ii];
-    //free(alignment.subject - 1);
-    //}
-    //}
-
     for(ii = 0; ii < parameters_num_threads; ii++)
     {
         free(goodExtensionBuf_arr[ii]);
         free(gappedExtension_arr[ii]);
         free(traceCodeBuf_arr[ii]);
         free(goodAlignBuf_arr[ii]);
-        //free(subjectBuf_arr[ii]);
     }
-
-
 }
 
 void prelim_search_dbIdx2(
@@ -301,11 +273,7 @@ void prelim_search_dbIdx2(
             maxMaxNumSeq = numSeqBlk;
             maxMaxDiag = maxDiag;
         }
-        //maxNumSecondBins = MAX(numSeqBins, maxNumSecondBins);
     }
-
-    //fprintf(stderr, "maxNumSecondBins: %d\n", maxNumSecondBins);
-    //
 
     for(ii = 0; ii < parameters_num_threads; ii++)
     {
@@ -319,12 +287,6 @@ void prelim_search_dbIdx2(
     }
 
     uint2 *lastHits_arr = (uint2 *)global_malloc(sizeof(uint2) * maxNumSecondBins * parameters_num_threads);
-
-    //fprintf(stderr, "maxNumSecondBins: %d maxMaxNumSeq: %d maxMaxDiag: %d lasthit_arr: %d selectHits_arr: %d\n",
-    //maxNumSecondBins, maxMaxNumSeq, maxMaxDiag,
-    //sizeof(uint2) * maxNumSecondBins * parameters_num_threads >> 20,
-    //sizeof(HitPair) * maxNumSecondBins * 2 >> 20
-    //);
 
     if(lastHits_arr == NULL)
     {
@@ -341,8 +303,6 @@ void prelim_search_dbIdx2(
         int4 thread_id = omp_get_thread_num();
 
         uint2 *lastHits = lastHits_arr + maxNumSecondBins * thread_id;
-
-        //int goodAlignCount = 0, goodExtensionCount = 0, gappedExtensionCount = 0;
 
         BlastGapDP *dp_mem = dp_mem_arr + DP_MEM_SIZE * thread_id;
 
@@ -363,9 +323,6 @@ void prelim_search_dbIdx2(
         int bid;
         for (bid = 0; bid < proteinLookup_numBlocks; bid++) 
         {
-
-            //#pragma omp single
-            //read_dbIdxBlock(parameters_subjectDatabaseFile, bid);
 
             int kk;
 #pragma omp for schedule(dynamic)
@@ -426,7 +383,6 @@ void prelim_search_dbIdx2(
 
     for(ii = 0; ii < parameters_num_threads; ii++)
     {
-        //free(selectHits1_arr[ii]);
         free(selectHits2_arr[ii]);
         free(ungappedExtension_new_arr[ii]);
     }
