@@ -474,12 +474,6 @@ void alignments_getTracebacks_ncbi(
             struct ungappedExtension *ungappedExtension = 
                 alignment->ungappedExtensions + extCount;
 
-
-            if(ungappedExtension == NULL)
-            {
-                continue;
-            }
-
             if(ungappedExtension->status == ungappedExtension_SEMIGAPPED){
 
                 ungappedExtension->nominalScore *= SCALING_FACTOR;
@@ -641,8 +635,6 @@ void alignments_getTracebacks_ncbi(
                 oldNearIdenticalStatus = shouldTestIdentical;
 
             }
-
-            //ungappedExtension++;
         }
 
         struct ungappedExtension *ungappedExtension = alignment->ungappedExtensions;
