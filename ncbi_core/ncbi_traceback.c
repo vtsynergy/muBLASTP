@@ -549,6 +549,7 @@ ALIGN_EX(int tid, const Uint1* A, const Uint1* B, Int4 M, Int4 N, Int4* a_offset
             score_gap_col = score_array[b_index].best_gap;
 
             next_score = score_array[b_index].best + matrix_row[ *b_ptr ];
+            //fprintf(stderr, "%d %d %d %d %d\n", next_score, b_index, score_array[b_index].best, *b_ptr, matrix_row[ *b_ptr  ]);
 
             /* script, script_row and script_col contain the
                actions specified by the dynamic programming.
@@ -852,6 +853,47 @@ Int2 BLAST_GappedAlignmentWithTraceback(
 
     gap_align->query_stop = q_start + private_q_length + 1;
     gap_align->subject_stop = s_start + private_s_length + 1;
+
+
+    GapEditScript *esp = Blast_PrelimEditBlockToGapEditScript(
+            rev_prelim_tback,
+            fwd_prelim_tback);
+
+
+
+    gap_align->edit_script = esp;
+    int i;
+    if (esp) {
+        while (esp->size && esp->op_type[0] != eGapAlignSub) {
+            score_left += score_params->gap_open +
+                esp->num[0] * score_params->gap_extend;
+
+            if (esp->op_type[0] == eGapAlignDel)
+                gap_align->subject_start += esp->num[0];
+            else
+                gap_align->query_start += esp->num[0];
+
+            for (i = 1; i < esp->size; i++) {
+                esp->op_type[i-1] = esp->op_type[i];
+                esp->num[i-1] = esp->num[i];
+            }
+            esp->size--;
+        }
+        i = esp->size;
+        while (esp->size && esp->op_type[i-1] != eGapAlignSub) {
+            score_right += score_params->gap_open +
+                esp->num[i-1] * score_params->gap_extend;
+
+            if (esp->op_type[i-1] == eGapAlignDel)
+                gap_align->subject_stop -= esp->num[i-1];
+            else
+                gap_align->query_stop -= esp->num[i-1];
+
+            esp->size--;
+            i--;
+            ASSERT(esp->size == i);
+        }
+    }
 
 
     //fprintf(stderr, "score_right: %d query_stop: %d subject_stop: %d\n", score_right, gap_align->query_stop, gap_align->subject_stop);

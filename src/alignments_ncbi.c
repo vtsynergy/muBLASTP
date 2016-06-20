@@ -555,6 +555,7 @@ void alignments_getTracebacks_ncbi(
                         PSSMatrix.length, alignment->subjectLength, NULL, matrix);
 
                 int cutoff_s = 1;
+                //fprintf(stderr, "%d %d\n", ungappedExtension->nominalScore, gap_align->score);
                 if(gap_align->score > cutoff_s)
                 {
                     num_goodAlignment++;
