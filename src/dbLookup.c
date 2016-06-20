@@ -293,14 +293,14 @@ void neighbourLookup_build(struct PSSMatrix PSSMatrix,
 
     while (queryPosition < PSSMatrix.length - wordLength + 1) {
         codeword =
-            getCodeword(PSSMatrix.bestMatchCodes + queryPosition, wordLength);
+            getCodeword(PSSMatrix.queryCodes + queryPosition, wordLength);
 
         if (neighborLookup[codeword].numNeighbours == 0) {
             numNeighbours = 0;
             // wordLookupDFA_getNeighbours(PSSMatrix, queryPosition, &numNeighbours,
             // neighbours);
 
-            wordLookupSM_getNeighbours(PSSMatrix.bestMatchCodes, scoreMatrix,
+            wordLookupSM_getNeighbours(PSSMatrix.queryCodes, scoreMatrix,
                     queryPosition, &numNeighbours, neighbours);
 
             neighborLookup[codeword].numNeighbours = numNeighbours;

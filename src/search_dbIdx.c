@@ -190,7 +190,6 @@ void search_protein2hit_dbIdx_hitDetect(
                         *extHitsBufSize *= 2;
                         *extHitBuf = (HitPair *)realloc(*extHitBuf, 
                                 sizeof(HitPair) * *extHitsBufSize);
-                        fprintf(stderr, "extHitBuf resized to %lu\n", *extHitsBufSize);
                     }
 
                     (*extHitBuf)[numExtHit_t] = hp;
@@ -336,7 +335,6 @@ void search_protein2hit_dbIdx_ungapExt(
         if(numGoodExtensions + numUngappedExtSeq >= *goodExtensionBufSize)
         {
             *goodExtensionBufSize *= 2;
-            //fprintf(stderr, "goodExtensionBuf resize to %d\n", *goodAlignBufSize);
             *goodExtensionBuf = (struct ungappedExtension *)global_realloc(
                     *goodExtensionBuf, 
                     sizeof(struct ungappedExtension) * (*goodExtensionBufSize));
@@ -381,7 +379,6 @@ void search_protein2hit_dbIdx_ungapExt(
                 if(numGoodAlign >= *goodAlignBufSize)
                 {
                     *goodAlignBufSize *= 2;
-                    //fprintf(stderr, "goodAlignBuf resize to %d\n", *goodAlignBufSize);
                     *goodAlignBuf = (struct alignment *)global_realloc(
                             *goodAlignBuf, 
                             sizeof(struct alignment) * (*goodAlignBufSize));
@@ -538,6 +535,7 @@ void search_protein2hit_dbIdx_lasthit_radix(
                     hp.distance = distance;
                     selectHits1[numExtHit] = hp;
                     numExtHit++;
+
                 }
 
                 numHits++;
@@ -546,11 +544,6 @@ void search_protein2hit_dbIdx_lasthit_radix(
         queryPosition++;
     }
 
-    //if(numExtHit > MAX_NUM_UNGAPPED_EXT)
-    //{
-        //fprintf(stderr, "%d, %d] ERROR! numExtHit = %d\n", tid, queryNum, numExtHit);
-        //exit(0);
-    //}
 
     HitPair *to_bin = hit_sort_radix(selectHits1, selectHits2, numSecondBins, numExtHit);
 
@@ -628,7 +621,6 @@ void search_protein2hit_dbIdx_lasthit_radix(
         if(numGoodExtensions + numUngappedExtSeq >= *goodExtensionBufSize)
         {
             *goodExtensionBufSize *= 2;
-            //fprintf(stderr, "goodExtensionBuf resize to %d\n", *goodAlignBufSize);
             *goodExtensionBuf = (struct ungappedExtension *)global_realloc(
                     *goodExtensionBuf, 
                     sizeof(struct ungappedExtension) * (*goodExtensionBufSize));
@@ -673,7 +665,6 @@ void search_protein2hit_dbIdx_lasthit_radix(
                 if(numGoodAlign >= *goodAlignBufSize)
                 {
                     *goodAlignBufSize *= 2;
-                    //fprintf(stderr, "goodAlignBuf resize to %d\n", *goodAlignBufSize);
                     *goodAlignBuf = (struct alignment *)global_realloc(
                             *goodAlignBuf, 
                             sizeof(struct alignment) * (*goodAlignBufSize));
@@ -698,6 +689,7 @@ void search_protein2hit_dbIdx_lasthit_radix(
             }
             alignment->numExtensions++;
         }
+        
         prev_hitIndex = hitIndex;
     }
 
@@ -851,12 +843,6 @@ void search_protein2hit_dbIdx_lasthit_radix_cp(
         queryPosition++;
     }
 
-    //if(numExtHit > MAX_NUM_UNGAPPED_EXT)
-    //{
-        //fprintf(stderr, "%d, %d] ERROR! numExtHit = %d\n", tid, queryNum, numExtHit);
-        //exit(0);
-    //}
-
     HitPair *to_bin = hit_sort_radix(selectHits1, selectHits2, numSecondBins, numExtHit);
 
 #if 1
@@ -933,7 +919,6 @@ void search_protein2hit_dbIdx_lasthit_radix_cp(
         if(numGoodExtensions + numUngappedExtSeq >= *goodExtensionBufSize)
         {
             *goodExtensionBufSize *= 2;
-            //fprintf(stderr, "goodExtensionBuf resize to %d\n", *goodAlignBufSize);
             *goodExtensionBuf = (struct ungappedExtension *)global_realloc(
                     *goodExtensionBuf, 
                     sizeof(struct ungappedExtension) * (*goodExtensionBufSize));
@@ -978,7 +963,6 @@ void search_protein2hit_dbIdx_lasthit_radix_cp(
                 if(numGoodAlign >= *goodAlignBufSize)
                 {
                     *goodAlignBufSize *= 2;
-                    //fprintf(stderr, "goodAlignBuf resize to %d\n", *goodAlignBufSize);
                     *goodAlignBuf = (struct alignment *)global_realloc(
                             *goodAlignBuf, 
                             sizeof(struct alignment) * (*goodAlignBufSize));

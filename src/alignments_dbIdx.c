@@ -529,9 +529,6 @@ void prelim_search_dbIdx(
                             BlastHSP);
             }
 
-            //#pragma omp single
-            //free_dbIdxBlock(bid);
-
         }
 
         Blast_IntervalTreeFree2(private_tree);
@@ -544,8 +541,6 @@ void prelim_search_dbIdx(
             (start.tv_sec * 1000000 + start.tv_usec));
 
     fprintf(stderr, "time: %f\n", (float)prelim_time * 1e-6);
-
-
 
     for(ii = 0; ii < parameters_num_threads; ii++)
     {
@@ -590,8 +585,6 @@ void merge(int numQuery)
                 sizeof(struct alignment) * numGoodAlignQuery[ii]);
         numGoodAlignQuery[ii] = 0;
     }
-
-    //memset(numGoodAlignQuery, 0, sizeof(int4) * numQuery);
 
     for(tid = 0; tid < parameters_num_threads; tid++)
     {
@@ -638,12 +631,15 @@ void merge(int numQuery)
                         descriptions_getDescription_mem(alignment->descriptionLocation, 
                                 alignment->descriptionLength);
                     struct ungappedExtension *ungappedExtensions = 
-                        (struct ungappedExtension*)global_malloc(sizeof(struct ungappedExtension) * 
+                        (struct ungappedExtension*)global_malloc(
+                                sizeof(struct ungappedExtension) * 
                                 alignment->numExtensions);
+                    
                     memcpy(ungappedExtensions, alignment->ungappedExtensions, 
                             sizeof(struct ungappedExtension) * alignment->numExtensions);
+                    alignments_sortUngapedExtension3(ungappedExtensions, 
+                            alignment->numExtensions);
                     alignment->ungappedExtensions = ungappedExtensions; 
-
                     alignment->inMemorySubject = 1;
                 }
             }
@@ -676,7 +672,6 @@ void merge(int numQuery)
     long merge_time = ((end.tv_sec * 1000000 + end.tv_usec) -
             (start.tv_sec * 1000000 + start.tv_usec));
 
-    fprintf(stderr, "merge time: %f\n", (float)merge_time * 1e-6);
 }
 
 void traceback(
@@ -818,11 +813,6 @@ void traceback(
         gettimeofday(&end_t, NULL);
         long traceback_time_t = ((end_t.tv_sec * 1000000 + end_t.tv_usec) -
                 (start_t.tv_sec * 1000000 + start_t.tv_usec));
-
-        //fprintf(stderr, "tid: %d traceback time: %f\n", 
-        //thread_id,
-        //(float)traceback_time_t * 1e-6);
-
     }
 
     gettimeofday(&end, NULL);

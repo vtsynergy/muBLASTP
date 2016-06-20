@@ -1583,44 +1583,23 @@ Blast_HSPListPurgeHSPsWithCommonEndpoints(
         Boolean purge)
 
 {
-    //BlastHSP** hsp_array;  /* hsp_array to purge. */
     struct ungappedExtension* hsp;
     Int4 i, j, k;
-    //Int4 hsp_count;
-    //purge |= (program != eBlastTypeBlastn);
-
-    /* If HSP list is empty, return immediately. */
-    //if (hsp_list == NULL || hsp_list->hspcnt == 0)
-    //return 0;
-
-    /* Do nothing for PHI BLAST, because HSPs corresponding to different pattern
-       occurrences may have common end points, but should all be kept. */
-    //if (Blast_ProgramIsPhiBlast(program))
-    //return hsp_list->hspcnt;
-
-    //hsp_array = hsp_list->hsp_array;
-    //hsp_count = hsp_list->hspcnt;
-
-    //qsort(hsp_array, hsp_count, sizeof(BlastHSP*), s_QueryOffsetCompareHSPs);
-    qsort(hsp_array, hsp_count, sizeof(struct ungappedExtension *), s_QueryOffsetCompareHSPs);
+    qsort(hsp_array, 
+            hsp_count, 
+            sizeof(struct ungappedExtension *), 
+            s_QueryOffsetCompareHSPs);
     i = 0;
     while (i < hsp_count) {
         j = 1;
         while (i+j < hsp_count &&
                 hsp_array[i] && hsp_array[i+j] &&
                 hsp_array[i]->start.queryOffset == hsp_array[i+j]->start.queryOffset &&
-                hsp_array[i]->start.subjectOffset == hsp_array[i+j]->start.subjectOffset) {
+                hsp_array[i]->start.subjectOffset == hsp_array[i+j]->start.subjectOffset) 
+        {
             hsp_count--;
-            //hsp_array[i+j]->status = ungappedExtension_DELETED;
             hsp = hsp_array[i+j];
-            //if (!purge && (hsp->query.end > hsp_array[i]->query.end)) {
-            //s_CutOffGapEditScript(hsp, hsp_array[i]->query.end,
-            //hsp_array[i]->subject.end, TRUE);
-            //} else {
-            //hsp = Blast_HSPFree(hsp);
             hsp->status = ungappedExtension_DELETED;
-            //hsp = NULL;
-            //}
             for (k=i+j; k<hsp_count; k++) {
                 hsp_array[k] = hsp_array[k+1];
             }
@@ -1629,7 +1608,10 @@ Blast_HSPListPurgeHSPsWithCommonEndpoints(
         i += j;
     }
 
-    qsort(hsp_array, hsp_count, sizeof(struct ungappedExtension *), s_QueryEndCompareHSPs);
+    qsort(hsp_array, 
+            hsp_count, 
+            sizeof(struct ungappedExtension *), 
+            s_QueryEndCompareHSPs);
     i = 0;
     while (i < hsp_count) {
         j = 1;
@@ -1638,16 +1620,8 @@ Blast_HSPListPurgeHSPsWithCommonEndpoints(
                 hsp_array[i]->end.queryOffset == hsp_array[i+j]->end.queryOffset &&
                 hsp_array[i]->end.subjectOffset == hsp_array[i+j]->end.subjectOffset) {
             hsp_count--;
-            //hsp_array[i+j]->status = ungappedExtension_DELETED;
             hsp = hsp_array[i+j];
-            //if (!purge && (hsp->query.offset < hsp_array[i]->query.offset)) {
-            //s_CutOffGapEditScript(hsp, hsp_array[i]->query.offset,
-            //hsp_array[i]->subject.offset, FALSE);
-            //} else {
-            //hsp = Blast_HSPFree(hsp);
             hsp->status = ungappedExtension_DELETED;
-            //hsp = NULL;
-            //}
             for (k=i+j; k<hsp_count; k++) {
                 hsp_array[k] = hsp_array[k+1];
             }
@@ -1655,10 +1629,6 @@ Blast_HSPListPurgeHSPsWithCommonEndpoints(
         }
         i += j;
     }
-
-    //if (purge) {
-        //Blast_HSPListPurgeNullHSPs(hsp_list);
-    //}
 
     return hsp_count;
 }

@@ -724,13 +724,9 @@ struct ungappedExtension *ungappedExtension_extend_ncbi_multi2(
 
   *ungappedExtension_subjectEndReached = subject + subjectEndReached;
 
-  //if(sequenceCount == 545626)
-  //fprintf(stderr, "hit id: %d diag: %d q: %d s: %d\n", sequenceCount, (queryStart - subjectStart) & 2047, queryOffset, subjectOffset);
 
   if (ungappedExtension_bestScore >=
       blast_ungappedNominalTrigger_multi[queryNum]) {
-
-      //fprintf(stderr, "ext id: %d diag: %d q: %d - %d s: %d - %d score: %d\n", sequenceCount, (queryStart - subjectStart) & 2047, queryStart, queryStart + extendLength, subjectStart, subjectStart + extendLength, ungappedExtension_bestScore);
 
     int4 diagonal;
     struct ungappedExtension *newUngappedExtension = goodExtensionBuf + *goodExtensionCount;
@@ -788,13 +784,8 @@ int ungappedExtension_extend_ncbi_multi3(
 
   *ungappedExtension_subjectEndReached = subject + subjectEndReached;
 
-  //if(sequenceCount == 545626)
-  //fprintf(stderr, "hit id: %d diag: %d q: %d s: %d\n", sequenceCount, (queryStart - subjectStart) & 2047, queryOffset, subjectOffset);
-
   if (ungappedExtension_bestScore >=
       blast_ungappedNominalTrigger_multi[queryNum]) {
-
-      //fprintf(stderr, "ext id: %d diag: %d q: %d - %d s: %d - %d score: %d\n", sequenceCount, (queryStart - subjectStart) & 2047, queryStart, queryStart + extendLength, subjectStart, subjectStart + extendLength, ungappedExtension_bestScore);
 
     int4 diagonal;
 

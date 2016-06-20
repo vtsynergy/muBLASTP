@@ -125,6 +125,7 @@ void alignments_sortUngapedExtension3(struct ungappedExtension *ungappedExtensio
             sizeof(struct ungappedExtension), score_compare_match3);
 }
 
+
 // Perform initial scoring of all ungapped extensions to find "good" alignments
 // that may
 // score above the cutoff
@@ -151,25 +152,14 @@ int alignments_findGoodAlignments_ncbi(
     gap_align.dp_mem = dp_mem; 
 
     BlastScoringParameters score_params;
-    //score_params.gap_open = parameters_semiGappedOpenGap ;
     score_params.gap_open = 11;
     score_params.gap_extend = parameters_semiGappedExtendGap;
 
 
     blast_dloc_multi[queryNum] = alignment->descriptionLocation;
 
-    // Record if subject has children
-    //if (encoding_alphabetType == encoding_protein &&
-            //alignment->encodedLength > alignment->subjectLength + 2)
-    //{
-        //hasChildren = 1;
-    //}
-    //else
-    //{
-        //hasChildren = 0;
-    //}
-
-    tree = Blast_IntervalTreeInit2(0, PSSMatrix.length + 1, 0, alignment->subjectLength + 1, tree);
+    tree = Blast_IntervalTreeInit2(0, 
+            PSSMatrix.length + 1, 0, alignment->subjectLength + 1, tree);
 
     Boolean restricted_align;
 
@@ -210,10 +200,6 @@ int alignments_findGoodAlignments_ncbi(
                     !BlastIntervalTreeContainsHSP(private_tree, &tmp_hsp, min_diag_separation)) ||
                 !BlastIntervalTreeContainsHSP(tree, &tmp_hsp, min_diag_separation)) {
 
-            // Find the seed
-            //ungappedExtension_findSeed(ungappedExtension + index, PSSMatrix,
-            //alignment->subject);
-
             BLAST_SequenceBlk query_blk;
             query_blk.sequence = PSSMatrix.queryCodes;
             query_blk.length = PSSMatrix.length;
@@ -226,20 +212,26 @@ int alignments_findGoodAlignments_ncbi(
             Int4 q_start, s_start, q_length, s_length, q_off, s_off;
             q_off = q_start = ungappedExtension[index].start.queryOffset;
             s_off = s_start = ungappedExtension[index].start.subjectOffset;
-            s_length = q_length = ungappedExtension[index].end.queryOffset - ungappedExtension[index].start.queryOffset;
-            Int4 max_offset = BlastGetStartForGappedAlignment(PSSMatrix.queryCodes, alignment->subject, scoreMatrix.matrix, q_start, q_length, s_start, s_length);
+            s_length = q_length = 
+                ungappedExtension[index].end.queryOffset - 
+                ungappedExtension[index].start.queryOffset;
+            Int4 max_offset = BlastGetStartForGappedAlignment(
+                    PSSMatrix.queryCodes, 
+                    alignment->subject, scoreMatrix.matrix, 
+                    q_start, q_length, s_start, s_length);
             s_off += max_offset - q_off;
             q_off = max_offset;
 
-            //blast_numGappedExtension_multi[queryNum]++;
-            s_BlastProtGappedAlignment(&query_blk, q_off, &subject_blk, s_off, &gap_align, &score_params, restricted_align, ungappedExtension + index, scoreMatrix);
+            s_BlastProtGappedAlignment(&query_blk, 
+                    q_off, &subject_blk, s_off, 
+                    &gap_align, &score_params, restricted_align, 
+                    ungappedExtension + index, scoreMatrix);
 
             Int4 cutoff, restricted_cutoff = 0;
             cutoff = blast_gappedNominalCutoff_multi[queryNum];
 
             if (restricted_align)
                 restricted_cutoff = (Int4)(kRestrictedMult * cutoff);
-
 
             if (restricted_align &&
                     gap_align.score < cutoff &&
@@ -250,7 +242,9 @@ int alignments_findGoodAlignments_ncbi(
                             PSSMatrix.length + 1, 0, alignment->subjectLength + 1);
                 }
                 else {
-                    private_tree = Blast_IntervalTreeInit2(0, PSSMatrix.length + 1, 0, alignment->subjectLength + 1, private_tree);
+                    private_tree = Blast_IntervalTreeInit2(0, 
+                            PSSMatrix.length + 1, 0, 
+                            alignment->subjectLength + 1, private_tree);
                 }
 
                 redo_index = index;
@@ -259,7 +253,6 @@ int alignments_findGoodAlignments_ncbi(
                 restricted_align = FALSE;
                 continue;
             }
-
 
             if(gap_align.score >= blast_gappedNominalCutoff_multi[queryNum])
             {
@@ -278,7 +271,6 @@ int alignments_findGoodAlignments_ncbi(
 
 
                 BlastHSP *new_hsp = Blast_HSPInit(BlastHSP_arr, &BlastHSP_cnt);
-                //BlastHSP *new_hsp = Blast_HSPNew();
 
                 new_hsp->score = ungappedExtension[index].nominalScore; 
                 new_hsp->context = 0;
@@ -315,40 +307,37 @@ int alignments_findGoodAlignments_ncbi(
     }
 
 
-    int new_numGappedExt = Blast_HSPListPurgeHSPsWithCommonEndpoints(ungappedExtension_new, num_GappedExt, TRUE);
+    int new_numGappedExt = 
+        Blast_HSPListPurgeHSPsWithCommonEndpoints(
+                ungappedExtension_new, num_GappedExt, TRUE);
+
     int4 numExtensions = 0;
     if(new_numGappedExt > 0)
     {
-        //fprintf(stderr, "%d : %d > %d\n", alignment->sequenceCount, num_GappedExt,  new_numGappedExt);
         alignments_get_eValue(ungappedExtension_new, 
                 new_numGappedExt, PSSMatrix.length, 
                 alignment->subjectLength, 
                 &(alignment->best_eValue));
+
         s_Blast_HSPListReapByPrelimEvalue(ungappedExtension_new, 
                 new_numGappedExt, 
                 prelim_evalue);
 
         for(index = 0; index < new_numGappedExt; index++){
-            if(ungappedExtension_new[index]->status == ungappedExtension_SEMIGAPPED)
+            if(ungappedExtension_new[index]->status 
+                    == ungappedExtension_SEMIGAPPED)
             {
-                //fprintf(stderr, "findGoodAlignment output: subject id: %d index: %d\n", alignment->sequenceCount, index);
                 numExtensions++;
             }
         } 
     }
 
-    //free(ungappedExtension_new);
-    //for(ii = 0; ii < num_ungappedExt; ii++)
-    //{
-        //ungappedExtension = alignment->ungappedExtensions + ii;
-        //ungappedExtension->next = alignment->ungappedExtensions + ii + 1;
-    //}
+    //qsort(ungappedExtension_new, 
+            //new_numGappedExt, 
+            //sizeof(struct ungappedExtension *),
+            //ScoreCompareHSPs); 
 
-    //ungappedExtension->next = NULL;
-    // If this alignment contains gapped extensions that could score above
-    // cutoff
     if (numExtensions > 0) {
-        //alignments_addGoodAlignment_multi(bestScore, alignment, queryNum);
         return 1;
     }
     else {
@@ -357,25 +346,24 @@ int alignments_findGoodAlignments_ncbi(
 }
 
 int4 alignments_compareGoodAlignments(const void *alignment1,
-                                       const void *alignment2) {
-  const struct alignment *a1, *a2;
+        const void *alignment2) {
+    const struct alignment *a1, *a2;
 
-  a1 = (struct alignment *)alignment1;
-  a2 = (struct alignment *)alignment2;
+    a1 = (struct alignment *)alignment1;
+    a2 = (struct alignment *)alignment2;
 
-  if (a1->best_eValue < a2->best_eValue) {
-    return -1;
-  } else if (a1->best_eValue > a2->best_eValue) {
-    return 1;
-  } else {
-    // Resolve conflicts using subject length
-    if (a1->subjectLength > a2->subjectLength)
-      return 1;
-    else if (a1->subjectLength < a2->subjectLength)
-      return -1;
-    else
-      return 0;
-  }
+    if (a1->best_eValue < a2->best_eValue) {
+        return -1;
+    } else if (a1->best_eValue > a2->best_eValue) {
+        return 1;
+    } else {
+        if (a1->subjectLength > a2->subjectLength)
+            return 1;
+        else if (a1->subjectLength < a2->subjectLength)
+            return -1;
+        else
+            return 0;
+    }
 }
 
 alignments_sortGoodAlignments_multi(struct alignment *goodAlignQuery,
@@ -450,13 +438,10 @@ void alignments_getTracebacks_ncbi(
 
     s_MatrixInfoInit(matrixInfo, 0.31760595763573063, 32);
 
-    //memSingleBlock_resetCurrent(alignments_goodAlignments_multi[queryNum]);
-
     int gappedExtensionCount_t = (*gappedExtensionCount);
 
     int hspcnt = 0;
     int num_goodAlignment = 0;
-    //double worse_eValue = INT2_MAX;
 
     int alignId;
     for(alignId = 0; alignId < numGoodAlignQuery; alignId++)
@@ -465,22 +450,8 @@ void alignments_getTracebacks_ncbi(
 
         Boolean oldNearIdenticalStatus = FALSE;
 
-        //fprintf(stderr, "trace: seqId: %d queryId: %d extOff: %d numExt: %d\n",
-        //alignment->sequenceCount, alignment->queryCount, 
-        //alignment->ungappedExtensionOffset,
-        //alignment->numExtensions);
-
         int hsp_index = 0;
         int num_adjustments = 0;
-
-        //if(EarlyTermination(
-                    //alignment->best_eValue, 
-                    //num_goodAlignment, 
-                    //worse_eValue))
-        //{
-            //fprintf(stderr, "seqId: %d worse_eValue: %f best_eValue: %f skip\n", alignment->sequenceCount, worse_eValue, alignment->best_eValue);
-            //break;
-        //}
 
         BlastCompo_SequenceData seqData;
         seqData.buffer = seq_data; 
@@ -488,33 +459,26 @@ void alignments_getTracebacks_ncbi(
         {
             seqData.buffer[ii] = 0;
         }
-        //memset(seqData.buffer, 0, sizeof(unsigned char) * alignment->subjectLength + 2);
+
         seqData.length = alignment->subjectLength;
         seqData.data = seqData.buffer + 1;
-
-        //ASSERT(alignment->volumnNumber == readdb_volume);
-        //fprintf(stderr, "subject: %p\n", alignment->subject);
 
         for(ii = 0; ii < alignment->subjectLength; ii++)
         {
             seqData.data[ii] = to_ncbi[alignment->subject[ii]];
         }
 
-        struct ungappedExtension *ungappedExtension;
-        ungappedExtension = alignment->ungappedExtensions;
-
         int extCount = 0;
         for(extCount = 0; extCount < alignment->numExtensions; extCount++)
         {
+            struct ungappedExtension *ungappedExtension = 
+                alignment->ungappedExtensions + extCount;
+
 
             if(ungappedExtension == NULL)
             {
-                break;
+                continue;
             }
-            //ASSERT(ungappedExtension != NULL);
-
-            //fprintf(stderr, "ext status: %d\n", ungappedExtension->status);
-            //fprintf(stderr, "ungappedExtension: %d\n", ungappedExtension->status);
 
             if(ungappedExtension->status == ungappedExtension_SEMIGAPPED){
 
@@ -524,7 +488,6 @@ void alignments_getTracebacks_ncbi(
                 if(isContained)
                 {
                     ungappedExtension->status == ungappedExtension_DELETED;
-                    ungappedExtension = ungappedExtension->next;
                     continue;
                 }
 
@@ -549,7 +512,6 @@ void alignments_getTracebacks_ncbi(
                         num_adjustments++;
                     }
                 }
-
 
 
                 if(hsp_index == 0 || (shouldTestIdentical != oldNearIdenticalStatus))
@@ -593,7 +555,7 @@ void alignments_getTracebacks_ncbi(
                         PSSMatrix.length, alignment->subjectLength, NULL, matrix);
 
                 int cutoff_s = 1;
-                if(ungappedExtension->nominalScore > cutoff_s)
+                if(gap_align->score > cutoff_s)
                 {
                     num_goodAlignment++;
                     ungappedExtension->start.queryOffset = gap_align->query_start;
@@ -614,18 +576,8 @@ void alignments_getTracebacks_ncbi(
 
                     if(*traceCodeCount + trace.length >= *traceCodeBufSize)
                     {
-
-                        gettimeofday(&start, NULL);
                         *traceCodeBufSize *= 2;
                         *traceCodeBuf = (unsigned char *)global_realloc(*traceCodeBuf, *traceCodeBufSize);
-                        gettimeofday(&end, NULL);
-
-                        long malloc_time = ((end.tv_sec * 1000000 + end.tv_usec) -
-                                (start.tv_sec * 1000000 + start.tv_usec));
-
-                        //fprintf(stderr, "traceCodeBuf resize to %d (%ld ms)\n", 
-                        //*traceCodeBufSize,
-                        //malloc_time);
                     }
 
                     unsigned char* traceCodes = *traceCodeBuf + *traceCodeCount;
@@ -688,10 +640,10 @@ void alignments_getTracebacks_ncbi(
 
             }
 
-            ungappedExtension++;
+            //ungappedExtension++;
         }
 
-        ungappedExtension = alignment->ungappedExtensions;
+        struct ungappedExtension *ungappedExtension = alignment->ungappedExtensions;
         hspcnt = 0;
         struct ungappedExtension *hsp_array[alignment->numExtensions];
         for(extCount = 0; extCount < alignment->numExtensions; extCount++)
@@ -727,21 +679,10 @@ void alignments_getTracebacks_ncbi(
                 if(gappedExtensionCount_t + 1 >= *gapExtensionBufSize)
                 {
 
-                    gettimeofday(&start, NULL);
                     *gapExtensionBufSize *= 2;
-                    //fprintf(stderr, "gappedExtensionBuf resized to %d\n", *gapExtensionBufSize);
                     *gappedExtensionBuf = (struct gappedExtension *)
                         global_realloc(*gappedExtensionBuf, 
                                 sizeof(struct gappedExtension) * (*gapExtensionBufSize));
-
-                    gettimeofday(&end, NULL);
-
-                    long malloc_time = ((end.tv_sec * 1000000 + end.tv_usec) -
-                            (start.tv_sec * 1000000 + start.tv_usec));
-
-                    //fprintf(stderr, "traceCodeBuf resize to %d (%ld ms)\n", 
-                    //*traceCodeBufSize,
-                    //malloc_time);
                 }
 
                 struct gappedExtension *gappedExtension = *gappedExtensionBuf + gappedExtensionCount_t;

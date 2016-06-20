@@ -685,7 +685,8 @@ s_BlastProtGappedAlignment(
     AdjustSubjectRange(&s_length, &subject_length, q_length, query_length, 
             &subject_shift);
 
-    //fprintf(stderr, "q_off: %d s_off: %d query_length: %d q_length: %d subject_length: %d s_length: %d gap_x_dropoff: %d gap_open: %d gap_extend: %d subject_shift: %d\n ", q_off, s_off, query_length, q_length, subject_length, s_length, gap_align->gap_x_dropoff, score_params->gap_open, score_params->gap_extend, subject_shift);
+    //fprintf(stderr, "q_off: %d s_off: %d query_length: %d q_length: %d subject_length: %d s_length: %d gap_x_dropoff: %d gap_open: %d gap_extend: %d subject_shift: %d\n ", 
+    //q_off, s_off, query_length, q_length, subject_length, s_length, gap_align->gap_x_dropoff, score_params->gap_open, score_params->gap_extend, subject_shift);
     //fprintf(stderr, "q_length: %d s_length: %d query_length: %d subject_length: %d subject_shift: %d\n", q_length, s_length, query_length, subject_length, subject_shift);
 
     found_start = FALSE;

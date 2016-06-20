@@ -116,6 +116,7 @@
 #include "alignments_queryIdx.h"
 #include "alignments_multi.h"
 #include "gappedExtension_multi.h"
+#include "alignments_ncbi.h"
 
 #define ASSERT(x) if(!(x)) {fprintf(stderr, "ERR in line %d at file: %s\n", __LINE__, __FILE__); exit(1);}
 

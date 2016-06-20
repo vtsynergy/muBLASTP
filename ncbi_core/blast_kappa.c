@@ -364,8 +364,10 @@ s_TestNearIdentical(const BlastCompo_SequenceData* seqData,
     const double kMinFractionNearIdentical = 0.96;
     int max_shift = 8;
 
-    int query_len = qEnd - qStart + 1;
-    int subject_len = sEnd - sStart + 1;
+    //int query_len = qEnd - qStart + 1;
+    //int subject_len = sEnd - sStart + 1;
+    int query_len = qEnd - qStart;
+    int subject_len = sEnd - sStart;
     int align_len = MIN(query_len, subject_len);
 
     int query_left_len = 0;

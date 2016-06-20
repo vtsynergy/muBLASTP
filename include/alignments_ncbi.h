@@ -14,9 +14,8 @@
 #ifndef _alignments_ncbi_
 #define _alignments_ncbi_
 
-
 int alignments_findGoodAlignments_ncbi(
-        align_t *alignment,
+        struct alignment *alignment,
         struct ungappedExtension *goodExtensionBuf,
         struct PSSMatrix PSSMatrix,
         struct scoreMatrix scoreMatrix,
@@ -27,16 +26,6 @@ int alignments_findGoodAlignments_ncbi(
         BlastIntervalTree *private_tree, 
         BlastHSP *BlastHSP_arr); 
 
-int alignments_findGoodAlignments_ncbi(
-        align_t *alignment,
-        struct ungappedExtension *goodExtensionBuf,
-        struct PSSMatrix PSSMatrix,
-        struct scoreMatrix scoreMatrix,
-        int queryNum,
-        struct ungappedExtension **ungappedExtension_new,
-        BlastGapDP *dp_mem,
-        BlastIntervalTree *tree,
-        BlastIntervalTree *private_tree, 
-        BlastHSP *BlastHSP_arr); 
+int ScoreCompareHSPs(const void* h1, const void* h2);
 
 #endif
