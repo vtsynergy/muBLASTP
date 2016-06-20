@@ -482,18 +482,19 @@ void alignments_getTracebacks_ncbi(
 
             if(ungappedExtension->status == ungappedExtension_SEMIGAPPED){
 
+                ungappedExtension->nominalScore *= SCALING_FACTOR;
+
                 double lambda = 0.008344;
                 Boolean isContained = s_IsContained(ungappedExtension, alignment, lambda);
 
                 if(isContained)
                 {
-                    ungappedExtension->status == ungappedExtension_DELETED;
+                    ungappedExtension->status = ungappedExtension_DELETED;
                     continue;
                 }
 
                 Blast_AminoAcidComposition subject_composition;
 
-                ungappedExtension->nominalScore *= SCALING_FACTOR;
 
                 Boolean shouldTestIdentical =  
                     s_preliminaryTestNearIdentical(PSSMatrix.length,
