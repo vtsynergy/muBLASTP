@@ -50,7 +50,7 @@ void print_sequence(int seqId, int ii, FILE *output_file)
             readdb_sequenceData[seqId].sequenceLength, 
             seqDes,
             readdb_sequenceData[seqId].descriptionLength, 
-            NULL, 0, NULL, 0, ii);
+            NULL, 0, NULL, 0, seqId);
 
     fprintf(output_file, ">%s\n%s\n", seqDes, seq);
 
