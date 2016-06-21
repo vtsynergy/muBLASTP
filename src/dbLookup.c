@@ -379,16 +379,14 @@ void proteinLookup_db_build(int4 numCodes, int wordLength,
 
             int4 sequenceCount = ii + readdb_volumeOffset;
 
-            if(numLetterBlk + readdb_sequenceData[sequenceCount].sequenceLength >= dbIdx_block_size 
+            if((numLetterBlk + 
+                        readdb_sequenceData[sequenceCount].sequenceLength) >= dbIdx_block_size 
                     || (ii - seqStartBlk) >= (1 << 16))
             {
-                ii--;
                 break;
             }
 
             numLetterBlk += readdb_sequenceData[sequenceCount].sequenceLength;
-
-            ASSERT(readdb_sequenceData[sequenceCount].sequenceLength > 0);
 
             proteinLookup_db_sub(ii - seqStartBlk, 
                     readdb_sequenceData[sequenceCount].sequence,
