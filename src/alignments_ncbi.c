@@ -332,10 +332,9 @@ int alignments_findGoodAlignments_ncbi(
         } 
     }
 
-    //qsort(ungappedExtension_new, 
-            //new_numGappedExt, 
-            //sizeof(struct ungappedExtension *),
-            //ScoreCompareHSPs); 
+
+    alignments_sortUngapedExtension3(ungappedExtension, 
+            alignment->numExtensions);
 
     if (numExtensions > 0) {
         return 1;

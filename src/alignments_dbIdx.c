@@ -634,11 +634,8 @@ void merge(int numQuery)
                         (struct ungappedExtension*)global_malloc(
                                 sizeof(struct ungappedExtension) * 
                                 alignment->numExtensions);
-                    
                     memcpy(ungappedExtensions, alignment->ungappedExtensions, 
                             sizeof(struct ungappedExtension) * alignment->numExtensions);
-                    alignments_sortUngapedExtension3(ungappedExtensions, 
-                            alignment->numExtensions);
                     alignment->ungappedExtensions = ungappedExtensions; 
                     alignment->inMemorySubject = 1;
                 }

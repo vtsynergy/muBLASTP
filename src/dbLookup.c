@@ -156,7 +156,7 @@ void proteinLookup_db_initial(int4 numCodes, int wordLength) {
     numEntries = ceil(pow(numCodes, wordLength));
     int4 proteinLookup_wordLength = wordLength;
 
-    uint4 numBlocks = ceil((float)readdb_numVolumeLetters / dbIdx_block_size) + 1;
+    uint4 numBlocks = ceil((float)readdb_numVolumeLetters / dbIdx_block_size) + 20;
     proteinLookup_numBlocks = numBlocks;
 
     // Declare memory for initial DB index blocks
@@ -379,15 +379,16 @@ void proteinLookup_db_build(int4 numCodes, int wordLength,
 
             int4 sequenceCount = ii + readdb_volumeOffset;
 
-            if(numLetterBlk >= dbIdx_block_size || (ii - seqStartBlk) >= (1 << 16))
+            if(numLetterBlk + readdb_sequenceData[sequenceCount].sequenceLength >= dbIdx_block_size 
+                    || (ii - seqStartBlk) >= (1 << 16))
             {
                 ii--;
                 break;
             }
 
-            numLetterBlk += readdb_sequenceData[ii + readdb_volumeOffset].sequenceLength;
+            numLetterBlk += readdb_sequenceData[sequenceCount].sequenceLength;
 
-            ASSERT(readdb_sequenceData[ii + readdb_volumeOffset].sequenceLength > 0);
+            ASSERT(readdb_sequenceData[sequenceCount].sequenceLength > 0);
 
             proteinLookup_db_sub(ii - seqStartBlk, 
                     readdb_sequenceData[sequenceCount].sequence,

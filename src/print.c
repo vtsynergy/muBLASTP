@@ -456,11 +456,7 @@ void print_gappedAlignmentsFull_multi(char *query, struct PSSMatrix PSSMatrix,
     strcpy(queryDescription, blast_queryDescription_multi[queryNum]);
     queryDescription = print_untilWhitespace(queryDescription);
 
-
-    int prevSeq = -1;
-    int displayCnt = 0;
-
-    while ((displayCnt < parameters_numDisplayTracebacks ||
+    while ((count < parameters_numDisplayTracebacks ||
                 parameters_numDisplayTracebacks == 0) &&
             count < alignments_finalAlignments_multi[queryNum]->numEntries) {
         finalAlignment = memSingleBlock_getEntry(
@@ -468,16 +464,6 @@ void print_gappedAlignmentsFull_multi(char *query, struct PSSMatrix PSSMatrix,
 
         int tid = finalAlignment->thread_id;
         alignment = finalAlignment->alignment;
-
-        if(prevSeq == alignment->sequenceCount)
-        {
-            count++;
-            continue;
-        }
-        prevSeq = alignment->sequenceCount;
-        displayCnt++;
-
-
 
         // If this alignment is to be displayed
         if (parameters_allClusterMembers) {
@@ -586,26 +572,13 @@ void print_gappedAlignmentsBrief_multi(int queryNum) {
 
     alignments_sortFinalAlignments_multi2(queryNum);
 
-    int prevSeq = -1;
-    int displayCnt = 0;
-
     // For each alignment
     while (count < alignments_finalAlignments_multi[queryNum]->numEntries &&
-            displayCnt < parameters_numDisplayAlignments) {
+            count < parameters_numDisplayAlignments) {
         finalAlignment = memSingleBlock_getEntry(
                 alignments_finalAlignments_multi[queryNum], count);
         currentAlignment = finalAlignment->alignment;
         currentExtension = currentAlignment->gappedExtensions;
-
-        if(prevSeq == currentAlignment->sequenceCount)
-        {
-            count++;
-            continue;
-        }
-        prevSeq = currentAlignment->sequenceCount;
-        displayCnt++;
-
-
 
         // Get description of subject
         if (parameters_getDescriptions) {
@@ -615,10 +588,8 @@ void print_gappedAlignmentsBrief_multi(int queryNum) {
             descriptionLength = strlen(description);
 #else
             descriptionLength = currentAlignment->descriptionLength;
-            //descriptionLength = strlen(finalAlignment->description);
             description =
                 (char *)global_malloc(sizeof(char) * (descriptionLength + 1));
-            //strcpy(description, finalAlignment->description);
             memcpy(description, finalAlignment->description, descriptionLength);
 #endif
         } else {
