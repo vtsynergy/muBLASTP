@@ -437,6 +437,13 @@ char *print_encodeGreaterLessThan(char *description) {
     return newDescription;
 }
 
+int s_IsSameEndPointGap(struct gappedExtension *prev, struct gappedExtension *curr)
+{
+    return (prev->subjectStart == curr->subjectStart) ||
+        (prev->subjectEnd == curr->subjectEnd);
+}
+
+
 void print_gappedAlignmentsFull_multi(char *query, struct PSSMatrix PSSMatrix,
         int queryNum) {
     struct alignment *alignment;
@@ -522,9 +529,23 @@ void print_gappedAlignmentsFull_multi(char *query, struct PSSMatrix PSSMatrix,
             hspNum = 0;
 
 
+            struct gappedExtension *prevExtension = NULL;
+
             // For each gapped extension
             while (currentExtension != NULL) {
-                currentExtension->trace.traceCodes = traceCodeBuf_arr[tid] + currentExtension->trace.traceCodeOff;
+
+                if(prevExtension != NULL)
+                {
+                    if(s_IsSameEndPointGap(prevExtension, currentExtension))
+                    {
+                        prevExtension = currentExtension;
+                        currentExtension = currentExtension->next;
+                        continue;
+                    }
+                }
+
+                currentExtension->trace.traceCodes = 
+                    traceCodeBuf_arr[tid] + currentExtension->trace.traceCodeOff;
                 hspNum++;
                 subject = alignment->subject;
                 // Print the gapped extension
@@ -537,6 +558,7 @@ void print_gappedAlignmentsFull_multi(char *query, struct PSSMatrix PSSMatrix,
                 else if (parameters_outputType != parameters_tabular)
                     print_gappedExtension(currentExtension, PSSMatrix, query, subject);
 
+                prevExtension = currentExtension;
                 currentExtension = currentExtension->next;
 
             }

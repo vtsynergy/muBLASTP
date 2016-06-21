@@ -693,6 +693,8 @@ void alignments_getTracebacks_ncbi(
                    gappedExtension->eValue = 0.0;
 
                 gappedExtension_score_ncbi_multi(gappedExtension, queryNum);
+
+
                 alignments_addGappedExtension2(alignment, gappedExtension, 
                         gappedExtensionCount_t, *gappedExtensionBuf);
 

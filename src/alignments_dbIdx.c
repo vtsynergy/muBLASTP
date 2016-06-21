@@ -173,7 +173,8 @@ void alignments_dbIdx(
                 gappedExtension_arr[thread_id] 
                 + alignment->gappedExtensionOffset;
 
-            struct gappedExtension *currentExtension = alignment->gappedExtensions; 
+            struct gappedExtension *currentExtension = 
+                alignment->gappedExtensions; 
 
             while(currentExtension != NULL)
             {
