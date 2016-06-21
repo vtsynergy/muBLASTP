@@ -767,6 +767,7 @@ s_BlastProtGappedAlignment(
     }
 
     gap_align->score = score_right+score_left;
+    //fprintf(stderr, "%d %d %d\n", gap_align->score, score_right, score_left);
 
     return 0;
 }

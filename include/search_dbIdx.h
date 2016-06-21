@@ -4,8 +4,8 @@
 typedef struct hit_pair_struct
 {
     uint4 hitIndex;
-    uint2 queryOffset:10, distance:6;
-    /*uint2 queryOffset, distance;*/
+    /*uint2 queryOffset:10, distance:6;*/
+    uint2 queryOffset, distance;
 }HitPair;
 
 

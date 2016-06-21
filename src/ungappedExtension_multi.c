@@ -724,6 +724,8 @@ struct ungappedExtension *ungappedExtension_extend_ncbi_multi2(
 
   *ungappedExtension_subjectEndReached = subject + subjectEndReached;
 
+  //fprintf(stderr, "%d %d (%d %d %d %d) %d\n", queryOffset, subjectOffset, queryStart, queryStart + extendLength, subjectStart, subjectStart + extendLength, ungappedExtension_bestScore);
+
 
   if (ungappedExtension_bestScore >=
       blast_ungappedNominalTrigger_multi[queryNum]) {

@@ -52,7 +52,7 @@ inline HitPair *hit_sort_radix(HitPair *selectHits1, HitPair *selectHits2, int n
     unsigned int *to_bin_num;
 
     int bit, jj;
-    for(bit = 0; bit < ceil((float)bitCount/LOG_NUM_BINS); bit++)
+    for(bit = 0; bit < bitCount; bit+=LOG_NUM_BINS)
     {
         if(binset == 0)
         {
@@ -79,7 +79,7 @@ inline HitPair *hit_sort_radix(HitPair *selectHits1, HitPair *selectHits2, int n
         {
             HitPair hp = from_bin[jj];
             uint4 hitIndex = hp.hitIndex;
-            uint4 binId = (hitIndex >> (bit * LOG_NUM_BINS)) & NUM_BINS_1;
+            uint4 binId = (hitIndex >> bit) & NUM_BINS_1;
             to_bin_num[binId + 1]++;
         }
 
@@ -92,7 +92,7 @@ inline HitPair *hit_sort_radix(HitPair *selectHits1, HitPair *selectHits2, int n
         {
             HitPair hp = from_bin[jj];
             uint4 hitIndex = hp.hitIndex;
-            uint4 binId = (hitIndex >> (bit * LOG_NUM_BINS)) & NUM_BINS_1;
+            uint4 binId = (hitIndex >> bit) & NUM_BINS_1;
             to_bin[to_bin_num[binId]++] = hp;
         }
     }
@@ -456,10 +456,10 @@ void search_protein2hit_dbIdx_lasthit_radix(
         uint4 *blast_numTriggerExtensions_t,
         uint4 *blast_numTriggerSequences_t, BlastHSP *BlastHSP) 
 {
-    uint2 subjectOffset, wordLengthMinusOne;
-    uint2 queryOffset;
+    uint4 subjectOffset, wordLengthMinusOne;
+    uint4 queryOffset;
     struct ungappedExtension *ungappedExtension;
-    int4 diagonal;
+    int8 diagonal;
 
     uint4 codeword;
     uint8 queryPosition;
@@ -510,10 +510,12 @@ void search_protein2hit_dbIdx_lasthit_radix(
             for (jj = subPositionOffset[codeword_neighbours]; 
                     jj < subPositionOffset[codeword_neighbours + 1]; 
                     jj++) {
+
                 subPos_t hit = subSequencePositions[jj];
                 subjectOffset = hit.subOff;
                 diagonal =
                     subjectOffset - queryPosition + (length - wordLengthMinusOne);
+
                 int seqId = hit.seqId;
 
                 uint4 secondBinId = seqId * maxDiag + diagonal;
@@ -535,7 +537,6 @@ void search_protein2hit_dbIdx_lasthit_radix(
                     hp.distance = distance;
                     selectHits1[numExtHit] = hp;
                     numExtHit++;
-
                 }
 
                 numHits++;
@@ -552,7 +553,7 @@ void search_protein2hit_dbIdx_lasthit_radix(
     int prev_seqId = -1;
     int numUngappedExtSeq = 0;
     struct alignment *alignment = NULL;
-    int4 lastExt = -1;
+    int8 lastExt = -1;
     for(jj = 0; jj < numExtHit; jj++)
     {
         HitPair hp = to_bin[jj];
@@ -563,9 +564,8 @@ void search_protein2hit_dbIdx_lasthit_radix(
             exit(0);
         }
 
-
         int seqId = hp.hitIndex/maxDiag;
-        int diagonal = hp.hitIndex%maxDiag;
+        diagonal = hp.hitIndex%maxDiag;
         int queryOffset = hp.queryOffset + wordLengthMinusOne;
         int subjectOffset = queryOffset + diagonal - (length - wordLengthMinusOne);
 
@@ -596,7 +596,7 @@ void search_protein2hit_dbIdx_lasthit_radix(
 
         prev_seqId = seqId;
 
-        int4 currExt = (diagonal << 16) + subjectOffset; 
+        int8 currExt = (diagonal << 32) + subjectOffset; 
 
         if(lastExt > currExt)
         {
@@ -647,7 +647,7 @@ void search_protein2hit_dbIdx_lasthit_radix(
                 subjectOffset = (ungappedExtension_subjectEndReached -
                         subject);
 
-                lastExt = (diagonal << 16) + subjectOffset;
+                lastExt = (diagonal << 32) + subjectOffset;
             }
 
             if (alignment == NULL) {
