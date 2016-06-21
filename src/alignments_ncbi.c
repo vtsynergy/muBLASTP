@@ -478,9 +478,8 @@ void alignments_getTracebacks_ncbi(
                 ungappedExtension->nominalScore *= SCALING_FACTOR;
 
                 double lambda = 0.008344;
-                Boolean isContained = s_IsContained(ungappedExtension, alignment, lambda);
 
-                if(isContained)
+                if(s_IsContained(ungappedExtension, alignment, lambda))
                 {
                     ungappedExtension->status = ungappedExtension_DELETED;
                     continue;

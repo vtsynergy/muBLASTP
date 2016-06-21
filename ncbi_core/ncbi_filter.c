@@ -3403,13 +3403,10 @@ s_IsContained(struct ungappedExtension *in_align,
     double score        = in_align->nominalScore;
     double scoreThresh = score + KAPPA_BIT_TOL * LOCAL_LN2/lambda;
 
-    //fprintf(stderr, "in_align q: %d - %d s: %d - %d score: %d\n", query_offset, query_end, subject_offset, subject_end, score);
-
-    for (align = alignments->ungappedExtensions;  align != NULL;  align = align->next ) {
-        /* for all elements of alignments */
-        //if (KAPPA_SIGN(in_align->frame) == KAPPA_SIGN(align->frame)) {
+    int ii;
+    for (align = alignments->ungappedExtensions, ii = 0;  
+            ii < alignments->numExtensions;  align++, ii++) {
         if (align->status == ungappedExtension_GAPPED) {
-            //fprintf(stderr, "align q: %d - %d s: %d - %d score: %d\n", align->start.queryOffset, align->end.queryOffset, align->start.subjectOffset, align->end.subjectOffset, align->nominalScore);
             /* hsp1 and hsp2 are in the same query/subject frame */
             if (KAPPA_CONTAINED_IN_HSP
                     (align->start.queryOffset, align->end.queryOffset, query_offset,
