@@ -226,17 +226,39 @@ GapPrelimEditBlockNew(void)
     return edit_block;
 }
 
+/* see gapinfo.h for description */
+    GapEditScript* 
+GapEditScriptNew(Int4 size)
+
+{
+    GapEditScript* new;
+
+    if (size <= 0) 
+        return NULL;
+
+    new = (GapEditScript*) calloc(1, sizeof(GapEditScript));
+    if (new)
+    {
+        new->size = size;
+        new->op_type = (EGapAlignOpType*) calloc(size, sizeof(EGapAlignOpType));
+        new->num = (Int4*) calloc(size, sizeof(Int4));
+    }
+    return new;
+}
+
 Int2
 BLAST_GapAlignStructNew( 
-        //const BlastExtensionParameters* ext_params, 
         Uint4 max_subject_length,
-        //BlastScoreBlk* sbp, 
         BlastGapAlignStruct** gap_align_ptr)
 {
     Int2 status = 0;
     BlastGapAlignStruct* gap_align;
 
     gap_align = (BlastGapAlignStruct*) calloc(1, sizeof(BlastGapAlignStruct));
+
+    GapEditScript* esp = GapEditScriptNew(max_subject_length * 2);
+
+    gap_align->edit_script = esp;
 
     *gap_align_ptr = gap_align;
 
@@ -710,33 +732,25 @@ done:
     return best_score;
 }
 
+
+
 /* see gapinfo.h for description */
-    GapEditScript* 
-GapEditScriptNew(Int4 size)
-
+void GapEditScriptReset(Int4 size, GapEditScript* new)
 {
-    GapEditScript* new;
-
-    if (size <= 0) 
-        return NULL;
-
-    new = (GapEditScript*) calloc(1, sizeof(GapEditScript));
-    if (new)
-    {
-        new->size = size;
-        new->op_type = (EGapAlignOpType*) calloc(size, sizeof(EGapAlignOpType));
-        new->num = (Int4*) calloc(size, sizeof(Int4));
-    }
-    return new;
+    ASSERT(size < longestQueryLength * 2);
+    new->size = size;
+    memset(new->op_type, 0, sizeof(EGapAlignOpType) * size);
+    memset(new->num, 0, sizeof(Int4) * size);
 }
 
 
-    GapEditScript*
-Blast_PrelimEditBlockToGapEditScript (GapPrelimEditBlock* rev_prelim_tback,
+GapEditScript*
+Blast_PrelimEditBlockToGapEditScript (
+        GapEditScript *esp, 
+        GapPrelimEditBlock* rev_prelim_tback,
         GapPrelimEditBlock* fwd_prelim_tback)
 {
     Boolean merge_ops = FALSE;
-    GapEditScript* esp;
     GapPrelimEditScript *op;
     Int4 i;
     Int4 index=0;
@@ -758,7 +772,7 @@ Blast_PrelimEditBlockToGapEditScript (GapPrelimEditBlock* rev_prelim_tback,
     if (merge_ops)
         size--;
 
-    esp = GapEditScriptNew(size);
+    GapEditScriptReset(size, esp);
 
     index = 0;
     for (i=0; i < rev_prelim_tback->num_ops; i++) {
@@ -856,12 +870,10 @@ Int2 BLAST_GappedAlignmentWithTraceback(
 
 
     GapEditScript *esp = Blast_PrelimEditBlockToGapEditScript(
+            gap_align->edit_script,
             rev_prelim_tback,
             fwd_prelim_tback);
 
-
-
-    gap_align->edit_script = esp;
     int i;
     if (esp) {
         while (esp->size && esp->op_type[0] != eGapAlignSub) {

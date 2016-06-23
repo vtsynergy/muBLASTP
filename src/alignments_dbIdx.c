@@ -742,7 +742,7 @@ void traceback(
     {
         NRrecord_arr[ii] = Blast_CompositionWorkspaceNew();
         Blast_MatrixInfoNew2(&matrixInfo_arr[ii], BLASTAA_SIZE, BLASTAA_SIZE, FALSE);
-        BLAST_GapAlignStructNew(readdb_longestSequenceLength, &gap_align_arr[ii]);
+        BLAST_GapAlignStructNew(longestQueryLength, &gap_align_arr[ii]);
         matrix_arr[ii] = (void *)_PSIAllocateMatrix(BLASTAA_SIZE, BLASTAA_SIZE, sizeof(Int4)); 
         seq_data_arr[ii] = (unsigned char *)malloc((readdb_longestSequenceLength + 10) * sizeof(unsigned char));
         newton_system_arr[ii] = ReNewtonSystemNew(alphsize); 
