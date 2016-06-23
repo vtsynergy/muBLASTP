@@ -90,6 +90,7 @@ struct gappedExtension
 {
 	struct trace trace;
 	int4 nominalScore;
+	int4 queryStart;
 	int4 queryEnd;
     int4 subjectStart;
 	int4 subjectEnd;
@@ -156,6 +157,7 @@ struct finalAlignment
     char* description;
 	struct alignment* alignment;
     int4 thread_id;
+    char num_adjustments;
 };
 
 extern int rank, num_procs;

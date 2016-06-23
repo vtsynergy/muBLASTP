@@ -437,12 +437,6 @@ char *print_encodeGreaterLessThan(char *description) {
     return newDescription;
 }
 
-int s_IsSameEndPointGap(struct gappedExtension *prev, struct gappedExtension *curr)
-{
-    return (prev->subjectStart == curr->subjectStart) ||
-        (prev->subjectEnd == curr->subjectEnd);
-}
-
 
 void print_gappedAlignmentsFull_multi(char *query, struct PSSMatrix PSSMatrix,
         int queryNum) {
@@ -536,7 +530,9 @@ void print_gappedAlignmentsFull_multi(char *query, struct PSSMatrix PSSMatrix,
 
                 if(prevExtension != NULL)
                 {
-                    if(s_IsSameEndPointGap(prevExtension, currentExtension))
+                    if(s_WithDistinctEnds(prevExtension, 
+                                currentExtension, 
+                                finalAlignment->num_adjustments == 1))
                     {
                         prevExtension = currentExtension;
                         currentExtension = currentExtension->next;

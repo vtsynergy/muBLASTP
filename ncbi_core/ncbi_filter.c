@@ -3424,140 +3424,62 @@ s_IsContained(struct ungappedExtension *in_align,
 }
 
 Boolean
-s_IsSameEndPoint(const struct ungappedExtension* newAlign,
-                 const struct ungappedExtension* align)
+s_IsSameEndPoint(const struct gappedExtension* newAlign,
+                 const struct gappedExtension* align)
 {
-    //ASSERT(newAlign->frame == align->frame);
-    //return ((align->queryStart == newAlign->queryStart &&
-             //align->matchStart == newAlign->matchStart)
-            //|| (align->queryEnd == newAlign->queryEnd &&
-                //align->matchEnd == newAlign->matchEnd));
-
-    return ((align->start.queryOffset == newAlign->start.queryOffset &&
-             align->start.subjectOffset == newAlign->start.subjectOffset)
-            || (align->end.queryOffset == newAlign->end.queryOffset &&
-                align->end.subjectOffset == newAlign->end.subjectOffset));
+    return ((align->queryStart == newAlign->queryStart &&
+             align->subjectStart == newAlign->subjectStart)
+            || (align->queryEnd == newAlign->queryEnd &&
+                align->subjectEnd == newAlign->subjectEnd));
 }
 
 
 
 Boolean
-s_IsSimilarEndPoint(const struct ungappedExtension* newAlign,
-                    const struct ungappedExtension* align)
+s_IsSimilarEndPoint(const struct gappedExtension* newAlign,
+                    const struct gappedExtension* align)
 {
-    /* ASSERT(newAlign->frame == align->frame); */
-    /* is start of newAlign contained within align */
-    //Boolean start_contained =
-        //KAPPA_CONTAINED_IN_HSP(align->queryStart, align->queryEnd,
-                               //newAlign->queryStart,
-                               //align->matchStart, align->matchEnd,
-                               //newAlign->matchStart);
-
     Boolean start_contained =
-        KAPPA_CONTAINED_IN_HSP(align->start.queryOffset, align->end.queryOffset,
-                               newAlign->start.queryOffset,
-                               align->start.subjectOffset, align->end.subjectOffset,
-                               newAlign->start.subjectOffset);
+        KAPPA_CONTAINED_IN_HSP(align->queryStart, align->queryEnd,
+                               newAlign->queryStart,
+                               align->subjectStart, align->subjectEnd,
+                               newAlign->subjectStart);
     /* is end of newAlign contained within align */
     Boolean end_contained = 
-        KAPPA_CONTAINED_IN_HSP(align->start.queryOffset, align->end.queryOffset,
-                               newAlign->end.queryOffset,
-                               align->start.subjectOffset, align->end.subjectOffset,
-                               newAlign->end.subjectOffset);
+        KAPPA_CONTAINED_IN_HSP(align->queryStart, align->queryEnd,
+                               newAlign->queryEnd,
+                               align->subjectStart, align->subjectEnd,
+                               newAlign->subjectEnd);
 
     /* does either end point of newAlign lie on the same diagonal as the same
        end point of align */
     Boolean result =  (start_contained && 
-                       (newAlign->start.queryOffset - newAlign->start.subjectOffset ==
-                        align->start.queryOffset - align->start.subjectOffset)) ||
+                       (newAlign->queryStart - newAlign->subjectStart ==
+                        align->queryStart - align->subjectStart)) ||
                       (end_contained &&
-                       (newAlign->end.queryOffset - newAlign->end.subjectOffset ==
-                        align->end.queryOffset - align->end.subjectOffset));
+                       (newAlign->queryEnd - newAlign->subjectEnd ==
+                        align->queryEnd - align->subjectEnd));
        
     return result;
 }
 
 
-void
-s_WithDistinctEnds(struct ungappedExtension *newAlign,
-                   struct alignment *oldAlignments,
-                   Boolean is_same_adjustment)
+    Boolean
+s_WithDistinctEnds(struct gappedExtension *newAlign,
+        struct gappedExtension *align,
+        Boolean is_same_adjustment)
 {
-    /* Deference the input parameters. */
-    //BlastCompo_Alignment * newAlign      = *p_newAlign;
-    //BlastCompo_Alignment * oldAlignments = *p_oldAlignments;
-    struct ungappedExtension * align;      /* represents the current
-                                             alignment in loops */
-    int include_new_align;                /* true if the new alignment
-                                             may be added to the list */
-    //*p_newAlign        = NULL;
-    include_new_align  = 1;
-
-    for (align = oldAlignments->ungappedExtensions;  align != NULL;  align = align->next) {
-
-        /* If all HSPs were computed with the same adjustment (and subject
-           segging), then simply compare end points. Otherwise, check if the
-           end point of the new HSPs is contained within an old one and
-           whether it lies on the same diagonal as the end point of the old
-           HSP. */
-
-        if(align->status == ungappedExtension_GAPPED)
-        {
-            if (((is_same_adjustment && s_IsSameEndPoint(newAlign, align)) ||
-                        (!is_same_adjustment && s_IsSimilarEndPoint(newAlign, align)))) {
-                /* At least one of the endpoints of newAlign matches an endpoint
-                   of align. */
-                if (newAlign->nominalScore <= align->nominalScore) {
-                    /* newAlign cannot be added to the list. */
-                    include_new_align = 0;
-                    break;
-                }
-            }
+    if (((is_same_adjustment && s_IsSameEndPoint(newAlign, align)) ||
+                (!is_same_adjustment && s_IsSimilarEndPoint(newAlign, align)))) {
+        /* At least one of the endpoints of newAlign matches an endpoint
+           of align. */
+        if (newAlign->nominalScore <= align->nominalScore) {
+            /* newAlign cannot be added to the list. */
+            return 1;
         }
-        
     }
 
-    if (include_new_align) {
-        /* tail of the list being created */
-        //BlastCompo_Alignment **tail;
-
-        //tail  = &newAlign->next;
-        align = oldAlignments->ungappedExtensions;
-        while (align != NULL) {
-            /* Save align->next because align may be deleted. */
-            //BlastCompo_Alignment * align_next = align->next;
-            //align->next = NULL;
-
-            if(align->status == ungappedExtension_GAPPED)
-            {
-                if (((align->start.queryOffset == newAlign->start.queryOffset &&
-                                align->start.subjectOffset == newAlign->start.subjectOffset)
-                            || (align->end.queryOffset == newAlign->end.queryOffset &&
-                                align->end.subjectOffset == newAlign->end.subjectOffset))) {
-                    /* The alignment shares an end with newAlign; */
-                    /* delete it. */
-                    //BlastCompo_AlignmentsFree(&align, free_align_context);
-                    align->status = ungappedExtension_DELETED;
-                } else { /* The alignment does not share an end with newAlign; */
-                    /* add it to the output list. */
-                    //*tail =  align;
-                    //tail  = &align->next;
-                    align->status = ungappedExtension_GAPPED;
-                }
-            }
-
-            align = align->next;
-        } /* end while align != NULL */
-        //*p_oldAlignments = newAlign;
-    } else { /* do not include_new_align */
-
-        align = oldAlignments->ungappedExtensions;
-        while (align != NULL) {
-            align->status = ungappedExtension_DELETED;
-            align = align->next;
-        }
-        //BlastCompo_AlignmentsFree(&newAlign, free_align_context);
-    } /* end else do not include newAlign */
+    return 0;
 }
 
 

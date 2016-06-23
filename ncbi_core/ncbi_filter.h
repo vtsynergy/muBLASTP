@@ -96,7 +96,7 @@ s_IsContained(struct ungappedExtension *in_align,
         double lambda);
 
 
-void
-s_WithDistinctEnds(struct ungappedExtension *newAlign,
-                   struct alignment *oldAlignments,
+Boolean
+s_WithDistinctEnds(struct gappedExtension *newAlign,
+                   struct gappedExtension *align,
                    Boolean is_same_adjustment);

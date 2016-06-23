@@ -682,6 +682,7 @@ void alignments_getTracebacks_ncbi(
                 gappedExtension->trace = hsp_array[ii]->trace;
                 gappedExtension->next = NULL;
                 gappedExtension->nextOffset = -1;
+                gappedExtension->queryStart = hsp_array[ii]->start.queryOffset;
                 gappedExtension->queryEnd = hsp_array[ii]->end.queryOffset;
                 gappedExtension->subjectEnd = hsp_array[ii]->end.subjectOffset;
                 gappedExtension->subjectStart = hsp_array[ii]->start.subjectOffset;
@@ -704,6 +705,7 @@ void alignments_getTracebacks_ncbi(
             finalAlignment = 
                 alignments_addFinalAlignment_multi(bestScore, alignment, queryNum);
             finalAlignment->thread_id = tid;
+            finalAlignment->num_adjustments = num_adjustments;
 
             //finalAlignment->description = descriptions_getDescription_mem(
                     //finalAlignment->alignment->descriptionLocation,
