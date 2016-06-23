@@ -1019,9 +1019,6 @@ Int2 Blast_ScoreBlkKbpUngappedCalc(BlastScoreBlk *sbp,
     Blast_ScoreFreqFree(sfp);
     Blast_ResFreqFree(stdrfp);
     Blast_ResFreqFree(rfp);
-    // printf("blast_ungappedNominalTrigger: %d\n",
-    // *blast_ungappedNominalTrigger);
-
 
     return status;
 }
@@ -1419,26 +1416,15 @@ Int2 Blast_HSPListGetEvalues(
 Int2 
 s_Blast_HSPListReapByPrelimEvalue(struct ungappedExtension **ungappedExtensions, int4 numExts, double prelim_evalue)
 {
-    //BlastHSP* hsp;
-    //BlastHSP** hsp_array;
-    //Int4 hsp_cnt = 0;
     Int4 index;
     double cutoff;
 
-    //if (hsp_list == NULL)
-    //return 0;
-
     cutoff = prelim_evalue;
 
-    //hsp_array = hsp_list->hsp_array;
     for (index = 0; index < numExts; index++) {
-        //hsp = hsp_array[index];
-
-        //ASSERT(hsp != NULL);
 
         if(ungappedExtensions[index]->status == ungappedExtension_SEMIGAPPED)
         {
-            //fprintf(stderr, "q_start: %d s_start: %d evalue: %f\n", ungappedExtensions[index]->start.queryOffset, ungappedExtensions[index]->start.subjectOffset, ungappedExtensions[index]->eValue);
             if (ungappedExtensions[index]->eValue > cutoff) {
                 ungappedExtensions[index]->status = ungappedExtension_DELETED;
             }
@@ -1446,8 +1432,6 @@ s_Blast_HSPListReapByPrelimEvalue(struct ungappedExtension **ungappedExtensions,
         }
 
     }
-
-    //hsp_list->hspcnt = hsp_cnt;
 
     return 0;
 }
@@ -1539,10 +1523,6 @@ s_QueryOffsetCompareHSPs(const void* v1, const void* v2)
       return -1;
 
    /* If these are from different contexts, don't compare offsets */
-   //if (h1->context < h2->context) 
-      //return -1;
-   //if (h1->context > h2->context)
-      //return 1;
 
    if (h1->start.queryOffset < h2->start.queryOffset)
       return -1;
@@ -1692,21 +1672,13 @@ Int4 get_ncbi_ungappedNominalTrigger(struct PSSMatrix PSSMatrix, struct scoreMat
     sbp.ambig_occupy = 0;
     sbp.ambig_size = 0;
 
-    //BLAST_ScoreSetAmbigRes(&sbp, 'X');
-    //BLAST_ScoreSetAmbigRes(&sbp, '*');
     Blast_KarlinBlk kbp;
 
-    //kbp = Blast_KarlinBlkNew();
     Blast_ScoreBlkKbpUngappedCalc(&sbp, PSSMatrix, &blast_ungappedNominalTrigger_t, &kbp);
 
     Blast_KarlinBlkFree(sbp.kbp_ideal);
 
 
     min_lambda = MIN(kbp.Lambda, min_lambda);
-    //printf("Lambda: %f K: %f logK: %f H: %f paramC: %f min_lambda: %f\n", kbp.Lambda, kbp.K,
-    //kbp.logK, kbp.H, kbp.paramC, min_lambda);
-    //printf("blast_ungappedNominalTrigger_t: %d\n", blast_ungappedNominalTrigger_t);
-
-    //Blast_KarlinBlkFree(kbp);
     return blast_ungappedNominalTrigger_t;
 }

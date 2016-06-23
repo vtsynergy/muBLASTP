@@ -533,7 +533,6 @@ void alignments_getTracebacks_ncbi(
                     {
                         s_DoSegSequenceData(&seqData, eBlastTypeBlastp,
                                 &subject_maybe_biased);
-                        num_adjustments++;
                     }
                 }
 
@@ -567,6 +566,7 @@ void alignments_getTracebacks_ncbi(
                             resids_x, resids_z, old_scores, 
                             workspace, grads, Scores);
 
+                    num_adjustments++;
                 }
 
                 BLAST_GappedAlignmentWithTraceback(
@@ -579,7 +579,6 @@ void alignments_getTracebacks_ncbi(
                         PSSMatrix.length, alignment->subjectLength, NULL, matrix);
 
                 int cutoff_s = 1;
-                //fprintf(stderr, "%d %d\n", ungappedExtension->nominalScore, gap_align->score);
                 if(gap_align->score > cutoff_s)
                 {
                     num_goodAlignment++;
@@ -737,10 +736,6 @@ void alignments_getTracebacks_ncbi(
                 alignments_addFinalAlignment_multi(bestScore, alignment, queryNum);
             finalAlignment->thread_id = tid;
             finalAlignment->num_adjustments = num_adjustments;
-
-            //finalAlignment->description = descriptions_getDescription_mem(
-                    //finalAlignment->alignment->descriptionLocation,
-                    //finalAlignment->alignment->descriptionLength);
         }
     }
 

@@ -181,8 +181,6 @@ BLAST_GapAlignStructFree(BlastGapAlignStruct* gap_align)
     GapEditScriptDelete(gap_align->edit_script);
     GapPrelimEditBlockFree(gap_align->fwd_prelim_tback);
     GapPrelimEditBlockFree(gap_align->rev_prelim_tback);
-    //if (gap_align->greedy_align_mem)
-    //s_BlastGreedyAlignsFree(gap_align->greedy_align_mem);
     GapStateFree(gap_align->state_struct);
     free(gap_align->dp_mem);
 
@@ -412,17 +410,9 @@ ALIGN_EX(int tid, const Uint1* A, const Uint1* B, Int4 M, Int4 N, Int4* a_offset
 
     GapStateArrayStruct* state_struct;
     Uint1* edit_script_row;
-    //Uint1** edit_script_t[tid];
-    //Int4 *edit_start_offset_t[tid];
-    //Int4 edit_script_num_rows_t[tid];
     Int4 orig_b_index;
     Uint1 script, next_script, script_row, script_col;
     Int4 num_extra_cells;
-
-    //matrix = gap_align->sbp->matrix->data;
-    //if (gap_align->positionBased) {
-    //pssm = gap_align->sbp->psi_matrix->pssm->data;
-    //}
 
     *a_offset = 0;
     *b_offset = 0;
@@ -448,12 +438,7 @@ ALIGN_EX(int tid, const Uint1* A, const Uint1* B, Int4 M, Int4 N, Int4* a_offset
        separately. edit_script_t[tid][i] points to the storage reserved
        for row i, and edit_start_offset_t[tid][i] gives the offset into
        the B sequence corresponding to element 0 of edit_script_t[tid][i].
-
        Also make the number of edit script rows grow dynamically */
-
-    //edit_script_num_rows_t[tid] = EDIT_SCRIPT_MAX_NUM_ROWS;
-    //edit_script_t[tid] = (Uint1**) malloc(sizeof(Uint1*) * edit_script_num_rows_t[tid]);
-    //edit_start_offset_t[tid] = (Int4*) malloc(sizeof(Int4) * edit_script_num_rows_t[tid]);
 
     /* allocate storage for the first row of the traceback
        array. Because row elements correspond to gaps in A,
@@ -571,7 +556,6 @@ ALIGN_EX(int tid, const Uint1* A, const Uint1* B, Int4 M, Int4 N, Int4* a_offset
             score_gap_col = score_array[b_index].best_gap;
 
             next_score = score_array[b_index].best + matrix_row[ *b_ptr ];
-            //fprintf(stderr, "%d %d %d %d %d\n", next_score, b_index, score_array[b_index].best, *b_ptr, matrix_row[ *b_ptr  ]);
 
             /* script, script_row and script_col contain the
                actions specified by the dynamic programming.

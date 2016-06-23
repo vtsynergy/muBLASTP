@@ -29,16 +29,6 @@
 #include <limits.h>
 
 
-//#ifndef MIN
-///** returns smaller of a and b. */
-//#define MIN(a,b)    ((a)>(b)?(b):(a))
-//#endif
-
-//#ifndef MAX
-///** returns larger of a and b. */
-//#define MAX(a,b)    ((a)>=(b)?(a):(b))
-//#endif
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -50,11 +40,6 @@ enum { eGapChar = 0, eBchar = 2,  eDchar = 4,  eEchar = 5, eIchar = 9,
     eLchar = 11,  eNchar = 13, eQchar = 15, eXchar = 21,
     eZchar = 23,  eSelenocysteine = 24, eStopChar = 25,
     eOchar = 26,  eJchar = 27};
-
-//enum { eGapChar = 24, eBchar = 20,  eDchar = 8,  eEchar = 5, eIchar = 10,
-       //eLchar = 0,  eNchar = 12, eQchar = 13, eXchar = 22,
-       //eZchar = 21,  eSelenocysteine = 23, eStopChar = 25,
-       //eOchar = 26,  eJchar = 27};
 
 typedef struct Compo_FrequencyData {
     const char * name;   /**< name of the matrix */
@@ -233,12 +218,6 @@ static Compo_FrequencyData *
 s_LocateFrequencyData(const char * matrix) 
 {
     return &s_FrequencyData[0];
-    //for (i = 0;  i < NUM_SUPPORTED_MATRICES;  i++) {
-        //if (0 == strcmp(s_FrequencyData[i].name, matrix)) {
-            //return &s_FrequencyData[i];
-        //}
-    //}
-    //return NULL;
 }
 
 
@@ -445,34 +424,7 @@ Blast_CalcFreqRatios(double ** ratios, int alphsize,
     }
 }
 
-//#ifndef INT2_MIN
-///** smallest (most negative) number represented by signed (two byte) short */
-//#define INT2_MIN    (-32768)
-//#endif
-
-//#ifndef INT2_MAX
-///** smallest (most negative) number represented by signed (two byte) short */
-//#define INT2_MAX    (32767)
-//#endif
-
-
 #define COMPO_SCORE_MIN INT2_MIN
-
-//void
-//Blast_FreqRatioToScore(double ** matrix, int rows, int cols, double Lambda)
-//{
-    //int i;
-    //for (i = 0;  i < rows;  i++) {
-        //int j;
-        //for (j = 0;  j < cols;  j++) {
-            //if (0.0 == matrix[i][j]) {
-                //matrix[i][j] = COMPO_SCORE_MIN;
-            //} else {
-                //matrix[i][j] = log(matrix[i][j])/Lambda;
-            //}
-        //}
-    //}
-//}
 
 void
 Blast_CalcLambdaFullPrecision(double * plambda, int *piterations,
@@ -2261,54 +2213,12 @@ Blast_AdjustScores2(Int4 ** matrix,
                 subject_composition->prob, alphsize);
     }
 
-    //if (compositionTestIndex > 0) {
-        //int i,j; /*loop indices*/
-        ///* a score matrix to pass*/
-        //double **scores = Nlm_DenseMatrixNew(alphsize, alphsize);
-
-        //if (scores == NULL) {
-            //return -1;
-        //}
-        //for (i = 0;  i < COMPO_NUM_TRUE_AA;  i++)
-            //for (j = 0;  j < COMPO_NUM_TRUE_AA; j++)
-                //scores[i][j] = BLOS62[i][j];
-        //Blast_CalcLambdaFullPrecision(&lambdaForPair, &iter_count,
-                                      //scores,
-                                      //COMPO_NUM_TRUE_AA,
-                                      //permutedQueryProbs,
-                                      //permutedMatchProbs,
-                                      //kLambdaErrorTolerance,
-                                      //kLambdaFunctionTolerance,
-                                      //kLambdaIterationLimit);
-        //if (iter_count >= kLambdaIterationLimit) {
-            ///* The algorithm for lambda didn't converge, likely
-             //* because the matrix has positive expected score; 
-             //* set lambda to the smallest value in the table. */
-            //lambdaForPair = COMPO_MIN_LAMBDA;
-        //}
-        ///*use lengths of query and subject not counting X's */
-        //*pvalueForThisPair = Blast_CompositionPvalue(lambdaForPair);
-
-        //Nlm_DenseMatrixFree(&scores);
-    //}
-
-    //if (matrixInfo->positionBased ||
-        //composition_adjust_mode == eCompositionBasedStats) {
-        ///* Use old-style composition-based statistics unconditionally. */
-        //*matrix_adjust_rule =  eCompoScaleOldMatrix;
-    //} else 
-   {
-        /* else call Yi-Kuo's code to choose mode for matrix adjustment. */
-        *matrix_adjust_rule =
-            Blast_ChooseMatrixAdjustRule(queryLength, subjectLength,
-                                         permutedQueryProbs,
-                                         permutedMatchProbs,
-                                         matrixInfo->matrixName,
-                                         composition_adjust_mode);
-    }  /* end else call Yi-Kuo's code to choose mode for matrix adjustment. */
-
-   //fprintf(stderr, "matrix_adjust_rule: %d\n", *matrix_adjust_rule);
-
+    *matrix_adjust_rule =
+        Blast_ChooseMatrixAdjustRule(queryLength, subjectLength,
+                permutedQueryProbs,
+                permutedMatchProbs,
+                matrixInfo->matrixName,
+                composition_adjust_mode);
    
     if (eCompoScaleOldMatrix != *matrix_adjust_rule) {
         /* Try matrix optimization, if it fails to converge, we
@@ -2344,32 +2254,6 @@ Blast_AdjustScores2(Int4 ** matrix,
             
     } /* End try matrix optimization */
 
-    //int ii, jj;
-
-    //for(ii = 0; ii < BLASTAA_SIZE; ii++)
-    //{
-        //for(jj = 0; jj < BLASTAA_SIZE; jj++)
-        //{
-            //fprintf(stderr, "%d ", matrix[ii][jj]);
-        //}
-
-        //fprintf(stderr, "\n");
-    //}
-
-    //int ii;
-    //for(ii = 0; ii < COMPO_NUM_TRUE_AA; ii++)
-    //{
-        //fprintf(stderr, "%f-%f ", permutedQueryProbs[ii], permutedMatchProbs[ii]);
-    //}
-    //fprintf(stderr, "\n");
-
-    //for(ii = 0; ii < COMPO_LARGEST_ALPHABET; ii++)
-    //{
-        //fprintf(stderr, "%f-%f ", query_composition->prob[ii], subject_composition->prob[ii]);
-    //}
-    //fprintf(stderr, "\n");
-
-
     *matrix_adjust_rule = eCompoScaleOldMatrix; 
     return Blast_CompositionBasedStats(matrix, ratioToPassBack, matrixInfo,
                                        query_composition->prob,
@@ -2389,7 +2273,6 @@ Blast_AdjustScores(Int4 ** matrix,
                    int RE_pseudocounts,
                    Blast_CompositionWorkspace *NRrecord,
                    EMatrixAdjustRule *matrix_adjust_rule,
-                   //double calc_lambda(double *,int,int,double),
                    double *pvalueForThisPair,
                    int compositionTestIndex,
                    double *ratioToPassBack)
@@ -2421,52 +2304,13 @@ Blast_AdjustScores(Int4 ** matrix,
                 subject_composition->prob, alphsize);
     }
 
-    //if (compositionTestIndex > 0) {
-        //int i,j; /*loop indices*/
-        ///* a score matrix to pass*/
-        //double **scores = Nlm_DenseMatrixNew(alphsize, alphsize);
-
-        //if (scores == NULL) {
-            //return -1;
-        //}
-        //for (i = 0;  i < COMPO_NUM_TRUE_AA;  i++)
-            //for (j = 0;  j < COMPO_NUM_TRUE_AA; j++)
-                //scores[i][j] = BLOS62[i][j];
-        //Blast_CalcLambdaFullPrecision(&lambdaForPair, &iter_count,
-                                      //scores,
-                                      //COMPO_NUM_TRUE_AA,
-                                      //permutedQueryProbs,
-                                      //permutedMatchProbs,
-                                      //kLambdaErrorTolerance,
-                                      //kLambdaFunctionTolerance,
-                                      //kLambdaIterationLimit);
-        //if (iter_count >= kLambdaIterationLimit) {
-            ///* The algorithm for lambda didn't converge, likely
-             //* because the matrix has positive expected score; 
-             //* set lambda to the smallest value in the table. */
-            //lambdaForPair = COMPO_MIN_LAMBDA;
-        //}
-        ///*use lengths of query and subject not counting X's */
-        //*pvalueForThisPair = Blast_CompositionPvalue(lambdaForPair);
-
-        //Nlm_DenseMatrixFree(&scores);
-    //}
-
-    //if (matrixInfo->positionBased ||
-        //composition_adjust_mode == eCompositionBasedStats) {
-        ///* Use old-style composition-based statistics unconditionally. */
-        //*matrix_adjust_rule =  eCompoScaleOldMatrix;
-    //} else 
-   {
-        /* else call Yi-Kuo's code to choose mode for matrix adjustment. */
-        *matrix_adjust_rule =
-            Blast_ChooseMatrixAdjustRule(queryLength, subjectLength,
-                                         permutedQueryProbs,
-                                         permutedMatchProbs,
-                                         matrixInfo->matrixName,
-                                         composition_adjust_mode);
-    }  /* end else call Yi-Kuo's code to choose mode for matrix adjustment. */
-
+    /* else call Yi-Kuo's code to choose mode for matrix adjustment. */
+    *matrix_adjust_rule =
+        Blast_ChooseMatrixAdjustRule(queryLength, subjectLength,
+                permutedQueryProbs,
+                permutedMatchProbs,
+                matrixInfo->matrixName,
+                composition_adjust_mode);
    //fprintf(stderr, "matrix_adjust_rule: %d\n", *matrix_adjust_rule);
 
    
@@ -2501,37 +2345,10 @@ Blast_AdjustScores(Int4 ** matrix,
             
     } /* End try matrix optimization */
 
-    //int ii, jj;
-
-    //for(ii = 0; ii < BLASTAA_SIZE; ii++)
-    //{
-        //for(jj = 0; jj < BLASTAA_SIZE; jj++)
-        //{
-            //fprintf(stderr, "%d ", matrix[ii][jj]);
-        //}
-
-        //fprintf(stderr, "\n");
-    //}
-
-    //int ii;
-    //for(ii = 0; ii < COMPO_NUM_TRUE_AA; ii++)
-    //{
-        //fprintf(stderr, "%f-%f ", permutedQueryProbs[ii], permutedMatchProbs[ii]);
-    //}
-    //fprintf(stderr, "\n");
-
-    //for(ii = 0; ii < COMPO_LARGEST_ALPHABET; ii++)
-    //{
-        //fprintf(stderr, "%f-%f ", query_composition->prob[ii], subject_composition->prob[ii]);
-    //}
-    //fprintf(stderr, "\n");
-
-
     *matrix_adjust_rule = eCompoScaleOldMatrix; 
     return Blast_CompositionBasedStats(matrix, ratioToPassBack, matrixInfo,
                                        query_composition->prob,
                                        subject_composition->prob,
-                                       //calc_lambda,
                                        (compositionTestIndex > 0));
 }
 
@@ -2655,30 +2472,9 @@ s_GetComposition(Blast_AminoAcidComposition * composition,
         int length
         )
 {
-    //Uint1 * data;     /* sequence data for the subject */
-    //int length;       /* length of the subject portion of the alignment */
-    /* [left, right) is the interval of the subject to use when
-     * computing composition. The endpoints are offsets into the
-     * subject_range. */
     int left, right;
-
-    //data = seq->data;
-    //length = range->end - range->begin;
-   
-    //if (query_is_translated || subject_is_translated) {
-        //int start;  
-        //int end; 
-        //start = ((query_is_translated) ?  
-                 //align->queryStart : align->matchStart) - range->begin;
-        //end   = ((query_is_translated) ?  
-                 //align->queryEnd   : align->matchEnd  ) - range->begin;
-        //Blast_GetCompositionRange(&left, &right, data, length, start, end);
-    //} else 
-    {
-        /* Use the whole subject to compute the composition */
-        left = 0;
-        right = length;
-    }
+    left = 0;
+    right = length;
     Blast_ReadAaComposition(composition, alphsize, &data[left], right-left);
 }
 
@@ -2774,14 +2570,14 @@ Blast_GetJointProbsForMatrix(double ** probs, double row_sums[],
 
 
 
-int
+    int
 Blast_CompositionWorkspaceInit(Blast_CompositionWorkspace * NRrecord,
-                               const char *matrixName)
+        const char *matrixName)
 {
     if (0 == Blast_GetJointProbsForMatrix(NRrecord->mat_b,
-                                          NRrecord->first_standard_freq,
-                                          NRrecord->second_standard_freq,
-                                          matrixName)) {
+                NRrecord->first_standard_freq,
+                NRrecord->second_standard_freq,
+                matrixName)) {
         return 0;
     } else {
         fprintf(stderr,
@@ -2792,84 +2588,6 @@ Blast_CompositionWorkspaceInit(Blast_CompositionWorkspace * NRrecord,
 }
 
 #define DBL_MAX 1.79769e+308
-
-//void
-//s_AdjustEvaluesForComposition(
-    //BlastHSPList *hsp_list,
-    //double comp_p_value,
-    ////const BlastSeqSrc* seqSrc,
-    //Int4 subject_length,
-    //const BlastContextInfo * query_context,
-    //double LambdaRatio,
-    //int subject_id)
-//{
-    ///* Smallest observed evalue after adjustment */
-    //double best_evalue = DBL_MAX;
-
-    ///* True length of the query */
-    //int query_length =      query_context->query_length;
-    ///* Length adjustment to compensate for edge effects */
-    //int length_adjustment = query_context->length_adjustment;
-
-    ///* Effective lengths of the query, subject, and database */
-    //double query_eff   = MAX((query_length - length_adjustment), 1);
-    //double subject_eff = MAX((subject_length - length_adjustment), 1.0);
-    //double dblen_eff = (double) query_context->eff_searchsp / query_eff;
-    
-    ///* Scale factor to convert the database E-value to the sequence E-value */
-    //double db_to_sequence_scale = subject_eff / dblen_eff;
-
-    //int        hsp_index;
-    //for (hsp_index = 0;  hsp_index < hsp_list->hspcnt;  hsp_index++) {
-        ///* for all HSPs */
-        //double align_p_value;     /* P-value for the alignment score */
-        //double combined_p_value;  /* combination of two P-values */
-
-        ///* HSP for this iteration */
-        //BlastHSP * hsp = hsp_list->hsp_array[hsp_index];
-//#ifdef KAPPA_PRINT_DIAGNOSTICS
-        ///* Original E-value, saved if diagnostics are printed. */
-        //double old_e_value = hsp->evalue;
-//#endif
-        //hsp->evalue *= db_to_sequence_scale;
-
-        //align_p_value = BLAST_KarlinEtoP(hsp->evalue);
-        //combined_p_value = Blast_Overall_P_Value(comp_p_value,align_p_value);
-        //hsp->evalue = BLAST_KarlinPtoE(combined_p_value);
-        //hsp->evalue /= db_to_sequence_scale;
-
-        //if (hsp->evalue < best_evalue) {
-            //best_evalue = hsp->evalue;
-        //}
-
-//#ifdef KAPPA_PRINT_DIAGNOSTICS
-        //if (seqSrc){
-            //int    sequence_gi; /*GI of a sequence*/
-            //Blast_GiList* gi_list; /*list of GI's for a sequence*/
-            //gi_list = BlastSeqSrcGetGis(seqSrc, (void *) (&subject_id));
-            //if ((gi_list) && (gi_list->num_used > 0)) {
-                //sequence_gi = gi_list->data[0];
-            //} else {
-                //sequence_gi = (-1);
-            //}
-            //printf("GI %d Lambda ratio %e comp. p-value %e; "
-                   //"adjust E-value of query length %d match length "
-                   //"%d from %e to %e\n",
-                   //sequence_gi, LambdaRatio, comp_p_value,
-                   //query_length, subject_length, old_e_value, hsp->evalue);
-            //Blast_GiListFree(gi_list);
-        //}
-//#endif
-    //} /* end for all HSPs */
-
-    //hsp_list->best_evalue = best_evalue;
-
-    ///* suppress unused parameter warnings if diagnostics are not printed */
-    ////(void) seqSrc;
-    //(void) query_length;
-    //(void) LambdaRatio;
-    //(void) subject_id;
-//}
 
 void alignments_get_eValue(struct ungappedExtension **ungappedExtensions, int4 numExts, Int4 queryLength, Int4 subjectLength, double *best_eValue)
 {
@@ -2989,5 +2707,4 @@ s_HitlistEvaluateAndPurge(int * pbestScore, double *pbestEvalue,
 
     return hspcnt_new;
 }
-
 
