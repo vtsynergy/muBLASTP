@@ -374,11 +374,9 @@ s_MidpointTreeContainsHSP(const BlastIntervalTree *tree,
 Boolean
 BlastIntervalTreeContainsHSP(const BlastIntervalTree *tree, 
         const BlastHSP *hsp,
-        //const BlastQueryInfo *query_info,
         Int4 min_diag_separation)
 {
     SIntervalNode *node = tree->nodes;
-    //Int4 query_start = s_GetQueryStrandOffset(query_info, hsp->context);
     Int4 query_start = 0;
     Int4 region_start = query_start + hsp->query.offset;
     Int4 region_end = query_start + hsp->query.end;

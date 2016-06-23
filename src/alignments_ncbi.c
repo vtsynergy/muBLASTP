@@ -142,7 +142,7 @@ int alignments_findGoodAlignments_ncbi(
         BlastHSP *BlastHSP_arr) 
 {
     struct ungappedExtension *ungappedExtension;
-    int4 bestScore, hasChildren;
+    //int4 bestScore, hasChildren;
     Int4 num_ungappedExt = alignment->numExtensions;
 
     Int4 BlastHSP_cnt = 0;
@@ -182,24 +182,48 @@ int alignments_findGoodAlignments_ncbi(
     Int4 redo_query = -1;
     Int4 redo_index = -1;
     Int4 query_index = queryNum;
-    bestScore = 0;
+    //bestScore = 0;
+    struct ungappedExtension tmp_ungap[num_ungappedExt];
     for(index = 0; index < num_ungappedExt; index++) {
+
+        //fprintf(stderr, "%d %d %d %d\n", index, redo_index, query_index, redo_query);
+
+        //if (index < redo_index && query_index != redo_query) {
+            //continue;
+        //}
+
+        struct ungappedExtension init_ungap = ungappedExtension[index];
+
         BlastHSP tmp_hsp;
-        tmp_hsp.score = ungappedExtension[index].nominalScore; 
+        tmp_hsp.score = init_ungap.nominalScore; 
         tmp_hsp.context = 0;
-        tmp_hsp.query.offset = ungappedExtension[index].start.queryOffset;
-        tmp_hsp.query.end = ungappedExtension[index].end.queryOffset;
+        tmp_hsp.query.offset = init_ungap.start.queryOffset;
+        tmp_hsp.query.end = init_ungap.end.queryOffset;
         tmp_hsp.query.frame = 0;
-        tmp_hsp.subject.offset = ungappedExtension[index].start.subjectOffset;
-        tmp_hsp.subject.end = ungappedExtension[index].end.subjectOffset;
+        tmp_hsp.subject.offset = init_ungap.start.subjectOffset;
+        tmp_hsp.subject.end = init_ungap.end.subjectOffset;
         tmp_hsp.subject.frame = 0;
 
         Int4 min_diag_separation = 0;
 
-        if ((index <= redo_index && 
-                    !BlastIntervalTreeContainsHSP(private_tree, &tmp_hsp, min_diag_separation)) ||
-                !BlastIntervalTreeContainsHSP(tree, &tmp_hsp, min_diag_separation)) {
+        //fprintf(stderr, "%d %d %d %d %d %d %d %d %d\n",
+              //tmp_hsp.score,
+              //tmp_hsp.context,
+              //tmp_hsp.query.offset,
+              //tmp_hsp.query.end,
+              //tmp_hsp.query.frame,
+              //tmp_hsp.subject.offset,
+              //tmp_hsp.subject.end,
+              //tmp_hsp.subject.frame,
+              //min_diag_separation
+             //);
 
+        if ((index <= redo_index && 
+                    !BlastIntervalTreeContainsHSP(
+                        private_tree, &tmp_hsp, min_diag_separation)) ||
+                !BlastIntervalTreeContainsHSP(tree, 
+                    &tmp_hsp, min_diag_separation)) 
+        {
             BLAST_SequenceBlk query_blk;
             query_blk.sequence = PSSMatrix.queryCodes;
             query_blk.length = PSSMatrix.length;
@@ -210,17 +234,20 @@ int alignments_findGoodAlignments_ncbi(
             subject_blk.length = alignment->subjectLength;
 
             Int4 q_start, s_start, q_length, s_length, q_off, s_off;
-            q_off = q_start = ungappedExtension[index].start.queryOffset;
-            s_off = s_start = ungappedExtension[index].start.subjectOffset;
+            q_off = q_start = init_ungap.start.queryOffset;
+            s_off = s_start = init_ungap.start.subjectOffset;
             s_length = q_length = 
-                ungappedExtension[index].end.queryOffset - 
-                ungappedExtension[index].start.queryOffset;
-            Int4 max_offset = BlastGetStartForGappedAlignment(
+                init_ungap.end.queryOffset - 
+                init_ungap.start.queryOffset;
+            Int4 max_offset = 
+                BlastGetStartForGappedAlignment(
                     PSSMatrix.queryCodes, 
                     alignment->subject, scoreMatrix.matrix, 
                     q_start, q_length, s_start, s_length);
             s_off += max_offset - q_off;
             q_off = max_offset;
+
+            //fprintf(stderr, "seq: %d %d %d %d %d\n", alignment->sequenceCount, q_start, s_start, q_length, max_offset);
 
             s_BlastProtGappedAlignment(&query_blk, 
                     q_off, &subject_blk, s_off, 
@@ -235,7 +262,8 @@ int alignments_findGoodAlignments_ncbi(
 
             if (restricted_align &&
                     gap_align.score < cutoff &&
-                    gap_align.score >= restricted_cutoff) {
+                    gap_align.score >= restricted_cutoff) 
+            {
 
                 if (!private_tree) {
                     private_tree = Blast_IntervalTreeInit(0, 
@@ -256,29 +284,29 @@ int alignments_findGoodAlignments_ncbi(
 
             if(gap_align.score >= blast_gappedNominalCutoff_multi[queryNum])
             {
-                if(gap_align.score > bestScore)
-                    bestScore = gap_align.score;
+                //if(gap_align.score > bestScore)
+                //bestScore = gap_align.score;
 
-                ungappedExtension[index].start.queryOffset = gap_align.query_start; 
-                ungappedExtension[index].start.subjectOffset = gap_align.subject_start; 
-                ungappedExtension[index].end.queryOffset = gap_align.query_stop; 
-                ungappedExtension[index].end.subjectOffset = gap_align.subject_stop; 
+                init_ungap.start.queryOffset = gap_align.query_start; 
+                init_ungap.start.subjectOffset = gap_align.subject_start; 
+                init_ungap.end.queryOffset = gap_align.query_stop; 
+                init_ungap.end.subjectOffset = gap_align.subject_stop; 
 
-                ungappedExtension[index].gap_start.queryOffset = q_off; 
-                ungappedExtension[index].gap_start.subjectOffset = s_off; 
-                ungappedExtension[index].nominalScore = gap_align.score;
-                ungappedExtension[index].status = ungappedExtension_SEMIGAPPED;
+                init_ungap.gap_start.queryOffset = q_off; 
+                init_ungap.gap_start.subjectOffset = s_off; 
+                init_ungap.nominalScore = gap_align.score;
+                init_ungap.status = ungappedExtension_SEMIGAPPED;
 
 
                 BlastHSP *new_hsp = Blast_HSPInit(BlastHSP_arr, &BlastHSP_cnt);
 
-                new_hsp->score = ungappedExtension[index].nominalScore; 
+                new_hsp->score = init_ungap.nominalScore; 
                 new_hsp->context = 0;
-                new_hsp->query.offset = ungappedExtension[index].start.queryOffset;
-                new_hsp->query.end = ungappedExtension[index].end.queryOffset;
+                new_hsp->query.offset = init_ungap.start.queryOffset;
+                new_hsp->query.end = init_ungap.end.queryOffset;
                 new_hsp->query.frame = 0;
-                new_hsp->subject.offset = ungappedExtension[index].start.subjectOffset;
-                new_hsp->subject.end = ungappedExtension[index].end.subjectOffset;
+                new_hsp->subject.offset = init_ungap.start.subjectOffset;
+                new_hsp->subject.end = init_ungap.end.subjectOffset;
                 new_hsp->subject.frame = 0;
 
                 BlastIntervalTreeAddHSP(new_hsp, tree, eQueryAndSubject);
@@ -290,7 +318,9 @@ int alignments_findGoodAlignments_ncbi(
 
         }
 
+        tmp_ungap[index] = init_ungap;
     }
+
 
     double prelim_evalue = 50;
 
@@ -298,6 +328,7 @@ int alignments_findGoodAlignments_ncbi(
     int ii;
     for(ii = 0; ii < num_ungappedExt; ii++)
     {
+        ungappedExtension[ii] = tmp_ungap[ii];
         if(ungappedExtension[ii].status == ungappedExtension_SEMIGAPPED)
         {
             ASSERT(num_GappedExt < MAX_EXTENSIONS_PER_QUERY);
