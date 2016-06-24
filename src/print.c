@@ -13,7 +13,7 @@
 // Prototypes
 void print_gappedExtension(struct gappedExtension *gappedExtension,
         struct PSSMatrix PSSMatrix, char *query,
-        unsigned char *subject);
+        unsigned char *subject, char compo_adjust_mode);
 void print_ungappedExtension(struct ungappedExtension *ungappedExtension,
         char *query, struct PSSMatrix PSSMatrix,
         unsigned char *subjectSequence);
@@ -552,7 +552,7 @@ void print_gappedAlignmentsFull_multi(char *query, struct PSSMatrix PSSMatrix,
                     print_tabularGappedExtension(currentExtension, PSSMatrix, query,
                             subject, queryDescription, description);
                 else if (parameters_outputType != parameters_tabular)
-                    print_gappedExtension(currentExtension, PSSMatrix, query, subject);
+                    print_gappedExtension(currentExtension, PSSMatrix, query, subject, alignment->compo_adjust_mode);
 
                 prevExtension = currentExtension;
                 currentExtension = currentExtension->next;
@@ -770,7 +770,7 @@ void print_gappedAlignmentsBrief() {
 // Print a gapped extension
 void print_gappedExtension(struct gappedExtension *gappedExtension,
         struct PSSMatrix PSSMatrix, char *query,
-        unsigned char *subject) {
+        unsigned char *subject, char comp_adjustment_method) {
     int4 queryPosition, subjectPosition;
     int4 count = 0, charCount = 0, length, lineStart;
     char *queryLine, *subjectLine, *midLine;
@@ -926,22 +926,36 @@ void print_gappedExtension(struct gappedExtension *gappedExtension,
     // Construct the final text
     finalText = (char *)global_malloc(numberOfSections * 300 + 300);
 
+    char *str_compo_adjust_mode;
+    char str_CompoScaleOldMatrix[] = "Composition-based stats";
+    char str_CompositionMatrixAdjust[] = "Compositional matrix adjust";
+    char str_DontAdjustMatrix[] = "No Compositional matrix adjust";
+
+    if(comp_adjustment_method == 1)
+        str_compo_adjust_mode = str_CompoScaleOldMatrix;
+    else 
+        str_compo_adjust_mode = str_CompositionMatrixAdjust;
+
     if(gappedExtension->normalizedScore >= 100)
     {
         sprintf(finalText,
-            " Score = %d bits (%d), Expect = %s\n Identities = %d/%d (%d%%)",
+            " Score = %d bits (%d), Expect = %s, Method: %s.\n Identities = %d/%d (%d%%)",
             (int)gappedExtension->normalizedScore, 
             (int4)round((double)gappedExtension->nominalScore/SCALING_FACTOR),
-            print_eValue2String(gappedExtension->eValue), identities, length,
+            print_eValue2String(gappedExtension->eValue), 
+            str_compo_adjust_mode,
+            identities, length,
             (int4)round((double)identities * 100 / length));
     }
     else
     {
         sprintf(finalText,
-            " Score = %.1f bits (%d), Expect = %s\n Identities = %d/%d (%d%%)",
+            " Score = %.1f bits (%d), Expect = %s, Method: %s.\n Identities = %d/%d (%d%%)",
             gappedExtension->normalizedScore, 
             (int4)round((double)gappedExtension->nominalScore/SCALING_FACTOR),
-            print_eValue2String(gappedExtension->eValue), identities, length,
+            print_eValue2String(gappedExtension->eValue), 
+            str_compo_adjust_mode,
+            identities, length,
             (int4)round((double)identities * 100 / length));
     }
         

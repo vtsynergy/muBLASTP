@@ -975,6 +975,7 @@ void search_protein2hit_dbIdx_lasthit_radix_cp(
                 alignment->subject = subject;
                 alignment->subjectLength = subjectLength;
                 alignment->encodedLength = encodedLength;
+                alignment->compo_adjust_mode = 0;
                 //alignment->joinChecked = 0;
                 alignment->inMemorySubject = 0;
                 //alignment->numUnpackRegions = 0;

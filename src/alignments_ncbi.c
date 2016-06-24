@@ -552,7 +552,8 @@ void alignments_getTracebacks_ncbi(
                     double LambdaRatio;
                     EMatrixAdjustRule matrix_adjust_rule = eDontAdjustMatrix;
 
-                    Blast_AdjustScores2(matrix, query_composition,
+                    Blast_AdjustScores2(
+                            matrix, query_composition,
                             PSSMatrix.length,
                             &subject_composition,
                             alignment->subjectLength,
@@ -567,6 +568,13 @@ void alignments_getTracebacks_ncbi(
                             workspace, grads, Scores);
 
                     num_adjustments++;
+
+                    if(matrix_adjust_rule == eCompoScaleOldMatrix)
+                        alignment->compo_adjust_mode = 1;
+                    else if(matrix_adjust_rule == eCompositionMatrixAdjust)
+                        alignment->compo_adjust_mode = 2;
+                    else
+                        alignment->compo_adjust_mode = 0;
                 }
 
                 BLAST_GappedAlignmentWithTraceback(

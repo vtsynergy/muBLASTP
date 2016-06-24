@@ -124,6 +124,7 @@ struct alignment
     uint4 numExtensions;
     int volumnNumber;
     double best_eValue;
+    char compo_adjust_mode; 
 };
 
 /*typedef struct alignment align_t;*/
