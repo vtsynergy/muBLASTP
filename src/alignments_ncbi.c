@@ -615,35 +615,15 @@ void alignments_getTracebacks_ncbi(
                     unsigned char* traceCodes = *traceCodeBuf + *traceCodeCount;
                     *traceCodeCount += trace.length;
 
+                    GapEditScript *esp = gap_align->edit_script;
+
                     int ii;
                     int traceCode_cnt = 0;
-                    for(ii = 0; ii < gap_align->rev_prelim_tback->num_ops; ii++)
+                    for(ii = 0; ii < esp->size; ii++)
                     {
-                        for(jj = 0; jj < gap_align->rev_prelim_tback->edit_ops[ii].num; jj++)
+                        for(jj = 0; jj < esp->num[ii]; jj++)
                         {
-                            switch(gap_align->rev_prelim_tback->edit_ops[ii].op_type) {
-                                case eGapAlignDel: 
-                                    traceCodes[traceCode_cnt] = 1; 
-                                    break;
-                                case eGapAlignSub: 
-                                    traceCodes[traceCode_cnt] = 0; 
-                                    break;
-                                case eGapAlignIns:
-                                    traceCodes[traceCode_cnt] = 2; 
-                                    break;
-                                default:
-                                    fprintf(stderr, "Err: alien opt code %d\n", traceCode_cnt);
-                                    exit(1);
-                            }
-                            traceCode_cnt++;
-                        }
-                    }
-
-                    for(ii = gap_align->fwd_prelim_tback->num_ops - 1; ii >= 0; ii--)
-                    {
-                        for(jj = 0; jj < gap_align->fwd_prelim_tback->edit_ops[ii].num; jj++)
-                        {
-                            switch(gap_align->fwd_prelim_tback->edit_ops[ii].op_type) {
+                            switch(esp->op_type[ii]) {
                                 case eGapAlignDel: 
                                     traceCodes[traceCode_cnt] = 1; 
                                     break;

@@ -3471,12 +3471,7 @@ s_WithDistinctEnds(struct gappedExtension *newAlign,
 {
     if (((is_same_adjustment && s_IsSameEndPoint(newAlign, align)) ||
                 (!is_same_adjustment && s_IsSimilarEndPoint(newAlign, align)))) {
-        /* At least one of the endpoints of newAlign matches an endpoint
-           of align. */
-        if (newAlign->nominalScore <= align->nominalScore) {
-            /* newAlign cannot be added to the list. */
             return 1;
-        }
     }
 
     return 0;
