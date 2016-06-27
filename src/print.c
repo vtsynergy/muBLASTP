@@ -530,8 +530,8 @@ void print_gappedAlignmentsFull_multi(char *query, struct PSSMatrix PSSMatrix,
 
                 if(prevExtension != NULL)
                 {
-                    if(s_WithDistinctEnds(prevExtension, 
-                                currentExtension, 
+                    if(s_WithDistinctEnds(currentExtension, 
+                                prevExtension, 
                                 finalAlignment->num_adjustments == 1))
                     {
                         prevExtension = currentExtension;
