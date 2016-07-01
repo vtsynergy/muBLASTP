@@ -80,7 +80,7 @@ $(NCBI_CORE)/ncbi_composition_adjustment.c $(NCBI_CORE)/ncbi_filter.c\
 $(SRC)/alignments_ncbi.c $(SRC)/dbLookup_compress.c $(SRC)/sortdb.c\
 $(NCBI_CORE)/blast_kappa.c
 
-all: $(OBJ) mublastp formatdb indexdb sortdb sampledb querySelector #dbinfo blast
+all: $(OBJ) mublastp formatdb indexdb sortdb #sampledb querySelector #dbinfo blast
 
 $(OBJ):
 	mkdir -p $(OBJ)
