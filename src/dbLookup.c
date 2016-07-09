@@ -361,7 +361,7 @@ void proteinLookup_db_build(int4 numCodes, int wordLength,
 
         uint4 numLetterBlk = 0;
 
-        if(!(jj % 10))
+        if(!(jj % 20))
         {
             fprintf(stderr, ".");
         }
@@ -396,7 +396,7 @@ void proteinLookup_db_build(int4 numCodes, int wordLength,
 
             proteinLookup_db_b[jj].dbIdxblk_longestSeq =
                 MAX(proteinLookup_db_b[jj].dbIdxblk_longestSeq,
-                        readdb_sequenceData[ii + readdb_volumeOffset].sequenceLength);
+                        readdb_sequenceData[sequenceCount].sequenceLength);
         }
 
         proteinLookup_db_b[jj].numSeqBlk = ii - seqStartBlk + 1;

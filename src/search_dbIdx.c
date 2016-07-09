@@ -746,7 +746,7 @@ void search_protein2hit_dbIdx_lasthit_radix_cp(
     uint2 subjectOffset, wordLengthMinusOne;
     uint2 queryOffset;
     struct ungappedExtension *ungappedExtension;
-    int4 diagonal;
+    int8 diagonal;
 
     uint4 codeword;
     uint8 queryPosition;
@@ -796,7 +796,7 @@ void search_protein2hit_dbIdx_lasthit_radix_cp(
             struct initialWord_protein_db_cp *initialWord;
             initialWord = proteinLookup_db_blk_cp[bid].proteinLookup_db_cp + codeword_neighbours;
             int subOff = 0;
-            int numPosWord = 0;
+            //int numPosWord = 0;
             uint2 *seqIds = initialWord->seqId;
             for (jj = 0; jj < initialWord->numSubOff; jj++) {
                 subOff += initialWord->subOff[jj].subOff;
@@ -808,7 +808,6 @@ void search_protein2hit_dbIdx_lasthit_radix_cp(
 
                 for(kk = 0; kk < numPos; kk++)
                 {
-                    //uint4 hit = (subjectOffset << H_BITS) + seqIds[kk]; 
                     diagonal =
                         subjectOffset - queryPosition + (length - wordLengthMinusOne);
 
@@ -836,7 +835,7 @@ void search_protein2hit_dbIdx_lasthit_radix_cp(
                     }
                 }
                 seqIds += numPos;
-                numPosWord += numPos;
+                //numPosWord += numPos;
                 //binOffset[diagonal + 1]+=numPos;
             }
         }
@@ -850,7 +849,7 @@ void search_protein2hit_dbIdx_lasthit_radix_cp(
     int prev_seqId = -1;
     int numUngappedExtSeq = 0;
     struct alignment *alignment = NULL;
-    int4 lastExt = -1;
+    int8 lastExt = -1;
     for(jj = 0; jj < numExtHit; jj++)
     {
         HitPair hp = to_bin[jj];
@@ -861,9 +860,8 @@ void search_protein2hit_dbIdx_lasthit_radix_cp(
             exit(0);
         }
 
-
         int seqId = hp.hitIndex/maxDiag;
-        int diagonal = hp.hitIndex%maxDiag;
+        diagonal = hp.hitIndex%maxDiag;
         int queryOffset = hp.queryOffset + wordLengthMinusOne;
         int subjectOffset = queryOffset + diagonal - (length - wordLengthMinusOne);
 
@@ -894,7 +892,7 @@ void search_protein2hit_dbIdx_lasthit_radix_cp(
 
         prev_seqId = seqId;
 
-        int4 currExt = (diagonal << 16) + subjectOffset; 
+        int8 currExt = (diagonal << 32) + subjectOffset; 
 
         if(lastExt > currExt)
         {
@@ -945,7 +943,7 @@ void search_protein2hit_dbIdx_lasthit_radix_cp(
                 subjectOffset = (ungappedExtension_subjectEndReached -
                         subject);
 
-                lastExt = (diagonal << 16) + subjectOffset;
+                lastExt = (diagonal << 32) + subjectOffset;
             }
 
             if (alignment == NULL) {
@@ -975,24 +973,19 @@ void search_protein2hit_dbIdx_lasthit_radix_cp(
                 alignment->subject = subject;
                 alignment->subjectLength = subjectLength;
                 alignment->encodedLength = encodedLength;
-                alignment->compo_adjust_mode = 0;
-                //alignment->joinChecked = 0;
                 alignment->inMemorySubject = 0;
-                //alignment->numUnpackRegions = 0;
-                //alignment->cluster = 0;
                 alignment->sequenceCount = sequenceCount;
                 alignment->ungappedExtensionOffset = numGoodExtensions;
                 alignment->ungappedExtensions = NULL;
                 alignment->gappedExtensions = NULL;
                 alignment->gappedExtensionOffset = -1;
                 alignment->volumnNumber = readdb_volume;
-                //alignment->unpackRegions = NULL;
-                //alignment->edits = NULL;
                 alignment->numExtensions = 0;
                 alignment->queryCount = queryNum;
             }
             alignment->numExtensions++;
         }
+        
         prev_hitIndex = hitIndex;
     }
 
@@ -1015,6 +1008,8 @@ void search_protein2hit_dbIdx_lasthit_radix_cp(
 #endif
     }
 #endif
+
+
 
     (*goodAlignCount) = numGoodAlign;
     (*goodExtensionCount) = numGoodExtensions;
