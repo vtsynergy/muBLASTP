@@ -330,7 +330,7 @@ void proteinLookup_db_cp_build(int4 numCodes, int wordLength,
         }
 
         //Verify the correctness of compressed index
-#if 1
+#if 0
         for (ii = 0; ii < proteinLookup_numWords; ii++)
         {
             uint4 trueSubOff = 0;
