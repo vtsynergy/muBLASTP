@@ -11,7 +11,7 @@
 #include <ctype.h>
 
 #define NEIGHBOR_INDEX
-#define COMPRESSED_INDEX
+/*#define COMPRESSED_INDEX*/
 #define NCBI_BLAST
 #define MAX_NUM_THREADS 56 
 
