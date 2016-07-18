@@ -11,7 +11,7 @@
 ```
     $ ./sortdb <-i Database> <-o Sorted database>
 ```
-* 3 Build database index with a configurable block size. By default, block size is 128K bases, which is optimal for multithreading. For single thread, enlarging block size (e.g. 1024K bases) can achieve better performance. 
+* 3 Build database index with a configurable block size. By default, block size is 128K bases, which is optimal for multithreading. For single thread, enlarging block size (e.g. 1024K bases) can achieve better performance. Please checkout branch "compress_index" for compressed index implementation with dedicated optimizations.
 ```
     $ ./indexdb <-i Sorted database> [-s Block size in K bases, default 128 (K)]
 ```
