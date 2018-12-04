@@ -28,7 +28,7 @@ inline int4 getCodeword_protein_query(unsigned char *codes,
     return codeword;
 }
 
-inline HitPair *hit_sort_radix(HitPair *selectHits1, HitPair *selectHits2, int numSecondBins, int numExtHit)
+HitPair *hit_sort_radix(HitPair *selectHits1, HitPair *selectHits2, int numSecondBins, int numExtHit)
 {
 
     int8 bitCount = 0, bitValue = 1;

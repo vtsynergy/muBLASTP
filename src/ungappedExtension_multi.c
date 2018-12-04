@@ -701,6 +701,10 @@ struct ungappedExtension *ungappedExtension_extend_ncbi_multi2(
     unsigned char **ungappedExtension_subjectEndReached, int queryNum,
     struct ungappedExtension *goodExtensionBuf, int *goodExtensionCount,
     char *rightExtend) {
+
+    if(goodExtensionBuf == NULL)
+        return NULL;
+
   int4 subjectStart, subjectEnd, queryStart, queryEnd, extendLength,
       subjectEndReached;
   int4 ungappedExtension_bestScore;
